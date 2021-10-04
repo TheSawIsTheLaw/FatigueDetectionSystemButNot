@@ -19,8 +19,8 @@
 
 ## Use-Case диаграмма
 
-пум-пум
+![Use-case diagram](pics/UseCase.png)
 
 ## ER-диаграмма сущностей системы
 
-пам-пам
+![Use-case diagram](pics/ChenERDiagram.png)
