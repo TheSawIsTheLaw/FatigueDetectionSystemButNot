@@ -16,26 +16,21 @@ paths:
   /user/login:
     get:
       tags:
-      - Logs in user
+      - Authorization
       summary: "Allows user to get access to API functions"
       description: "Provides token for InfluxDB to get private info."
       operationId: logIn
       parameters:
       - in: query
-        name: token
+        name: Token
         description: "**Token**. *Example: EA13371477OO*. Token for InfluxDB access"
         required: true
         schema:
           type: string
       responses:
         200:
-          description: Success
-          content:
-            text/plain:
-              schema:
-                title: Authorized successfully
-                type: string
-                example: Authorized successfully
+          $ref: '#/components/responses/200'
+
         404:
           description: Illegal token
           content:
@@ -48,58 +43,164 @@ paths:
   /user/logout:
     get:
       tags:
-      - Logs out user
+      - Authorization
       summary: "Just logs out current token"
       description: "Woooo, i'll log out you o.o"
       operationId: logOut
       responses:
         200:
-          description: Success
+          $ref: '#/components/responses/200'
+
+  /subject/create:
+    get:
+      tags:
+      - Buckets management
+      summary: Creates new bucket for the user
+      description: Creates new bucket for the user to full it.
+      operationId: createBucket
+      parameters:
+      - $ref: '#/components/parameters/bucketName'
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+        
+        300:
+          description: Such name of bucket is already busy
           content:
             text/plain:
               schema:
-                title: Good bye!~
+                title: Name of the bucket is already busy
                 type: string
-                example: Good bye!~
+                example: Already exists
 
-  /user/create:
+  /subject/delete:
     get:
       tags:
-      summary:
-      description:
-      operationId:
-      externalDocs:
+      - Buckets management
+      summary: Deletes bucket of the user
+      description: Deletes bucket of the user with given name
+      operationId: deleteBucket
       parameters:
+      - $ref: '#/components/parameters/bucketName'
       responses:
-
-  /user/delete:
-    get:
-      tags:
-      summary:
-      description:
-      operationId:
-      externalDocs:
-      parameters:
-      responses:
+        200:
+          $ref: '#/components/responses/200'
+        
   
-  /user/addData/{dataType}:
+  /user/sendData:
     post:
       tags:
-      summary:
-      description:
-      operationId:
-      externalDocs:
+      - Data transfer
+      summary: Send user's data to the DB
+      description: Sends data to DB in case which type of data you would choose.
+      operationId: sendData
       parameters:
-      responses:
+      - $ref: '#/components/parameters/bucketName'
+      - $ref: '#/components/parameters/dataType'
+      - in: query
 
-  /user/getData/{dataType}:
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+
+        300:
+          description: Object is corrupted
+          content:
+            text/plain:
+              schema:
+                title: Sent object is not in allowed form
+                type: string
+                example: Not allowed form
+
+  /user/getData:
     get:
       tags:
+      - Data transfer
       summary:
       description:
       operationId:
       externalDocs:
       parameters:
+      - $ref: '#/components/parameters/bucketName'
+      - $ref: '#/components/parameters/dataType'
       responses:
+        200:
+          $ref: '#/components/responses/200'
 
-  
+components:
+  parameters:
+    bucketName:
+      in: query
+      name: Bucket name
+      description: "**Bucket name**. *Example: Chistyakov_Vladimir_Igorevich_IU7-77B*. Full name of subject to explore. Identification of a group is not neccesary, but be aware of duplicates (more info in responses)"
+      required: true
+      schema:
+        type: string
+
+    dataType:
+      in: query
+      name: Data type
+      description: "**Data type**. *Example: Pulse*. Name of needed characteristic of the subject"
+      required: true
+      schema:
+        type: string
+        enum: [pulse, timbre, adrenaline, breath, arterial, speech, mimic, gesture, wink, typing, corrections, dhs, mouse, keyboard, cortisol]
+        default: "pulse"
+
+  schemas:
+    Pulse:
+      title: Pulse
+      type: integer
+      description: Pulse
+      example: 75
+
+    Timbre:
+      title: Voice timbre
+      type: number
+      description: Voice timbre
+      example: 3.3
+    
+    AdrenalineLevel:
+      title: Adrenaline level
+      type: number
+      description: Adrenaline level in blood
+      example: 30.0
+
+    Breath:
+      title: Breath properties
+      type: object
+      properties:
+        type:
+          type: string
+          description: Type of breath
+          example: "Calm"
+        frequency:
+          type: number
+          description: Breath frequency - sigh/min
+          example: 6.2
+      
+    
+
+    ArterialPressure:
+      title: Arterial Pressure
+      type: object
+      properties:
+        topPressure:
+          type: integer
+          description: Top arterial pressure
+          example: 80
+        botBressure:
+          type: integer
+          description: Bot arterial pressure
+          example: 60
+
+  responses:
+    200:
+          description: Successful operation
+          content:
+            text/plain:
+              schema:
+                title: Success
+                type: string
+                example: Success
+
