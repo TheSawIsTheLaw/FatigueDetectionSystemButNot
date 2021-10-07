@@ -178,8 +178,6 @@ components:
           type: number
           description: Breath frequency - sigh/min
           example: 6.2
-      
-    
 
     ArterialPressure:
       title: Arterial Pressure
@@ -193,6 +191,66 @@ components:
           type: integer
           description: Bot arterial pressure
           example: 60
+    
+    Speech:
+      title: Speech rate
+      type: number
+      description: Speech rate in words/min
+      example: 3.3
+    
+    Mimic:
+      title: Facial expression
+      type: string
+      description: Facial expression
+      example: "Chaotic evil"
+
+    Gesture:
+      title: Gesture
+      type: string
+      description: Gesture
+      example: "Middle finger"
+
+    Blink:
+      title: Blink rate
+      type: number
+      description: Blink rate in blinks/min
+      example: 13.37
+
+    TypeRate:
+      title: Typing rate
+      type: number
+      description: Typing rate in types/min
+      example: 150.2
+
+    Remarks:
+      title: Correction of typos rate
+      type: number
+      description: Typos' correction rate in typoCor/min
+      example: 3.9
+
+    DHSLevel:
+      title: Dehydroepiandrosterone level
+      type: number
+      description: Dehydroepiandrosterone level
+      example: 6766.666
+
+    MouseSpeed:
+      title: Mouse speed
+      type: number
+      description: Mouse speed in m/sec
+      example: 3.6
+
+    ButtonsFreq:
+      title: Buttons frequency of use
+      type: number
+      description: Frequency in buttonTypes/min
+      example: 500.66
+
+    Cortisol:
+      title: Cortisol level
+      type: number
+      description: Cortisol level
+      example: 5.5
 
   responses:
     200:
