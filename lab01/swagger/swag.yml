@@ -1,0 +1,105 @@
+openapi: "3.0.2"
+info:
+  title: "FDSystem API"
+  description: "Some apoo and apees"
+  version: "1.0"
+  termsOfService: "https://whattheheck.su"
+  contact:
+    name: "Dmitry Yakuba"
+    url: "https://t.me/xGULZAx"
+    email: "dimakrok@bk.ru"
+
+servers:
+- url: https://api.fdsystem.ru/
+
+paths:
+  /user/login:
+    get:
+      tags:
+      - Logs in user
+      summary: "Allows user to get access to API functions"
+      description: "Provides token for InfluxDB to get private info."
+      operationId: logIn
+      parameters:
+      - in: query
+        name: token
+        description: "**Token**. *Example: EA13371477OO*. Token for InfluxDB access"
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                title: Authorized successfully
+                type: string
+                example: Authorized successfully
+        404:
+          description: Illegal token
+          content:
+            text/plain:
+              schema:
+                title: Illegal token
+                type: string
+                example: Illegal token
+  
+  /user/logout:
+    get:
+      tags:
+      - Logs out user
+      summary: "Just logs out current token"
+      description: "Woooo, i'll log out you o.o"
+      operationId: logOut
+      responses:
+        200:
+          description: Success
+          content:
+            text/plain:
+              schema:
+                title: Good bye!~
+                type: string
+                example: Good bye!~
+
+  /user/create:
+    get:
+      tags:
+      summary:
+      description:
+      operationId:
+      externalDocs:
+      parameters:
+      responses:
+
+  /user/delete:
+    get:
+      tags:
+      summary:
+      description:
+      operationId:
+      externalDocs:
+      parameters:
+      responses:
+  
+  /user/addData/{dataType}:
+    post:
+      tags:
+      summary:
+      description:
+      operationId:
+      externalDocs:
+      parameters:
+      responses:
+
+  /user/getData/{dataType}:
+    get:
+      tags:
+      summary:
+      description:
+      operationId:
+      externalDocs:
+      parameters:
+      responses:
+
+  
