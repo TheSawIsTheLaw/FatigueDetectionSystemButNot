@@ -113,15 +113,30 @@ paths:
     get:
         tags:
         - Data transfer
-        summary:
-        description:
-        operationId:
-        externalDocs:
+        summary: Get user's data from the DB
+        description: Gets all data from the bucket of chosen user
+        operationId: getData
         parameters:
         - $ref: '#/components/parameters/bucketName'
         responses:
           200:
-            $ref: '#/components/responses/200'
+            description: Success
+            content:
+              application/json:
+                schema:
+                  title: Characteristics
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Characteristics'
+
+          404:
+            description: No bucket with this name
+            content:
+              text/plain:
+                schema:
+                  title: Name of the bucket not found in DB
+                  type: string
+                  example: Not found
 
 components:
   parameters:
