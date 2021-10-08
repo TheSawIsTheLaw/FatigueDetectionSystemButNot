@@ -131,6 +131,9 @@ paths:
                   type: string
                   example: Not found
 
+security:
+  - secId: []
+
 components:
   parameters:
     bucketName:
@@ -141,15 +144,15 @@ components:
       schema:
         type: string
 
-    dataType:
-      in: query
-      name: Data type
-      description: "**Data type**. *Example: Pulse*. Name of needed characteristic of the subject"
-      required: true
-      schema:
-        type: string
-        enum: [pulse, timbre, adrenaline, breath, arterial, speech, mimic, gesture, wink, typing, corrections, dhs, mouse, keyboard, cortisol]
-        default: "pulse"
+    # dataType:
+    #   in: query
+    #   name: Data type
+    #   description: "**Data type**. *Example: Pulse*. Name of needed characteristic of the subject"
+    #   required: true
+    #   schema:
+    #     type: string
+    #     enum: [pulse, timbre, adrenaline, breath, arterial, speech, mimic, gesture, wink, typing, corrections, dhs, mouse, keyboard, cortisol]
+    #     default: "pulse"
 
   schemas:
     Characteristics:
@@ -271,4 +274,12 @@ components:
             title: Illegal token
             type: string
             example: Illegal token
+  
+  securitySchemes:
+    secId:
+      type: apiKey
+      description: API key to authorize requests. If you don't have one - run this cursed place...
+      name: securityId
+      in: query
+
 
