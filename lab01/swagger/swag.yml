@@ -32,13 +32,7 @@ paths:
           $ref: '#/components/responses/200'
 
         404:
-          description: Illegal token
-          content:
-            text/plain:
-              schema:
-                title: Illegal token
-                type: string
-                example: Illegal token
+          $ref: '#/components/responses/illegalToken'
   
   /user/logout:
     get:
@@ -51,8 +45,8 @@ paths:
         200:
           $ref: '#/components/responses/200'
 
-  /subject/create:
-    get:
+  /subject:
+    post:
       tags:
       - Buckets management
       summary: Creates new bucket for the user
@@ -73,8 +67,7 @@ paths:
                 type: string
                 example: Already exists
 
-  /subject/delete:
-    get:
+    delete:
       tags:
       - Buckets management
       summary: Deletes bucket of the user
@@ -253,20 +246,29 @@ components:
 
   responses:
     200:
-          description: Successful operation
-          content:
-            text/plain:
-              schema:
-                title: Success
-                type: string
-                example: Success
+      description: Successful operation
+      content:
+        text/plain:
+          schema:
+            title: Success
+            type: string
+            example: Success
 
     corruptedObj:
-          description: Object is corrupted
-          content:
-            text/plain:
-              schema:
-                title: Sent object is not in allowed form
-                type: string
-                example: Not allowed form
+      description: Object is corrupted
+      content:
+        text/plain:
+          schema:
+            title: Sent object is not in allowed form
+            type: string
+            example: Not allowed form
+
+    illegalToken:
+      description: Illegal token
+      content:
+        text/plain:
+          schema:
+            title: Illegal token
+            type: string
+            example: Illegal token
 
