@@ -1,0 +1,8 @@
+2021-10-09 00:11:10 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Синтаксическая ошибка в выражении SQL "CREATE TABLE IF NOT EXITS[*] MESSAGES ("; ожидалось "EXISTS"
+Syntax error in SQL statement "CREATE TABLE IF NOT EXITS[*] MESSAGES ("; expected "EXISTS"; SQL statement:
+create table if not exits messages ( [42001-200]
+2021-10-09 00:11:34 jdbc[3]: exception
+org.h2.jdbc.JdbcSQLSyntaxErrorException: Синтаксическая ошибка в выражении SQL "CREATE TABLE IF NOT EXISTS MESSAGES ([*]"; ожидалось "identifier"
+Syntax error in SQL statement "CREATE TABLE IF NOT EXISTS MESSAGES ([*]"; expected "identifier"; SQL statement:
+create table if not exists messages ( [42001-200]
