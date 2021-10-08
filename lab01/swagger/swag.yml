@@ -88,12 +88,12 @@ paths:
         
   # Я тут и через енамы пытался, и через {dataType}, всё бестолку.
   # Ну и чёрт с ним, смотрите, как могу))
-  /user/sendData/pulse:
+  /user/data:
     post:
       tags:
       - Data transfer
       summary: Send user's data to the DB
-      description: Sends data
+      description: Sends data. If one of the fields would be passed with initial values - they won't be sent.
       operationId: sendData
       parameters:
       - $ref: '#/components/parameters/bucketName'
@@ -101,7 +101,7 @@ paths:
         name: Data
         description: Data to send to the DB
         schema:
-          $ref: '#/components/schemas/Pulse'
+          $ref: '#/components/schemas/Characteristics'
 
       responses:
         200:
@@ -110,329 +110,18 @@ paths:
         300:
           $ref: '#/components/responses/corruptedObj'
 
-  /user/sendData/timbre:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Timbre'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/adrenaline:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/AdrenalineLevel'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/breath:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Breath'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-  
-  /user/sendData/pressure:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/ArterialPressure'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/speech:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Speech'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/mimic:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Mimic'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-
-  /user/sendData/gesture:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Gesture'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/blink:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Blink'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/typeRate:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/TypeRate'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/remarks:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Remarks'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/dhs:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/DHSLevel'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/mouse:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/MouseSpeed'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/keyboard:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/ButtonsFreq'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/sendData/cortisol:
-    post:
-      tags:
-      - Data transfer
-      summary: Send user's data to the DB
-      description: Sends data to the DB
-      operationId: sendData
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - in: query
-        name: Data
-        description: Data to send
-        schema:
-          $ref: '#/components/schemas/Cortisol'
-
-      responses:
-        200:
-          $ref: '#/components/responses/200'
-
-        300:
-          $ref: '#/components/responses/corruptedObj'
-
-  /user/getData:
     get:
-      tags:
-      - Data transfer
-      summary:
-      description:
-      operationId:
-      externalDocs:
-      parameters:
-      - $ref: '#/components/parameters/bucketName'
-      - $ref: '#/components/parameters/dataType'
-      responses:
-        200:
-          $ref: '#/components/responses/200'
+        tags:
+        - Data transfer
+        summary:
+        description:
+        operationId:
+        externalDocs:
+        parameters:
+        - $ref: '#/components/parameters/bucketName'
+        responses:
+          200:
+            $ref: '#/components/responses/200'
 
 components:
   parameters:
@@ -455,109 +144,97 @@ components:
         default: "pulse"
 
   schemas:
-    Pulse:
-      title: Pulse
-      type: integer
-      description: Pulse
-      example: 75
-
-    Timbre:
-      title: Voice timbre
-      type: number
-      description: Voice timbre
-      example: 3.3
-    
-    AdrenalineLevel:
-      title: Adrenaline level
-      type: number
-      description: Adrenaline level in blood
-      example: 30.0
-
-    Breath:
-      title: Breath properties
+    Characteristics:
       type: object
       properties:
-        type:
-          type: string
-          description: Type of breath
-          example: "Calm"
-        frequency:
+        Pulse:
+          type: integer
+          description: Pulse
+          example: 75
+
+        Timbre:
           type: number
-          description: Breath frequency - sigh/min
-          example: 6.2
-
-    ArterialPressure:
-      title: Arterial Pressure
-      type: object
-      properties:
-        topPressure:
-          type: integer
-          description: Top arterial pressure
-          example: 80
-        botBressure:
-          type: integer
-          description: Bot arterial pressure
-          example: 60
+          description: Voice timbre
+          example: 3.3
     
-    Speech:
-      title: Speech rate
-      type: number
-      description: Speech rate in words/min
-      example: 3.3
+        AdrenalineLevel:
+          type: number
+          description: Adrenaline level in blood
+          example: 30.0
+
+        Breath:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Type of breath
+              example: "Calm"
+            frequency:
+              type: number
+              description: Breath frequency - sigh/min
+              example: 6.2
+
+        ArterialPressure:
+          type: object
+          properties:
+            topPressure:
+              type: integer
+              description: Top arterial pressure
+              example: 80
+            botBressure:
+              type: integer
+              description: Bot arterial pressure
+              example: 60
     
-    Mimic:
-      title: Facial expression
-      type: string
-      description: Facial expression
-      example: "Chaotic evil"
+        Speech:
+          type: number
+          description: Speech rate in words/min
+          example: 3.3
+    
+        Mimic:
+          type: string
+          description: Facial expression
+          example: "Chaotic evil"
 
-    Gesture:
-      title: Gesture
-      type: string
-      description: Gesture
-      example: "Middle finger"
+        Gesture:
+          type: string
+          description: Gesture
+          example: "Middle finger"
 
-    Blink:
-      title: Blink rate
-      type: number
-      description: Blink rate in blinks/min
-      example: 13.37
+        Blink:
+          type: number
+          description: Blink rate in blinks/min
+          example: 13.37
 
-    TypeRate:
-      title: Typing rate
-      type: number
-      description: Typing rate in types/min
-      example: 150.2
+        TypeRate:
+          type: number
+          description: Typing rate in types/min
+          example: 150.2
 
-    Remarks:
-      title: Correction of typos rate
-      type: number
-      description: Typos' correction rate in typoCor/min
-      example: 3.9
+        Remarks:
+          type: number
+          description: Typos' correction rate in typoCor/min
+          example: 3.9
 
-    DHSLevel:
-      title: Dehydroepiandrosterone level
-      type: number
-      description: Dehydroepiandrosterone level
-      example: 6766.666
+        DHSLevel:
+          type: number
+          description: Dehydroepiandrosterone level
+          example: 6766.666
 
-    MouseSpeed:
-      title: Mouse speed
-      type: number
-      description: Mouse speed in m/sec
-      example: 3.6
+        MouseSpeed:
+          type: number
+          description: Mouse speed in m/sec
+          example: 3.6
 
-    ButtonsFreq:
-      title: Buttons frequency of use
-      type: number
-      description: Frequency in buttonTypes/min
-      example: 500.66
+        ButtonsFreq:
+          type: number
+          description: Frequency in buttonTypes/min
+          example: 500.66
 
-    Cortisol:
-      title: Cortisol level
-      type: number
-      description: Cortisol level
-      example: 5.5
+        Cortisol:
+          type: number
+          description: Cortisol level
+          example: 5.5
 
   responses:
     200:
