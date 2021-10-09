@@ -1,10 +1,10 @@
-package com.fdsystem.FDSystem
+package com.fdsystem.fdserver
 
 import org.junit.jupiter.api.Test
 import org.springframework.boot.test.context.SpringBootTest
 
 @SpringBootTest
-class FdSystemApplicationTests {
+class FdserverApplicationTests {
 
 	@Test
 	fun contextLoads() {
