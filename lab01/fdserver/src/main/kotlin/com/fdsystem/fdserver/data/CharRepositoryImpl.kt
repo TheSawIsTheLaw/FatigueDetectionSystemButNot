@@ -35,11 +35,11 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     }
 }
 
-class CharRepositoryImpl(connectionString: String, token: String, org: String): CharRepositoryInterface
+class CharRepositoryImpl(connectionString: String, token: String, org: String) : CharRepositoryInterface
 {
     private val connection = InfluxConnection(connectionString, token, org)
 
-    override fun get(subjectName: String, timeRange: Pair<Int, Int>): List<Triple<String, String, Instant>>
+    override fun get(subjectName: String, timeRange: Pair<Int, Int>, charName: String): List<Triple<String, String, Instant>>
     {
         if (connection.getConnectionToDB().health().status == HealthCheck.StatusEnum.FAIL)
             return listOf()
@@ -49,27 +49,25 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String): 
 
         val rng =
             if (timeRange.second == 0) "start: ${timeRange.first}" else "start: ${timeRange.first}, stop: ${timeRange.second}}"
-        val query = ("from(bucket: \"$subjectName\")\n" +
-                "|> range($rng)")
+        var query: String  = "from(bucket: \"$subjectName\")\n" +
+                "|> range($rng)"
+        if (charName.isNotBlank())
+        {
+            query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == \"$charName\"))"
+        }
         val result = client.getQueryKotlinApi().query(query)
 
-        val tempList =
         runBlocking {
             for (i in result)
             {
                 val curVal = i.values
-                outList.add(Triple(curVal["_measurement"].toString(), curVal["_value"].toString(), curVal["_time"] as Instant))
+                outList.add(Triple(curVal["_measurement"].toString(), curVal["_value"].toString(),
+                    curVal["_time"] as Instant))
             }
         }
         connection.closeConnection()
 
         return outList.toList()
-    }
-
-    override fun get(subjectName: String, charName: String,
-                     timeRange: Pair<Int, Int>): List<Triple<String, String, Instant>>
-    {
-        TODO("Not yet implemented")
     }
 
     override fun add(subjectName: String, chars: List<Triple<String, String, Instant>>)
