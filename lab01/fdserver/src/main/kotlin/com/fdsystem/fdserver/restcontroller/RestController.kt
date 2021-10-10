@@ -43,39 +43,46 @@ class MessageController(val service: MessageService)
 }
 
 @RestController
+@RequestMapping("/api/user")
 class UserController()
 {
-    @GetMapping("/user/login")
-    fun login()
+    @GetMapping("/login/{token}")
+    fun login(@PathVariable("token") token: String): String
     {
+        return token
     }
 
-    @GetMapping("/user/logout")
+    @GetMapping("/logout")
     fun logout()
     {
     }
 
-    @GetMapping("/user/data")
-    fun getData()
+    @GetMapping("/data/{bucket}")
+    fun getData(@PathVariable("bucket") bucket: String): String
     {
+        return bucket
     }
 
-    @PostMapping("/user/data")
-    fun addData()
+    @PostMapping("/data/{bucket}")
+    fun addData(@PathVariable("bucket") bucket: String): String
     {
+        return bucket
     }
 }
 
 @RestController
+@RequestMapping("/api/subject")
 class SubjectController()
 {
-    @PostMapping("/subject")
-    fun createNewBucket()
+    @PostMapping("/{bucket}")
+    fun createNewBucket(@PathVariable("bucket") bucket: String): String
     {
+        return bucket
     }
 
-    @DeleteMapping("/subject")
-    fun deleteBucket()
+    @DeleteMapping("/{bucket}")
+    fun deleteBucket(@PathVariable("bucket") bucket: String): String
     {
+        return bucket
     }
 }

@@ -21,3 +21,17 @@ data class BlinkRate(val rate: Float = -1.0f)
 data class FacialExpression(val expression: String = "")
 
 data class SpeechRate(val rate: Float = -1.0f)
+
+data class Characteristics(
+    val arterialPressure: ArterialPressure = ArterialPressure(),
+    val pulse: Pulse = Pulse(),
+    val breathe: Breathe = Breathe(),
+    val cortisol: Cortisol = Cortisol(),
+    val mouseClicks: MouseClicks = MouseClicks(),
+    val mouseSpeed: MouseSpeed = MouseSpeed(),
+    val dhea: DHEA = DHEA(),
+    val printSpeed: PrintSpeed = PrintSpeed(),
+    val blinkRate: BlinkRate = BlinkRate(),
+    val facialExpression: FacialExpression = FacialExpression(),
+    val speechRate: SpeechRate = SpeechRate()
+)
