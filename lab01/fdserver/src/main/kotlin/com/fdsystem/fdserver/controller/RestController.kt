@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.controller
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import com.fdsystem.fdserver.domain.MeasurementDTO
 import com.google.gson.Gson
 import io.swagger.annotations.*
 import org.springframework.data.annotation.Id
@@ -135,7 +136,7 @@ class UserController(val bucketsService: BucketsService)
     }
 
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
-    @ApiOperation(value = "Gets info about user", response = String::class)
+    @ApiOperation(value = "Gets info about user", response = MeasurementDTO::class)
     @ApiParam(name = "bucket", value = "User's bucket to get info from", required = true, example = "Yuriy Stroganov")
     @ApiImplicitParam(name = "charname", value = "Name of measurement to get from bucket", required = true,
         example = "http://kidnappers.com/",
@@ -148,12 +149,19 @@ class UserController(val bucketsService: BucketsService)
     )
     @GetMapping("/data/{bucket}")
     fun getData(@PathVariable("bucket") bucket: String,
-                @RequestParam("charname") characteristicName: String): List<Pair<String, Instant>>
+                @RequestParam("charname") characteristicName: String): List<MeasurementDTO>
     {
-        return if (bucketsService.checkAuth())
-            bucketsService.getMeasurementFromBucket(bucket, characteristicName)
-        else
+        if (!bucketsService.checkAuth())
             throw Exception("Not authorized")
+
+        val infoPairs = bucketsService.getMeasurementFromBucket(bucket, characteristicName)
+        val outList = mutableListOf<MeasurementDTO>()
+        for (measurement in infoPairs)
+        {
+            outList.add(0, MeasurementDTO(measurement.first, measurement.second))
+        }
+
+        return outList
     }
 
     @ApiOperation(value = "Adds data to bucket", response = String::class)

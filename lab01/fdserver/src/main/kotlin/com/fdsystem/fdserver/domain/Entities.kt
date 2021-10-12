@@ -1,5 +1,7 @@
 package com.fdsystem.fdserver.domain
 
+import java.time.Instant
+
 data class ArterialPressure(val topPressure: Int = -1, val botPressure: Int = -1)
 
 data class Pulse(val pulse: Int = -1)
@@ -35,3 +37,5 @@ data class Characteristics(
     val facialExpression: FacialExpression = FacialExpression(),
     val speechRate: SpeechRate = SpeechRate()
 )
+
+data class MeasurementDTO(val value: String, val time: Instant)
