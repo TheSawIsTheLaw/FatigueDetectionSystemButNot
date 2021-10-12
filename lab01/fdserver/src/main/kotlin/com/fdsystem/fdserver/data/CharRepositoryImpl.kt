@@ -78,30 +78,6 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
     private val connection = InfluxConnection(connectionString, token, org)
 
-    private fun createBucket(subjectName: String)
-    {
-        val httpClient = OkHttpClient()
-
-        val url = HttpUrl.parse("http://localhost:8086/api/v2/buckets")!!.newBuilder()
-            .build()
-
-        val jsonContent = "{\n" +
-                "  \"orgID\": \"$orgIDToAddUsers\",\n" +
-                "  \"name\": \"$subjectName\",\n" +
-                "  \"retentionRules\": []\n" +
-                "}"
-        val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json; charset=utf8"), jsonContent)
-
-        val request = Request.Builder()
-            .url(url)
-            .addHeader("Authorization",
-                "Token EymNpn7A_2aZHevNV_CCnttU0YGq93v3QxaV5dRSQ2E43cJK4r3MZIffvgYbeWDwtuTRSJHiP7WqWtBAuMhJOA==")
-            .post(body)
-            .build()
-
-        httpClient.newCall(request).execute()
-    }
-
     override fun get(subjectName: String, timeRange: Pair<Int, Int>,
                      charName: String): List<Triple<String, Any, Instant>>
     {
@@ -134,9 +110,32 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return outList.toList()
     }
 
-    override fun add(subjectName: String, chars: List<Pair<String, Any>>)
+    private fun createBucket(subjectName: String)
     {
-        // Подумай вынести куда
+        val httpClient = OkHttpClient()
+
+        val url = HttpUrl.parse("http://localhost:8086/api/v2/buckets")!!.newBuilder()
+            .build()
+
+        val jsonContent = "{\n" +
+                "  \"orgID\": \"$orgIDToAddUsers\",\n" +
+                "  \"name\": \"$subjectName\",\n" +
+                "  \"retentionRules\": []\n" +
+                "}"
+        val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json; charset=utf8"), jsonContent)
+
+        val request = Request.Builder()
+            .url(url)
+            .addHeader("Authorization",
+                "Token EymNpn7A_2aZHevNV_CCnttU0YGq93v3QxaV5dRSQ2E43cJK4r3MZIffvgYbeWDwtuTRSJHiP7WqWtBAuMhJOA==")
+            .post(body)
+            .build()
+
+        httpClient.newCall(request).execute()
+    }
+
+    private fun bucketNotExists(bucketName: String): Boolean
+    {
         val httpClient = OkHttpClient()
 
         var apiString = connection.getConnectionURL()
@@ -145,7 +144,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         apiString += "api/v2/buckets"
 
         val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
-            .addQueryParameter("name", subjectName)
+            .addQueryParameter("name", bucketName)
             .build()
 
         val request = Request.Builder()
@@ -155,9 +154,19 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val response = httpClient.newCall(request).execute()
         if (response.code() != 200)
+        {
             throw Exception("Connection to database failed")
-        else if (response.body()!!.string().contains("\"buckets\": []"))
+        }
+
+        return response.body()!!.string().contains("\"buckets\": []")
+    }
+
+    override fun add(subjectName: String, chars: List<Pair<String, Any>>)
+    {
+        if (bucketNotExists(subjectName))
+        {
             createBucket(subjectName)
+        }
 
         val client = connection.getConnectionWrite(subjectName)
         val writeApi = client.getWriteKotlinApi()
@@ -168,6 +177,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
                 writeApi.writeRecord("${i.first}=${i.second}", WritePrecision.S)
             }
         }
+        
         connection.closeWriteConnection()
     }
 }
