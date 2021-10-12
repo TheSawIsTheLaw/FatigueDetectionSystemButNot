@@ -1,20 +1,14 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.domain.CharRepositoryInterface
-import com.google.gson.JsonObject
-import com.influxdb.client.JSON
 import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
 import kotlinx.coroutines.runBlocking
-import okhttp3.FormBody
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.springframework.http.MediaType
-import org.springframework.web.bind.annotation.RequestBody
-import java.text.Format
 import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)
@@ -43,11 +37,11 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 
     fun getConnectionToDB(): InfluxDBClientKotlin
     {
-        if (connection.health().status == HealthCheck.StatusEnum.FAIL)
-        {
-            connection = InfluxDBClientKotlinFactory
-                .create(connectionString, token.toCharArray(), org)
-        }
+//        if (connection.health().status.toString() == "fail")
+//        {
+//            connection = InfluxDBClientKotlinFactory
+//                .create(connectionString, token.toCharArray(), org)
+//        }
         return connection
     }
 
@@ -114,8 +108,12 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     {
         val httpClient = OkHttpClient()
 
-        val url = HttpUrl.parse("http://localhost:8086/api/v2/buckets")!!.newBuilder()
-            .build()
+        var apiString = connection.getConnectionURL()
+        if (apiString.last() != '/')
+        {
+            apiString += '/'
+        }
+        apiString += "api/v2/buckets"
 
         val jsonContent = "{\n" +
                 "  \"orgID\": \"$orgIDToAddUsers\",\n" +
@@ -125,9 +123,9 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json; charset=utf8"), jsonContent)
 
         val request = Request.Builder()
-            .url(url)
+            .url(apiString)
             .addHeader("Authorization",
-                "Token EymNpn7A_2aZHevNV_CCnttU0YGq93v3QxaV5dRSQ2E43cJK4r3MZIffvgYbeWDwtuTRSJHiP7WqWtBAuMhJOA==")
+                "Token ${connection.getToken()}")
             .post(body)
             .build()
 
@@ -140,7 +138,9 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         var apiString = connection.getConnectionURL()
         if (apiString.last() != '/')
+        {
             apiString += '/'
+        }
         apiString += "api/v2/buckets"
 
         val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
@@ -149,6 +149,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val request = Request.Builder()
             .url(urlWithParams)
+            .addHeader("Authorization", "Token ${connection.getToken()}")
             .get()
             .build()
 
@@ -177,7 +178,32 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
                 writeApi.writeRecord("${i.first}=${i.second}", WritePrecision.S)
             }
         }
-        
+
         connection.closeWriteConnection()
+    }
+
+    fun checkHealth(): Boolean
+    {
+        val httpClient = OkHttpClient()
+
+        var apiString = connection.getConnectionURL()
+        if (apiString.last() != '/')
+        {
+            apiString += '/'
+        }
+        apiString += "api/v2/buckets"
+
+        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
+            .build()
+
+        val request = Request.Builder()
+            .url(urlWithParams)
+            .addHeader("Authorization", "Token ${connection.getToken()}")
+            .get()
+            .build()
+
+        val response = httpClient.newCall(request).execute()
+
+        return response.body()!!.string().contains("\"buckets\":")
     }
 }
