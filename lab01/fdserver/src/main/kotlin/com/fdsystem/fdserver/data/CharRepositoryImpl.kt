@@ -6,6 +6,11 @@ import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
 import kotlinx.coroutines.runBlocking
+import okhttp3.FormBody
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import org.springframework.web.bind.annotation.RequestBody
+import java.text.Format
 import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)
@@ -20,6 +25,16 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     {
         connection = InfluxDBClientKotlinFactory
             .create(connectionString, token.toCharArray(), org)
+    }
+
+    fun getConnectionURL(): String
+    {
+        return connectionString
+    }
+
+    fun getToken(): String
+    {
+        return token
     }
 
     fun getConnectionToDB(): InfluxDBClientKotlin
@@ -58,12 +73,12 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     private val connection = InfluxConnection(connectionString, token, org)
 
     override fun get(subjectName: String, timeRange: Pair<Int, Int>,
-                     charName: String): List<Triple<String, String, Instant>>
+                     charName: String): List<Triple<String, Any, Instant>>
     {
         if (connection.getConnectionToDB().health().status == HealthCheck.StatusEnum.FAIL)
             return listOf()
 
-        val outList: MutableList<Triple<String, String, Instant>> = mutableListOf()
+        val outList: MutableList<Triple<String, Any, Instant>> = mutableListOf()
         val client = connection.getConnectionToDB()
 
         val rng =
@@ -80,7 +95,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             for (i in result)
             {
                 val curVal = i.values
-                outList.add(Triple(curVal["_measurement"].toString(), curVal["_value"].toString(),
+                outList.add(Triple(curVal["_measurement"].toString(), curVal["_value"]!!,
                     curVal["_time"] as Instant))
             }
         }
@@ -89,8 +104,27 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return outList.toList()
     }
 
-    override fun add(subjectName: String, chars: List<Pair<String, String>>)
+    override fun add(subjectName: String, chars: List<Pair<String, Any>>)
     {
+        // Подумай вынести куда
+        val httpClient = OkHttpClient()
+
+        val requestBody = FormBody.Builder()
+            .add("Authorization", "Token " + connection.getToken())
+            .add("name", subjectName)
+            .build()
+
+        val request = Request.Builder()
+            .url(connection.getConnectionURL() + "/api/v2/buckets")
+            .post(requestBody)
+            .build()
+
+        val response = httpClient.newCall(request).execute()
+        if (response.code() != 200)
+            throw Exception("")
+        val out = response.body().toString()
+
+
         val client = connection.getConnectionWrite(subjectName)
         val writeApi = client.getWriteKotlinApi()
 
