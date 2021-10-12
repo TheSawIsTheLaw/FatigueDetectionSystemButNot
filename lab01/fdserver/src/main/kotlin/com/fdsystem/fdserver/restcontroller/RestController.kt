@@ -1,12 +1,14 @@
 package com.fdsystem.fdserver.restcontroller
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import com.google.gson.Gson
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
+import java.time.Instant
 
 @Table("MESSAGES")
 data class Message(@Id val id: String?, val text: String)
@@ -54,19 +56,42 @@ class BucketsService()
 
     fun checkDBHealth(): String
     {
-        repository?: return "Dead"
+        repository ?: return "Dead"
         return if (repository!!.checkHealth()) "Authorized" else "Error"
     }
 
     fun checkAuth(): Boolean
     {
-        repository?: return false
+        repository ?: return false
         return repository!!.checkHealth()
     }
 
     fun logout()
     {
         repository = null
+    }
+
+    fun getMeasurementFromBucket(bucketName: String, charName: String): List<Pair<String, Instant>>
+    {
+        val outList = mutableListOf<Pair<String, Instant>>()
+        if (repository != null)
+        {
+            val gotInformation = repository!!.get(bucketName, Pair(5, 0), charName)
+            for (i in gotInformation)
+            {
+                outList.add(0, Pair(i.second.toString(), i.third))
+            }
+        }
+
+        return outList.toList()
+    }
+
+    fun sendToBucket(bucketName: String, charName: String, chars: List<String>)
+    {
+        if (repository == null)
+            return
+
+        repository!!.add(bucketName, charName, chars)
     }
 }
 
@@ -90,31 +115,24 @@ class UserController(val bucketsService: BucketsService)
     }
 
     @GetMapping("/data/{bucket}")
-    fun getData(@PathVariable("bucket") bucket: String): String
+    fun getData(@PathVariable("bucket") bucket: String, @RequestParam("charname") characteristicName: String): String
     {
-        return bucket
+        return if (bucketsService.checkAuth())
+            Gson().toJson(bucketsService.getMeasurementFromBucket(bucket, characteristicName))
+        else
+            "Not authorized"
     }
 
     @PostMapping("/data/{bucket}")
-    fun addData(@PathVariable("bucket") bucket: String): String
+    fun addData(@PathVariable("bucket") bucket: String, @RequestParam("charname") characteristicName: String,
+                @RequestBody charsList: List<String>): String
     {
-        return bucket
-    }
-}
-
-@RestController
-@RequestMapping("/api/subject")
-class SubjectController()
-{
-    @PostMapping("/{bucket}")
-    fun createNewBucket(@PathVariable("bucket") bucket: String): String
-    {
-        return bucket
-    }
-
-    @DeleteMapping("/{bucket}")
-    fun deleteBucket(@PathVariable("bucket") bucket: String): String
-    {
-        return bucket
+        return if (bucketsService.checkAuth())
+        {
+            bucketsService.sendToBucket(bucket, characteristicName, charsList)
+            "Done"
+        }
+        else
+            "Not authorized"
     }
 }

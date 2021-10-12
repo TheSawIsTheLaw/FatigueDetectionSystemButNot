@@ -16,14 +16,9 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     private val connectionString = connectionString_
     private val token = token_
     private val org = org_
-    private var connection: InfluxDBClientKotlin
+    private var connection = InfluxDBClientKotlinFactory
+        .create(connectionString, token.toCharArray(), org)
     private lateinit var writeApiConnection: InfluxDBClientKotlin
-
-    init
-    {
-        connection = InfluxDBClientKotlinFactory
-            .create(connectionString, token.toCharArray(), org)
-    }
 
     fun getConnectionURL(): String
     {
@@ -162,7 +157,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return response.body()!!.string().contains("\"buckets\": []")
     }
 
-    override fun add(subjectName: String, chars: List<Pair<String, Any>>)
+    override fun add(subjectName: String, charName: String, chars: List<String>)
     {
         if (bucketNotExists(subjectName))
         {
@@ -175,7 +170,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         runBlocking {
             for (i in chars)
             {
-                writeApi.writeRecord("${i.first}=${i.second}", WritePrecision.S)
+                writeApi.writeRecord("$charName=$i", WritePrecision.S)
             }
         }
 
