@@ -26,6 +26,7 @@ dependencies {
 	implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 	implementation("com.influxdb:influxdb-client-kotlin:3.3.0")
 	implementation("com.google.code.gson:gson")
+	implementation("io.springfox:springfox-boot-starter:3.0.0")
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	runtimeOnly("com.h2database:h2")
 	testImplementation("org.springframework.boot:spring-boot-starter-test")
