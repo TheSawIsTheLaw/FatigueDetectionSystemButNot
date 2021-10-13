@@ -22,6 +22,7 @@ class ApplicationConfig
     {
         return Docket(DocumentationType.SWAGGER_2)
             .apiInfo(getApiInfo())
+            .protocols(setOf("http", "https"))
             .select()
             .apis(RequestHandlerSelectors.basePackage("com.fdsystem.fdserver.controller"))
             .paths(PathSelectors.any())

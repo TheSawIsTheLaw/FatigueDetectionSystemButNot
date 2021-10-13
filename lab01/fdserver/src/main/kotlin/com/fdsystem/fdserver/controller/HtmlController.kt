@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.GetMapping
 class HtmlController : ErrorController
 {
     @ApiOperation(value = "Welcome page of FDSystem")
-    @GetMapping("/")
+    @GetMapping("/welcome")
     fun welcome(model: Model): String
     {
         model["title"] = "FDSystem start page"
