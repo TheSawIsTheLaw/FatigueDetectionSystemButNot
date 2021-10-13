@@ -10,14 +10,15 @@ import org.springframework.web.bind.annotation.GetMapping
 
 @Controller
 @Api(value = "html", description = "Navigation through the pages", tags = ["Pages"])
-class HtmlController: ErrorController
+class HtmlController : ErrorController
 {
     @ApiOperation(value = "Welcome page of FDSystem")
     @GetMapping("/")
     fun welcome(model: Model): String
     {
         model["title"] = "FDSystem start page"
-        model["explanation"] = "Если бы знали, как долго я пытался сделать так, чтобы это работало, - вы бы расплакались."
+        model["explanation"] =
+            "Если бы Вы знали, как долго я пытался сделать так, чтобы это работало, - Вы бы расплакались."
         return "welcome"
     }
 
