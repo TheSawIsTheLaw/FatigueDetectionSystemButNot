@@ -4,6 +4,8 @@ services:
     build:
       context: ./nginx
       dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
     ports:
       - "9090:9090"
     depends_on:
@@ -13,11 +15,15 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8181:8080"
   service2:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8282:8080"
