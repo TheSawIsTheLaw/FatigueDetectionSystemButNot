@@ -11,6 +11,7 @@ services:
     depends_on:
       - service1
       - service2
+      - service3
   service1:
     build:
       context: .
@@ -27,3 +28,11 @@ services:
       - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8282:8080"
+  service3:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "8383:8080"

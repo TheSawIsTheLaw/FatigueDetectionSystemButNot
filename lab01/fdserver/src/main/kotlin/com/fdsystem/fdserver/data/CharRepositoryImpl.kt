@@ -18,7 +18,7 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     private val org = org_
     private var connection = InfluxDBClientKotlinFactory
         .create(connectionString, token.toCharArray(), org)
-    private lateinit var writeApiConnection: InfluxDBClientKotlin
+    private var writeApiConnection: InfluxDBClientKotlin? = null
 
     fun getConnectionURL(): String
     {
@@ -28,6 +28,11 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     fun getToken(): String
     {
         return token
+    }
+
+    fun getOrg(): String
+    {
+        return org
     }
 
     fun getConnectionToDB(): InfluxDBClientKotlin
@@ -42,12 +47,14 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 
     fun getConnectionWrite(bucketName: String): InfluxDBClientKotlin
     {
-        if (writeApiConnection.health().status == HealthCheck.StatusEnum.FAIL)
-        {
-            writeApiConnection = InfluxDBClientKotlinFactory
-                .create(connectionString, token.toCharArray(), org, bucketName)
-        }
-        return writeApiConnection
+//        if (writeApiConnection.health().status == HealthCheck.StatusEnum.FAIL)
+//        {
+        writeApiConnection?.close()
+
+        writeApiConnection = InfluxDBClientKotlinFactory
+            .create(connectionString, token.toCharArray(), org, bucketName)
+//        }
+        return writeApiConnection as InfluxDBClientKotlin
     }
 
     fun closeConnection()
@@ -57,18 +64,18 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 
     fun closeWriteConnection()
     {
-        writeApiConnection.close()
+        writeApiConnection?.close()
     }
 }
 
 class CharRepositoryImpl(connectionString: String, token: String, org: String) : CharRepositoryInterface
 {
-    private val orgIDToAddUsers = "c51d6cb468ec609f"
-
     private val connection = InfluxConnection(connectionString, token, org)
 
-    override fun get(subjectName: String, timeRange: Pair<Int, Int>,
-                     charName: String): List<Triple<String, Any, Instant>>
+    override fun get(
+        subjectName: String, timeRange: Pair<Int, Int>,
+        charName: String
+    ): List<Triple<String, Any, Instant>>
     {
         if (connection.getConnectionToDB().health().status == HealthCheck.StatusEnum.FAIL)
             return listOf()
@@ -90,8 +97,12 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             for (i in result)
             {
                 val curVal = i.values
-                outList.add(Triple(curVal["_measurement"].toString(), curVal["_value"]!!,
-                    curVal["_time"] as Instant))
+                outList.add(
+                    Triple(
+                        curVal["_measurement"].toString(), curVal["_value"]!!,
+                        curVal["_time"] as Instant
+                    )
+                )
             }
         }
         connection.closeConnection()
@@ -99,10 +110,35 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return outList.toList()
     }
 
+    private fun getOrgIDByName(apiString: String, orgName: String): String
+    {
+        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
+            .addQueryParameter("org", orgName)
+            .build()
+
+        val request = Request.Builder()
+            .url(urlWithParams)
+            .addHeader("Authorization", "Token ${connection.getToken()}")
+            .get()
+            .build()
+
+        val httpClient = OkHttpClient()
+        val response = httpClient.newCall(request).execute()
+        if (response.code() != 200)
+        {
+            throw Exception("Connection to database failed")
+        }
+
+        val retVal = response.body()!!.string()
+        response.close()
+        val regex = "\"orgID\": \"[a-z0-9]+\"".toRegex()
+        val res = regex.find(retVal) ?: throw Exception("Org ID is not defined")
+        return retVal.substring(res.range.first + 10, res.range.last)
+    }
+
     private fun createBucket(subjectName: String)
     {
         val httpClient = OkHttpClient()
-
         var apiString = connection.getConnectionURL()
         if (apiString.last() != '/')
         {
@@ -110,17 +146,20 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         }
         apiString += "api/v2/buckets"
 
+        val orgID = getOrgIDByName(apiString, connection.getOrg())
         val jsonContent = "{\n" +
-                "  \"orgID\": \"$orgIDToAddUsers\",\n" +
+                "  \"orgID\": \"$orgID\",\n" +
                 "  \"name\": \"$subjectName\",\n" +
                 "  \"retentionRules\": []\n" +
                 "}"
-        val body = okhttp3.RequestBody.create(okhttp3.MediaType.get("application/json; charset=utf8"), jsonContent)
+        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
 
         val request = Request.Builder()
             .url(apiString)
-            .addHeader("Authorization",
-                "Token ${connection.getToken()}")
+            .addHeader(
+                "Authorization",
+                "Token ${connection.getToken()}"
+            )
             .post(body)
             .build()
 
@@ -154,7 +193,9 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             throw Exception("Connection to database failed")
         }
 
-        return response.body()!!.string().contains("\"buckets\": []")
+        val retVal = response.body()!!.string().contains("\"buckets\": []")
+        response.close()
+        return retVal
     }
 
     override fun add(subjectName: String, charName: String, chars: List<String>)
@@ -170,7 +211,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         runBlocking {
             for (i in chars)
             {
-                writeApi.writeRecord("$charName=$i", WritePrecision.S)
+                writeApi.writeRecord("$charName value=$i", WritePrecision.S)
             }
         }
 
@@ -198,7 +239,9 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .build()
 
         val response = httpClient.newCall(request).execute()
+        val retVal = response.body()!!.string().contains("\"buckets\":")
+        response.close()
 
-        return response.body()!!.string().contains("\"buckets\":")
+        return retVal
     }
 }

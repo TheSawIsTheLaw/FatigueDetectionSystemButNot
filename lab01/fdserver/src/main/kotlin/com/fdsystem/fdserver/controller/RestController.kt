@@ -80,7 +80,7 @@ class BucketsService()
         val outList = mutableListOf<Pair<String, Instant>>()
         if (repository != null)
         {
-            val gotInformation = repository!!.get(bucketName, Pair(5, 0), charName)
+            val gotInformation = repository!!.get(bucketName, Pair(0, 0), charName)
             for (i in gotInformation)
             {
                 outList.add(0, Pair(i.second.toString(), i.third))
