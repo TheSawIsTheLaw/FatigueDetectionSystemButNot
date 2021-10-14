@@ -22,4 +22,4 @@
 
 ## ER-диаграмма сущностей системы
 
-![Use-case diagram](pics/ChenERDiagram.png)
+![Use-case diagram](pics/chenERDiagram.png)
