@@ -42,6 +42,17 @@ class BucketsService()
         return "Success"
     }
 
+    fun changeUserInfo(oldUsername: String, newUsername: String, oldPassword: String, newPassword: String): Boolean
+    {
+        logout()
+        return userRepository.changePasswordAndUsername(oldUsername, newUsername, oldPassword, newPassword)
+    }
+
+    fun logout()
+    {
+        repository = null
+    }
+
     fun checkDBHealth(): String
     {
         repository ?: return "Dead"
@@ -52,11 +63,6 @@ class BucketsService()
     {
         repository ?: return false
         return repository!!.checkHealth()
-    }
-
-    fun logout()
-    {
-        repository = null
     }
 
     fun getMeasurementFromBucket(bucketName: String, charName: String): List<Pair<String, Instant>>
