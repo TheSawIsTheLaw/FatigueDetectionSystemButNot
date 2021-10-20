@@ -15,10 +15,6 @@ class UserController(val facadeService: FacadeService)
     @ApiImplicitParams(
         *[
             ApiImplicitParam(
-                name = "url", value = "URL for DB access", required = true, example = "http://kidnappers.com/",
-                type = "String"
-            ),
-            ApiImplicitParam(
                 name = "org", value = "User's organisation for DB access", required = true,
                 example = "Kidnappers"
             )
@@ -53,6 +49,19 @@ class UserController(val facadeService: FacadeService)
 
     ///--- Добавлен PATCH метод
     @ApiOperation(value = "Change user info", response = String::class)
+    @ApiParam(name = "username", value = "Name of user", required = true, example = "Mark")
+    @ApiImplicitParams(
+        *[
+            ApiImplicitParam(
+                name = "oldPassword", value = "Old user's password", required = true,
+                example = "*******"
+            ),
+            ApiImplicitParam(
+                name = "newPassword", value = "New user's password", required = true,
+                example = "*******"
+            )
+        ]
+    )
     @ApiResponse(code = 200, message = "Success")
     // респонс на существующего пользователя
     // руспонс на 500

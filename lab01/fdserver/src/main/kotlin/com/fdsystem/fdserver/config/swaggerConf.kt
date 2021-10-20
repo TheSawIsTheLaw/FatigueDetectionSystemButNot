@@ -39,8 +39,8 @@ class ApplicationConfig: WebMvcConfigurationSupport()
     {
         return Docket(DocumentationType.SWAGGER_2)
             .select()
+            .apis(RequestHandlerSelectors.basePackage("com.fdsystem.fdserver.controllers"))
             .paths(PathSelectors.any())
-            .apis(RequestHandlerSelectors.basePackage("com.fdsystem.fdserver.controller"))
             .build()
             .apiInfo(getApiInfo())
     }
