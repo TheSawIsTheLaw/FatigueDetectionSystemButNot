@@ -124,14 +124,17 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .build()
 
         val httpClient = OkHttpClient()
+        val retVal: String
         val response = httpClient.newCall(request).execute()
-        if (response.code() != 200)
-        {
-            throw Exception("Connection to database failed")
+        response.use {
+            if (response.code() != 200)
+            {
+                throw Exception("Connection to database failed")
+            }
+
+            retVal = response.body()!!.string()
         }
 
-        val retVal = response.body()!!.string()
-        response.close()
         val regex = "\"orgID\": \"[a-z0-9]+\"".toRegex()
         val res = regex.find(retVal) ?: throw Exception("Org ID is not defined")
         return retVal.substring(res.range.first + 10, res.range.last)
@@ -241,9 +244,11 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .get()
             .build()
 
+        val retVal: Boolean
         val response = httpClient.newCall(request).execute()
-        val retVal = response.body()!!.string().contains("\"buckets\":")
-        response.close()
+        response.use {
+            retVal = response.body()!!.string().contains("\"buckets\":")
+        }
 
         return retVal
     }
@@ -264,10 +269,10 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
                 "  \"orgID\": \"$orgID\",\n" +
                 "  \"permissions\": [\n" +
                 "    {\n" +
-                "      \"action\": \"write\",\n" +
+                "      \"action\": \"read\",\n" +
                 "      \"resource\": {\n" +
                 "        \"type\": \"buckets\",\n"
-                "      }\n" +
+        "      }\n" +
                 "    }\n" +
                 "  ]\n" +
                 "}"
@@ -282,9 +287,54 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .post(body)
             .build()
 
+        var outBody: String
+
         val response = httpClient.newCall(request).execute()
+        response.use { outBody = response.body().toString() }
+
+        val regex = "\"token\": \"[a-z0-9]+\"".toRegex()
+        val regRes = regex.find(outBody) ?: throw java.lang.Exception("Token was not created")
+        return outBody.substring(regRes.range.first + 10, regRes.range.last)
+    }
+
+    //??? Может понадобиться. Если понадобится - изменим метод и внесём туда "mode" с тем, что потребуется делать
+    fun getNewTokenForSender(username: String): String
+    {
+        val httpClient = OkHttpClient()
+        var apiString = connection.getConnectionURL()
+        if (apiString.last() != '/')
+        {
+            apiString += '/'
+        }
+        apiString += "api/v2/authorizations"
+
+        val orgID = getOrgIDByName(apiString, connection.getOrg())
+        val jsonContent = "{\n" +
+                "  \"description\": \"$username token\",\n" +
+                "  \"orgID\": \"$orgID\",\n" +
+                "  \"permissions\": [\n" +
+                "    {\n" +
+                "      \"action\": \"write\",\n" +
+                "      \"resource\": {\n" +
+                "        \"type\": \"buckets\",\n"
+        "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}"
+        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
+
+        val request = Request.Builder()
+            .url(apiString)
+            .addHeader(
+                "Authorization",
+                "Token ${NetworkConfig.influxAdminToken}"
+            )
+            .post(body)
+            .build()
 
         var outBody: String
+
+        val response = httpClient.newCall(request).execute()
         response.use { outBody = response.body().toString() }
 
         val regex = "\"token\": \"[a-z0-9]+\"".toRegex()

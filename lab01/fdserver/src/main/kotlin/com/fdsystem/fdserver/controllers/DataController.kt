@@ -55,7 +55,8 @@ class DataController(val facadeService: FacadeService)
         ]
     )
     @PostMapping("/{bucket}")
-    fun addData(@PathVariable("bucket") bucket: String, @RequestParam("charname") characteristicName: String,
+    fun addData(@PathVariable("bucket") bucket: String,
+                @RequestParam("charname") characteristicName: String,
                 @RequestBody charsList: List<String>): String
     {
         return if (facadeService.checkAuth())

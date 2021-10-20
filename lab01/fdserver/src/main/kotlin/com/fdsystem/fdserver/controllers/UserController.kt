@@ -1,5 +1,6 @@
 package com.fdsystem.fdserver.controllers
 
+import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.controllers.services.FacadeService
 import io.swagger.annotations.*
 import org.springframework.web.bind.annotation.*
@@ -32,11 +33,11 @@ class UserController(val facadeService: FacadeService)
     // Нормальные респонсы
     @GetMapping("/login/{token}")
     fun login(
-        @PathVariable("token") token: String, @RequestParam("url") connectionUrl: String,
+        @PathVariable("token") token: String,
         @RequestParam("org") org: String
     ): String
     {
-        facadeService.loginToInflux(connectionUrl, token, org)
+        facadeService.loginToInflux(NetworkConfig.influxdbURL, token, org)
         return facadeService.checkDBHealth()
     }
 
