@@ -1,6 +1,6 @@
 package com.fdsystem.fdserver.data
 
-import com.fdsystem.fdserver.domain.CharRepositoryInterface
+import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin

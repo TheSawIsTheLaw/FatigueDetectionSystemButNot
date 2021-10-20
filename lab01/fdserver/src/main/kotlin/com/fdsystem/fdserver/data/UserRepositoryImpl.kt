@@ -1,5 +1,6 @@
-package com.fdsystem.fdserver.domain
+package com.fdsystem.fdserver.data
 
+import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.transactions.transaction
 
@@ -26,7 +27,7 @@ class UserRepositoryImpl(
     password_: String
 ) : UserRepositoryInterface
 {
-    val connection = PostgresConnection(username_, password_, "localhost:5432/users")
+    private val connection = PostgresConnection(username_, password_, "localhost:5432/users")
 
     override fun userExists(username: String)
     {

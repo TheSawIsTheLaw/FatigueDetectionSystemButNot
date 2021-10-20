@@ -1,4 +1,4 @@
-package com.fdsystem.fdserver.domain
+package com.fdsystem.fdserver.domain.userrepository
 
 interface UserRepositoryInterface
 {
