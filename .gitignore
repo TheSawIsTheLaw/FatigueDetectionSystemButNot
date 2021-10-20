@@ -5,3 +5,4 @@ lab1/fdserver/gradle
 *.properties
 .idea
 gradlew
+lab01/fdserver/gradle/wrapper/
