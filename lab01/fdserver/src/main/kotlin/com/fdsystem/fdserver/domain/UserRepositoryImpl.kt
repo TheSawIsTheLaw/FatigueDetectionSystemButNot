@@ -32,7 +32,7 @@ class UserRepositoryImpl(
     {
         transaction(connection.getConnectionToDB())
         {
-            
+
         }
     }
 
