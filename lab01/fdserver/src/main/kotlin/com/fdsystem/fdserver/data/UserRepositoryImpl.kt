@@ -1,5 +1,6 @@
 package com.fdsystem.fdserver.data
 
+import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -57,7 +58,11 @@ class UserRepositoryImpl(
             UsersTable.insert {
                 it[UsersTable.username] = username
                 it[UsersTable.password] = password
-//                it[UsersTable.dbToken] = TODO("Get token for a new user")
+                it[UsersTable.dbToken] = CharRepositoryImpl(
+                    NetworkConfig.influxdbURL,
+                    NetworkConfig.influxAdminToken,
+                    NetworkConfig.influxOrganization
+                ).getNewTokenForUser(username)
             }
         }
 

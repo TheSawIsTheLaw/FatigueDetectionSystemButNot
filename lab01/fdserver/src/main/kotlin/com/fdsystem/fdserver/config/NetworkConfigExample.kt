@@ -1,6 +1,6 @@
 package com.fdsystem.fdserver.config
 
-object networkConfigExample
+object NetworkConfigExample
 {
     // InfluxDB necessary info
     val influxdbURL: String = ""

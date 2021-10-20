@@ -1,5 +1,6 @@
 package com.fdsystem.fdserver.data
 
+import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision
@@ -187,16 +188,16 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .get()
             .build()
 
+        val retVal: Boolean
         val response = httpClient.newCall(request).execute()
-        // ЗАКРЫВАТЬ RESPONSE
-        // Или блок using??
-        if (response.code() != 200)
-        {
-            throw Exception("Connection to database failed")
+        response.use {
+            if (response.code() != 200)
+            {
+                throw Exception("Connection to database failed")
+            }
+            retVal = response.body()!!.string().contains("\"buckets\": []")
         }
 
-        val retVal = response.body()!!.string().contains("\"buckets\": []")
-        response.close()
         return retVal
     }
 
@@ -245,5 +246,49 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         response.close()
 
         return retVal
+    }
+
+    fun getNewTokenForUser(username: String): String
+    {
+        val httpClient = OkHttpClient()
+        var apiString = connection.getConnectionURL()
+        if (apiString.last() != '/')
+        {
+            apiString += '/'
+        }
+        apiString += "api/v2/authorizations"
+
+        val orgID = getOrgIDByName(apiString, connection.getOrg())
+        val jsonContent = "{\n" +
+                "  \"description\": \"$username token\",\n" +
+                "  \"orgID\": \"$orgID\",\n" +
+                "  \"permissions\": [\n" +
+                "    {\n" +
+                "      \"action\": \"write\",\n" +
+                "      \"resource\": {\n" +
+                "        \"type\": \"buckets\",\n"
+                "      }\n" +
+                "    }\n" +
+                "  ]\n" +
+                "}"
+        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
+
+        val request = Request.Builder()
+            .url(apiString)
+            .addHeader(
+                "Authorization",
+                "Token ${NetworkConfig.influxAdminToken}"
+            )
+            .post(body)
+            .build()
+
+        val response = httpClient.newCall(request).execute()
+
+        var outBody: String
+        response.use { outBody = response.body().toString() }
+
+        val regex = "\"token\": \"[a-z0-9]+\"".toRegex()
+        val regRes = regex.find(outBody) ?: throw java.lang.Exception("Token was not created")
+        return outBody.substring(regRes.range.first + 10, regRes.range.last)
     }
 }
