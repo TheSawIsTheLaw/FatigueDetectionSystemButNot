@@ -1,4 +1,4 @@
-package com.fdsystem.fdserver.controller
+package com.fdsystem.fdserver.controllers
 
 import io.swagger.annotations.*
 import org.springframework.boot.web.servlet.error.ErrorController

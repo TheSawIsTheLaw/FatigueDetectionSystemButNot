@@ -1,66 +1,10 @@
 package com.fdsystem.fdserver.controllers
 
-import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.MeasurementDTO
 import io.swagger.annotations.*
-import org.springframework.data.annotation.Id
-import org.springframework.data.jdbc.repository.query.Query
-import org.springframework.data.relational.core.mapping.Table
-import org.springframework.data.repository.CrudRepository
-import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
-import java.time.Instant
 
-@Service
-class BucketsService()
-{
-    private var repository: CharRepositoryImpl? = null
-
-    fun loginToInflux(connectionString: String, token: String, org: String)
-    {
-        repository = CharRepositoryImpl(connectionString, token, org)
-    }
-
-    fun checkDBHealth(): String
-    {
-        repository ?: return "Dead"
-        return if (repository!!.checkHealth()) "Authorized" else "Error"
-    }
-
-    fun checkAuth(): Boolean
-    {
-        repository ?: return false
-        return repository!!.checkHealth()
-    }
-
-    fun logout()
-    {
-        repository = null
-    }
-
-    fun getMeasurementFromBucket(bucketName: String, charName: String): List<Pair<String, Instant>>
-    {
-        val outList = mutableListOf<Pair<String, Instant>>()
-        if (repository != null)
-        {
-            val gotInformation = repository!!.get(bucketName, Pair(0, 0), charName)
-            for (i in gotInformation)
-            {
-                outList.add(0, Pair(i.second.toString(), i.third))
-            }
-        }
-
-        return outList.toList()
-    }
-
-    fun sendToBucket(bucketName: String, charName: String, chars: List<String>)
-    {
-        if (repository == null)
-            return
-
-        repository!!.add(bucketName, charName, chars)
-    }
-}
+import com.fdsystem.fdserver.controllers.services.BucketsService
 
 @RestController
 @RequestMapping("/api/v1/user")
@@ -96,6 +40,15 @@ class UserController(val bucketsService: BucketsService)
     {
         bucketsService.logout()
         return "Done"
+    }
+
+    ///--- Добавлен PATCH метод
+    @ApiOperation(value = "Logs out DB user", response = String::class)
+    @ApiResponse(code = 200, message = "Success")
+    @PatchMapping("/login")
+    fun relogin(): String
+    {
+        TODO()
     }
 
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.

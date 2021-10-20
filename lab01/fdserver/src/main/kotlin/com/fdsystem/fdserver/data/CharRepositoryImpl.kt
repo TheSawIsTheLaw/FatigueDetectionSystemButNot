@@ -77,7 +77,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         charName: String
     ): List<Triple<String, Any, Instant>>
     {
-        if (connection.getConnectionToDB().health().status == HealthCheck.StatusEnum.FAIL)
+        if (connection.getConnectionToDB().health().status == HealthCheck.StatusEnum.FAIL) // Исправить говно какое-то
             return listOf()
 
         val outList: MutableList<Triple<String, Any, Instant>> = mutableListOf()
@@ -188,6 +188,8 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .build()
 
         val response = httpClient.newCall(request).execute()
+        // ЗАКРЫВАТЬ RESPONSE
+        // Или блок using??
         if (response.code() != 200)
         {
             throw Exception("Connection to database failed")
