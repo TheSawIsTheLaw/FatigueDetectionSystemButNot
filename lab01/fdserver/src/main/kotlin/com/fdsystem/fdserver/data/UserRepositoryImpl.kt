@@ -24,11 +24,11 @@ class PostgresConnection(
 }
 
 class UserRepositoryImpl(
-    username_: String,
-    password_: String
+    postgresUsername_: String,
+    postgresPassword_: String
 ) : UserRepositoryInterface
 {
-    private val connection = PostgresConnection(username_, password_, "localhost:5432/users")
+    private val connection = PostgresConnection(postgresUsername_, postgresPassword_, "localhost:5432/users")
 
     private fun mapToUserDTO(it: ResultRow) =
         UsersTable.UserDTO(it[UsersTable.id], it[UsersTable.username], it[UsersTable.password], it[UsersTable.dbToken])

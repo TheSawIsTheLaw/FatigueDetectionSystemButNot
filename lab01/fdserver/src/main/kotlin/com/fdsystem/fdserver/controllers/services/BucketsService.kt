@@ -1,6 +1,9 @@
 package com.fdsystem.fdserver.controllers.services
 
+import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import com.fdsystem.fdserver.data.UserRepositoryImpl
+import com.sun.net.httpserver.Authenticator
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -8,10 +11,35 @@ import java.time.Instant
 class BucketsService()
 {
     private var repository: CharRepositoryImpl? = null
+    private var userRepository = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
 
     fun loginToInflux(connectionString: String, token: String, org: String)
     {
         repository = CharRepositoryImpl(connectionString, token, org)
+    }
+
+    fun register(username: String, password: String): String
+    {
+        val newToken = userRepository.registerUser(username, password)
+
+        if (newToken.isEmpty())
+        {
+            return "User already exists"
+        }
+
+        return newToken
+    }
+
+    fun login(username: String, password: String): String
+    {
+        val token = userRepository.getUserToken(username, password)
+        if (token == "User doesn't exist" || token == "Wrong password")
+        {
+            return token
+        }
+
+        repository = CharRepositoryImpl(NetworkConfig.influxdbURL, token, NetworkConfig.influxOrganization)
+        return "Success"
     }
 
     fun checkDBHealth(): String
