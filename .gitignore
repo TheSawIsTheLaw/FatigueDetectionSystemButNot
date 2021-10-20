@@ -1,5 +1,7 @@
 *.db
+lab1/fdserver/gradle
 *.jar
+*.bat
 *.properties
 .idea
 gradlew
