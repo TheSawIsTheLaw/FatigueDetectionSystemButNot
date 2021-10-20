@@ -1,5 +1,13 @@
 version: '3'
 services:
+  influxdb:
+    image: influxdb:2.0
+    container_name: fdserver-influxdb
+    env_file:
+      - .env
+    ports:
+      - "${INFLUXDB_PORT}:8086"
+
   lb:
     build:
       context: ./nginx
