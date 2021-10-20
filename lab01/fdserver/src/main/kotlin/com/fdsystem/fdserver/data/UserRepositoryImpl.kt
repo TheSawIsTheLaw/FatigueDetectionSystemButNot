@@ -1,11 +1,7 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
-import org.hibernate.sql.Select
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.Query
-import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.select
+import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class PostgresConnection(
@@ -34,33 +30,105 @@ class UserRepositoryImpl(
     private val connection = PostgresConnection(username_, password_, "localhost:5432/users")
 
     private fun mapToUserDTO(it: ResultRow) =
-        UserTable.UserDTO(it[UserTable.id], it[UserTable.username], it[UserTable.password], it[UserTable.dbToken])
+        UsersTable.UserDTO(it[UsersTable.id], it[UsersTable.username], it[UsersTable.password], it[UsersTable.dbToken])
 
     override fun userExists(username: String): Boolean
     {
-        var select: List<UserTable.UserDTO> = listOf()
+        var select: List<UsersTable.UserDTO> = listOf()
         transaction(connection.getConnectionToDB())
         {
-            select = UserTable.select { UserTable.username.eq(username) }
+            select = UsersTable.select { UsersTable.username.eq(username) }
                 .map { mapToUserDTO(it) }
         }
-        if (select.isEmpty())
-        {
-            return false
-        }
 
-        return true
+        return select.isNotEmpty()
     }
 
 
     override fun registerUser(username: String, password: String): Boolean
     {
-        TODO("Not yet implemented")
+        if (userExists(username))
+        {
+            return false
+        }
+
+        transaction(connection.getConnectionToDB())
+        {
+            UsersTable.insert {
+                it[UsersTable.username] = username
+                it[UsersTable.password] = password
+//                it[UsersTable.dbToken] = TODO("Get token for a new user")
+            }
+        }
+
+        return true
+    }
+
+    override fun checkPassword(username: String, password: String): Boolean
+    {
+        if (!userExists(username))
+        {
+            return false
+        }
+
+        var select: List<UsersTable.UserDTO> = listOf()
+        transaction(connection.getConnectionToDB())
+        {
+            select = UsersTable
+                .select { UsersTable.username.eq(username) and UsersTable.password.eq(password) }
+                .map { mapToUserDTO(it) }
+        }
+
+        return select.isNotEmpty()
+    }
+
+    override fun changePasswordAndUsername(
+        oldUsername: String,
+        newUsername: String,
+        oldPassword: String,
+        newPassword: String
+    ): Boolean
+    {
+        if (!userExists(oldUsername))
+        {
+            return false
+        }
+
+        transaction(connection.getConnectionToDB())
+        {
+            UsersTable.update({
+                UsersTable.username.eq(oldUsername) and
+                        UsersTable.password.eq(oldPassword)
+            })
+            {
+                it[username] = newUsername
+                it[password] = newPassword
+            }
+        }
+
+        return true
     }
 
     override fun getUserToken(username: String, password: String): String
     {
-        TODO("Not yet implemented")
+        if (!userExists(username))
+        {
+            return "User doesn't exist"
+        }
+
+        var select: List<UsersTable.UserDTO> = listOf()
+        transaction(connection.getConnectionToDB())
+        {
+            select = UsersTable.select { UsersTable.username.eq(username) and UsersTable.password.eq(password) }
+                .map { mapToUserDTO(it) }
+        }
+
+        if (select.isEmpty())
+        {
+            return "Wrong password"
+        }
+
+        return select[0].dbToken
     }
 }
 

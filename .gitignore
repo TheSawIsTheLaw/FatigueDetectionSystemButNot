@@ -8,3 +8,4 @@ gradlew
 lab01/fdserver/gradle/wrapper/
 lab01/fdserver/postgresData
 *.env
+networkConfig.kt

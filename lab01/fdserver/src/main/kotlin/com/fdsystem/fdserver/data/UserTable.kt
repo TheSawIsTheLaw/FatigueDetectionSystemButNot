@@ -2,7 +2,7 @@ package com.fdsystem.fdserver.data
 
 import org.jetbrains.exposed.sql.Table
 
-object UserTable: Table()
+object UsersTable: Table()
 {
     data class UserDTO(val id: Int, val username: String, val password: String, val dbToken: String)
 
