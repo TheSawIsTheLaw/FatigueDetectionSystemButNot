@@ -1,8 +1,7 @@
-package com.fdsystem.fdserver.controller
+package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.MeasurementDTO
-import com.google.gson.Gson
 import io.swagger.annotations.*
 import org.springframework.data.annotation.Id
 import org.springframework.data.jdbc.repository.query.Query
@@ -10,43 +9,7 @@ import org.springframework.data.relational.core.mapping.Table
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Service
 import org.springframework.web.bind.annotation.*
-import springfox.documentation.annotations.ApiIgnore
 import java.time.Instant
-
-@Table("MESSAGES")
-data class Message(@Id val id: String?, val text: String)
-
-interface MessageRepository : CrudRepository<Message, String>
-{
-
-    @Query("select * from messages")
-    fun findMessages(): List<Message>
-}
-
-@Service
-class MessageService(val db: MessageRepository)
-{
-    fun findMessages(): List<Message> = db.findMessages()
-
-    fun post(message: Message)
-    {
-        db.save(message)
-    }
-}
-
-@RestController
-@ApiIgnore
-class MessageController(val service: MessageService)
-{
-    @GetMapping("/messages")
-    fun index(): List<Message> = service.findMessages()
-
-    @PostMapping("/messages")
-    fun post(@RequestBody message: Message)
-    {
-        service.post(message)
-    }
-}
 
 @Service
 class BucketsService()
@@ -100,7 +63,7 @@ class BucketsService()
 }
 
 @RestController
-@RequestMapping("/api/user")
+@RequestMapping("/api/v1/user")
 @Api(value = "userApi", description = "Api for users of a system", tags = ["User API"])
 class UserController(val bucketsService: BucketsService)
 {

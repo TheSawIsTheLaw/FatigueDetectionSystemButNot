@@ -1,1 +1,5 @@
 *.db
+*.jar
+*.properties
+.idea
+gradlew
