@@ -6,3 +6,5 @@ lab1/fdserver/gradle
 .idea
 gradlew
 lab01/fdserver/gradle/wrapper/
+lab01/fdserver/postgresData
+*.env
