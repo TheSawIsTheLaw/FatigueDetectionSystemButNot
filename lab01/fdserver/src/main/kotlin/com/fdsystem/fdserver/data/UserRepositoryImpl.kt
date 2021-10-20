@@ -46,27 +46,29 @@ class UserRepositoryImpl(
     }
 
 
-    override fun registerUser(username: String, password: String): Boolean
+    override fun registerUser(username: String, password: String): String
     {
         if (userExists(username))
         {
-            return false
+            return ""
         }
+
+        val newToken = CharRepositoryImpl(
+            NetworkConfig.influxdbURL,
+            NetworkConfig.influxAdminToken,
+            NetworkConfig.influxOrganization
+        ).getNewTokenForUser(username)
 
         transaction(connection.getConnectionToDB())
         {
             UsersTable.insert {
                 it[UsersTable.username] = username
                 it[UsersTable.password] = password
-                it[UsersTable.dbToken] = CharRepositoryImpl(
-                    NetworkConfig.influxdbURL,
-                    NetworkConfig.influxAdminToken,
-                    NetworkConfig.influxOrganization
-                ).getNewTokenForUser(username)
+                it[UsersTable.dbToken] = newToken
             }
         }
 
-        return true
+        return newToken
     }
 
     override fun checkPassword(username: String, password: String): Boolean

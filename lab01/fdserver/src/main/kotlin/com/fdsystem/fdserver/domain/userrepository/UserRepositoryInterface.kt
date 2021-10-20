@@ -13,7 +13,8 @@ interface UserRepositoryInterface
         newPassword: String
     ): Boolean
 
-    fun registerUser(username: String, password: String): Boolean
+    // returns Token
+    fun registerUser(username: String, password: String): String
 
     fun getUserToken(username: String, password: String): String
 }
