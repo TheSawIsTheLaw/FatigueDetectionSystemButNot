@@ -1,18 +1,17 @@
 package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.services.FacadeService
-import com.fdsystem.fdserver.domain.MeasurementDTO
-import io.swagger.annotations.Api
+import com.fdsystem.fdserver.domain.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.time.Instant
 
 @RestController
 @RequestMapping("/api/v1/data")
-@Api(value = "dataApi", description = "Api for get from and send to buckets", tags = ["Data Retrieve and Send API"])
 class DataController(val facadeService: FacadeService)
 {
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
@@ -23,7 +22,10 @@ class DataController(val facadeService: FacadeService)
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
-                description = "Successful operation"
+                description = "Successful operation",
+                content = [
+                    Content(schema = Schema(implementation = Array<MeasurementList>::class))
+                ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "401",
@@ -43,28 +45,33 @@ class DataController(val facadeService: FacadeService)
             description = "Name of measurement to get from bucket", required = true,
             example = "ArterialPressure"
         )
-        @RequestParam("charName") characteristicName: String
+        @RequestParam("charnames") characteristicsNames: List<String>
     ): ResponseEntity<*>
     {
         if (!facadeService.checkAuth())
             return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
 
-        val infoPairs: List<Pair<String, Instant>>
+        val outList: MutableList<MeasurementList> = mutableListOf()
         try
         {
-            infoPairs = facadeService.getMeasurementFromBucket(bucket, characteristicName)
+            // После этих слов в украинском поезде начался сущий кошмар
+            for (curChar in characteristicsNames)
+            {
+                val addList = facadeService.getMeasurementFromBucket(bucket, curChar)
+                val convertedList: MutableList<MeasurementDTO> = mutableListOf()
+                for (i in addList)
+                {
+                    convertedList.add(MeasurementDTO(i.first, i.second))
+                }
+                outList.add(MeasurementList(curChar, convertedList))
+            }
         }
         catch (exc: Exception)
         {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
-        val outList = mutableListOf<MeasurementDTO>()
-        for (measurement in infoPairs)
-        {
-            outList.add(0, MeasurementDTO(measurement.first, measurement.second))
-        }
 
-        return ResponseEntity(outList, HttpStatus.OK)
+        return ResponseEntity(outList.toList(), HttpStatus.OK)
     }
 
     @Operation(
@@ -90,9 +97,8 @@ class DataController(val facadeService: FacadeService)
     fun addData(
         @Parameter(description = "User's bucket to add info", required = true, example = "Yuriy Stroganov")
         @PathVariable("bucket") bucket: String,
-        @Parameter(description = "Name of a measurement to add", required = true, example = "Pulse")
-        @RequestParam("measname") characteristicName: String,
-        @RequestBody charsList: List<String>
+        @Parameter(description = "Names of measurements to add and it's values", required = true, example = "Pulse")
+        @RequestBody charsList: List<MeasurementListLight>
     ): ResponseEntity<*>
     {
         if (!facadeService.checkAuth())
@@ -102,7 +108,10 @@ class DataController(val facadeService: FacadeService)
 
         try
         {
-            facadeService.sendToBucket(bucket, characteristicName, charsList)
+            for (curChar in charsList)
+            {
+                facadeService.sendToBucket(bucket, curChar.measurementName, curChar.measurements)
+            }
         }
         catch (exc: Exception)
         {
