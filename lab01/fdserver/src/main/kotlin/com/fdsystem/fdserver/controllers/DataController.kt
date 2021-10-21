@@ -2,10 +2,7 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.services.FacadeService
 import com.fdsystem.fdserver.domain.MeasurementDTO
-import com.fdsystem.fdserver.domain.OutputMeasListDTO
 import io.swagger.annotations.Api
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.ApiResponses
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.HttpStatus
@@ -22,13 +19,20 @@ class DataController(val facadeService: FacadeService)
     @Operation(
         summary = "Gets info about user",
         description = "Gets necessary information from the bucket",
-        tags = ["Data operations"]
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(code = 200, message = "Success", response = OutputMeasListDTO::class),
-            ApiResponse(code = 401, message = "Not authorized"),
-            ApiResponse(code = 500, message = "Internal server error")
+        tags = ["Data operations"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "401",
+                description = "Not authorized"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "500",
+                description = "Internal server error"
+            )
         ]
     )
     @GetMapping("/{bucket}")
@@ -66,13 +70,20 @@ class DataController(val facadeService: FacadeService)
     @Operation(
         summary = "Adds data to bucket",
         description = "Adds necessary information to the bucket",
-        tags = ["Data operations"]
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(code = 200, message = "Success", response = OutputMeasListDTO::class),
-            ApiResponse(code = 401, message = "Not authorized"),
-            ApiResponse(code = 500, message = "Internal server error")
+        tags = ["Data operations"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "401",
+                description = "Not authorized"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "500",
+                description = "Internal server error"
+            )
         ]
     )
     @PostMapping("/{bucket}")

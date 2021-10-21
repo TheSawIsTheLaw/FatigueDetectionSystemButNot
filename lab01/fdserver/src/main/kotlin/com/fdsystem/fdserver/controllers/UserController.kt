@@ -1,8 +1,6 @@
 package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.services.FacadeService
-import io.swagger.annotations.ApiResponse
-import io.swagger.annotations.ApiResponses
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.HttpStatus
@@ -11,18 +9,24 @@ import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/user")
-class UserController(val facadeService: FacadeService)
-{
+class UserController(val facadeService: FacadeService) {
     @Operation(
         summary = "Logs in user",
         description = "Logs in user and uses his token for DB access",
-        tags = ["Authorization"]
-    )
-    @ApiResponses(
-        value = [
-            ApiResponse(code = 200, message = "Successful operation"),
-            ApiResponse(code = 404, message = "Username not found or password is not correct"),
-            ApiResponse(code = 500, message = "Internal server error")
+        tags = ["Authorization"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404",
+                description = "Username not found or invalid password"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "500",
+                description = "Internal server error"
+            )
         ]
     )
     @GetMapping("/login/{username}")
@@ -31,14 +35,10 @@ class UserController(val facadeService: FacadeService)
         @PathVariable("username") username: String,
         @Parameter(description = "Password for login", required = true)
         @RequestParam("password") password: String
-    ): ResponseEntity<*>
-    {
-        try
-        {
+    ): ResponseEntity<*> {
+        try {
             facadeService.login(username, password)
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -46,22 +46,40 @@ class UserController(val facadeService: FacadeService)
         else ResponseEntity(null, HttpStatus.NOT_FOUND)
     }
 
-    @Operation(summary = "Logs out DB user", description = "Logs out current user", tags = ["Authorization"])
-    @ApiResponse(code = 200, message = "Successful operation")
+    @Operation(
+        summary = "Logs out DB user",
+        description = "Logs out current user",
+        tags = ["Authorization"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            )
+        ]
+    )
     @GetMapping("/logout")
-    fun logout(): ResponseEntity<*>
-    {
+    fun logout(): ResponseEntity<*> {
         facadeService.logout()
         return ResponseEntity(null, HttpStatus.OK)
     }
 
-    ///--- Добавлен PATCH метод
-    @Operation(summary = "Change user info", description = "Allows to change user's password", tags = ["Authorization"])
-    @ApiResponses(
-        value = [
-            ApiResponse(code = 200, message = "Successful operation"),
-            ApiResponse(code = 404, message = "Username not found or password is not correct"),
-            ApiResponse(code = 500, message = "Internal server error")
+    @Operation(
+        summary = "Change user info",
+        description = "Allows to change user's password",
+        tags = ["Authorization"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "404",
+                description = "Username not found or invalid password"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "500",
+                description = "Internal server error"
+            )
         ]
     )
     @PatchMapping("/password/{username}")
@@ -72,15 +90,11 @@ class UserController(val facadeService: FacadeService)
         @RequestParam("oldPassword") oldPassword: String,
         @Parameter(description = "New user's password", required = true, example = "*******")
         @RequestParam("newPassword") newPassword: String
-    ): ResponseEntity<*>
-    {
+    ): ResponseEntity<*> {
         val out: Boolean
-        try
-        {
+        try {
             out = facadeService.changeUserInfo(username, username, oldPassword, newPassword)
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
