@@ -1,6 +1,5 @@
 package com.fdsystem.fdserver.controllers
 
-import io.swagger.annotations.*
 import org.springframework.boot.web.servlet.error.ErrorController
 import org.springframework.stereotype.Controller
 import org.springframework.ui.Model
