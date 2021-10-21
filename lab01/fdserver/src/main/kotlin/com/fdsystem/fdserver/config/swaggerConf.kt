@@ -31,7 +31,7 @@ class ApplicationConfig: WebMvcConfigurationSupport()
     override fun addViewControllers(registry: ViewControllerRegistry)
     {
         registry.addViewController("/swagger-ui/")
-            .setViewName("forward:/swagger-ui/index.html")
+            .setViewName("redirect:/swagger-ui/index.html")
     }
 
     @Bean

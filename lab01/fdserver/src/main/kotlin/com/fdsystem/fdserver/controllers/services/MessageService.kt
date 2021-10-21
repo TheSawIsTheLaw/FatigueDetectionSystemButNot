@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.controllers.Message
+import io.swagger.annotations.Api
 import org.springframework.data.jdbc.repository.query.Query
 import org.springframework.data.repository.CrudRepository
 import org.springframework.stereotype.Service
