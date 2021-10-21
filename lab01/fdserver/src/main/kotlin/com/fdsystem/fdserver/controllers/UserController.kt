@@ -13,7 +13,11 @@ import org.springframework.web.bind.annotation.*
 @RequestMapping("/api/v1/user")
 class UserController(val facadeService: FacadeService)
 {
-    @Operation(summary = "Logs in user", description = "Logs in user and uses his token for DB access", tags = ["Auth"])
+    @Operation(
+        summary = "Logs in user",
+        description = "Logs in user and uses his token for DB access",
+        tags = ["Authorization"]
+    )
     @ApiResponses(
         value = [
             ApiResponse(code = 200, message = "Successful operation"),
@@ -42,7 +46,7 @@ class UserController(val facadeService: FacadeService)
         else ResponseEntity(null, HttpStatus.NOT_FOUND)
     }
 
-    @Operation(summary = "Logs out DB user", description = "Logs out current user", tags = ["Auth"])
+    @Operation(summary = "Logs out DB user", description = "Logs out current user", tags = ["Authorization"])
     @ApiResponse(code = 200, message = "Successful operation")
     @GetMapping("/logout")
     fun logout(): ResponseEntity<*>
@@ -52,7 +56,7 @@ class UserController(val facadeService: FacadeService)
     }
 
     ///--- Добавлен PATCH метод
-    @Operation(summary = "Change user info", description = "Allows to change user's password", tags = ["Auth"])
+    @Operation(summary = "Change user info", description = "Allows to change user's password", tags = ["Authorization"])
     @ApiResponses(
         value = [
             ApiResponse(code = 200, message = "Successful operation"),
@@ -60,7 +64,7 @@ class UserController(val facadeService: FacadeService)
             ApiResponse(code = 500, message = "Internal server error")
         ]
     )
-    @PatchMapping("/changePassword/{username}")
+    @PatchMapping("/password/{username}")
     fun changePassword(
         @Parameter(description = "Username of the user", required = true, example = "satan")
         @PathVariable("username") username: String,

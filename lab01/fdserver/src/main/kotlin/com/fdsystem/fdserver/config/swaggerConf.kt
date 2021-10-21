@@ -18,8 +18,8 @@ class OpenApiConfig
         return OpenAPI()
             .components(Components())
             .info(
-                Info().title("Contact Application API").description(
-                    "This is a sample Spring Boot RESTful service using springdoc-openapi and OpenAPI 3."
+                Info().title("FDSystem (in russian СРУ, it's funny) API").description(
+                    "All necessary operations for work in FDSystem. Welcome, subject ;-;"
                 )
             )
     }

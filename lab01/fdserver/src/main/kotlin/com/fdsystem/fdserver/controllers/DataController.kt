@@ -1,9 +1,11 @@
 package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.services.FacadeService
-import com.fdsystem.fdserver.domain.CharacteristicsGetDTO
 import com.fdsystem.fdserver.domain.MeasurementDTO
-import io.swagger.annotations.*
+import com.fdsystem.fdserver.domain.OutputMeasListDTO
+import io.swagger.annotations.Api
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import org.springframework.http.HttpStatus
@@ -17,10 +19,14 @@ import java.time.Instant
 class DataController(val facadeService: FacadeService)
 {
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
-    @Operation(summary = "Gets info about user", description = "Gets necessary information from the bucket")
+    @Operation(
+        summary = "Gets info about user",
+        description = "Gets necessary information from the bucket",
+        tags = ["Data operations"]
+    )
     @ApiResponses(
         value = [
-            ApiResponse(code = 200, message = "Success", response = CharacteristicsGetDTO::class),
+            ApiResponse(code = 200, message = "Success", response = OutputMeasListDTO::class),
             ApiResponse(code = 401, message = "Not authorized"),
             ApiResponse(code = 500, message = "Internal server error")
         ]
@@ -31,7 +37,7 @@ class DataController(val facadeService: FacadeService)
         @PathVariable("bucket") bucket: String,
         @Parameter(
             description = "Name of measurement to get from bucket", required = true,
-            example = "http://kidnappers.com/"
+            example = "ArterialPressure"
         )
         @RequestParam("charName") characteristicName: String
     ): ResponseEntity<*>
@@ -57,10 +63,14 @@ class DataController(val facadeService: FacadeService)
         return ResponseEntity(outList, HttpStatus.OK)
     }
 
-    @Operation(summary = "Adds data to bucket", description = "Adds necessary information to the bucket")
+    @Operation(
+        summary = "Adds data to bucket",
+        description = "Adds necessary information to the bucket",
+        tags = ["Data operations"]
+    )
     @ApiResponses(
         value = [
-            ApiResponse(code = 200, message = "Success", response = CharacteristicsGetDTO::class),
+            ApiResponse(code = 200, message = "Success", response = OutputMeasListDTO::class),
             ApiResponse(code = 401, message = "Not authorized"),
             ApiResponse(code = 500, message = "Internal server error")
         ]
