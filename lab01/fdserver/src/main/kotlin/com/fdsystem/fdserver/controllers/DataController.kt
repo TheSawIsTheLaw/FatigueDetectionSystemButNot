@@ -74,19 +74,20 @@ class DataController(val facadeService: FacadeService)
         @RequestBody charsList: List<String>
     ): ResponseEntity<*>
     {
-        if (facadeService.checkAuth())
+        if (!facadeService.checkAuth())
         {
-            try
-            {
-                facadeService.sendToBucket(bucket, characteristicName, charsList)
-            }
-            catch (exc: Exception)
-            {
-                return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-            }
-            return ResponseEntity(null, HttpStatus.OK)
-        }
-        else
             return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+        }
+
+        try
+        {
+            facadeService.sendToBucket(bucket, characteristicName, charsList)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return ResponseEntity(null, HttpStatus.OK)
     }
 }
