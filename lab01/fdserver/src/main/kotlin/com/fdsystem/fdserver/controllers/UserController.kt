@@ -1,78 +1,85 @@
 package com.fdsystem.fdserver.controllers
 
-import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.controllers.services.FacadeService
-import io.swagger.annotations.*
+import io.swagger.annotations.ApiResponse
+import io.swagger.annotations.ApiResponses
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
 
 @RestController
 @RequestMapping("/api/v1/user")
-@Api(value = "userApi", description = "Api for users of a system", tags = ["User API"])
 class UserController(val facadeService: FacadeService)
 {
-    @ApiOperation(value = "Logs in DB user", response = String::class)
-    @ApiParam(name = "token", value = "Token for DB access", required = true, example = "OAOAOOAOAAOMMMMMMM")
-    @ApiImplicitParams(
-        *[
-            ApiImplicitParam(
-                name = "org", value = "User's organisation for DB access", required = true,
-                example = "Kidnappers"
-            )
-        ]
-    )
+    @Operation(summary = "Logs in user", description = "Logs in user and uses his token for DB access", tags = ["Auth"])
     @ApiResponses(
         value = [
-            ApiResponse(code = 200, message = "Success"),
-            ApiResponse(code = 401, message = "Illegal token, address or organization")
+            ApiResponse(code = 200, message = "Successful operation"),
+            ApiResponse(code = 404, message = "Username not found or password is not correct"),
+            ApiResponse(code = 500, message = "Internal server error")
         ]
     )
-    // Нормальные респонсы
-    @GetMapping("/login/{token}")
+    @GetMapping("/login/{username}")
     fun login(
-        @PathVariable("token") token: String,
-        @RequestParam("org") org: String
-    ): String
+        @Parameter(description = "Username of the user", required = true)
+        @PathVariable("username") username: String,
+        @Parameter(description = "Password for login", required = true)
+        @RequestParam("password") password: String
+    ): ResponseEntity<*>
     {
-        facadeService.loginToInflux(NetworkConfig.influxdbURL, token, org)
-        return facadeService.checkDBHealth()
+        try
+        {
+            facadeService.login(username, password)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return if (facadeService.checkDBHealth() == "Authorized") ResponseEntity(null, HttpStatus.OK)
+        else ResponseEntity(null, HttpStatus.NOT_FOUND)
     }
 
-    @ApiOperation(value = "Logs out DB user", response = String::class)
-    @ApiResponse(code = 200, message = "Success")
+    @Operation(summary = "Logs out DB user", description = "Logs out current user", tags = ["Auth"])
+    @ApiResponse(code = 200, message = "Successful operation")
     @GetMapping("/logout")
-    // Респонсы
-    fun logout(): String
+    fun logout(): ResponseEntity<*>
     {
         facadeService.logout()
-        return "Done"
+        return ResponseEntity(null, HttpStatus.OK)
     }
 
     ///--- Добавлен PATCH метод
-    @ApiOperation(value = "Change user info", response = String::class)
-    @ApiParam(name = "username", value = "Name of user", required = true, example = "Mark")
-    @ApiImplicitParams(
-        *[
-            ApiImplicitParam(
-                name = "oldPassword", value = "Old user's password", required = true,
-                example = "*******"
-            ),
-            ApiImplicitParam(
-                name = "newPassword", value = "New user's password", required = true,
-                example = "*******"
-            )
+    @Operation(summary = "Change user info", description = "Allows to change user's password", tags = ["Auth"])
+    @ApiResponses(
+        value = [
+            ApiResponse(code = 200, message = "Successful operation"),
+            ApiResponse(code = 404, message = "Username not found or password is not correct"),
+            ApiResponse(code = 500, message = "Internal server error")
         ]
     )
-    @ApiResponse(code = 200, message = "Success")
-    // респонс на существующего пользователя
-    // руспонс на 500
     @PatchMapping("/changePassword/{username}")
-    fun relogin(
+    fun changePassword(
+        @Parameter(description = "Username of the user", required = true, example = "satan")
         @PathVariable("username") username: String,
+        @Parameter(description = "Old user's password", required = true, example = "*******")
         @RequestParam("oldPassword") oldPassword: String,
+        @Parameter(description = "New user's password", required = true, example = "*******")
         @RequestParam("newPassword") newPassword: String
-    ): String
+    ): ResponseEntity<*>
     {
-        val out = facadeService.changeUserInfo(username, username, oldPassword, newPassword)
-        return if (out) "Success" else "User already exists"
+        val out: Boolean
+        try
+        {
+            out = facadeService.changeUserInfo(username, username, oldPassword, newPassword)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return if (out) ResponseEntity(null, HttpStatus.OK) else ResponseEntity(null, HttpStatus.CONFLICT)
     }
 }

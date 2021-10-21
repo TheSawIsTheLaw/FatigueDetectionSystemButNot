@@ -9,10 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping
 
 
 @Controller
-@Api(value = "html", description = "Navigation through the pages", tags = ["Pages"])
 class HtmlController : ErrorController
 {
-    @ApiOperation(value = "Welcome page of FDSystem")
     @GetMapping("/welcome")
     fun welcome(model: Model): String
     {
@@ -27,7 +25,6 @@ class HtmlController : ErrorController
         return "/error"
     }
 
-    @ApiOperation(value = "Error page of FDSystem")
     @GetMapping("/error")
     fun noPage(model: Model): String
     {
