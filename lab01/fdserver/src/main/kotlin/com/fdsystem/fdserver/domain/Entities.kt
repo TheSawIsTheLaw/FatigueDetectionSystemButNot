@@ -39,3 +39,5 @@ data class Characteristics(
 )
 
 data class MeasurementDTO(val value: String, val time: Instant)
+
+data class CharacteristicsGetDTO(val characteristics: List<Pair<String, List<MeasurementDTO>>)
