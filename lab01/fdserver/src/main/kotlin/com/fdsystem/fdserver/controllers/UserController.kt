@@ -93,6 +93,7 @@ class UserController(val facadeService: FacadeService) {
         try {
             outAnswer = facadeService.register(username, password)
         } catch (exc: Exception) {
+            println(exc.toString())
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 

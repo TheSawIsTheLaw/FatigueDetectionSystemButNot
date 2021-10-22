@@ -3,13 +3,13 @@ package com.fdsystem.fdserver.config
 object NetworkConfig
 {
     // InfluxDB necessary info
-    val influxdbURL: String = "http://localhost:8086"
+    val influxdbURL: String = "http://localhost:8086/"
     val influxAdminToken: String =
-        "xkwv7-sIYO1IS0vlQB0HeJGp8vqcC_39WKDvTcnLMd8ZRHaJ469yXH1-7OW-56mrMY-mR7TTVDZYOJ8oqAw-Jg=="
+        "qG8iPh0Uz4aKw70lZQYzFoL0HL8oFuPuvfZQoDkMTj59c-efmnaTixWAkAT2pwtOyLYZFkGWgZPKSYFQX3-7fQ=="
     val influxOrganization: String = "subjects"
 
     // Postgres necessary info
-    val postgresURL: String = "localhost:5432"
+    val postgresURL: String = "postgres:5432/users"
     val postgresUsername: String = "admin"
     val postgresPassword: String = "satanIsHere"
 }
