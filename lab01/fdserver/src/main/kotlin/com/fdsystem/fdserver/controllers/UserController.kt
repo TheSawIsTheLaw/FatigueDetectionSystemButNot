@@ -47,7 +47,7 @@ class UserController(val facadeService: FacadeService) {
     }
 
     @Operation(
-        summary = "Logs out DB user",
+        summary = "Logs out user",
         description = "Logs out current user",
         tags = ["Authorization"],
         responses = [
@@ -61,6 +61,43 @@ class UserController(val facadeService: FacadeService) {
     fun logout(): ResponseEntity<*> {
         facadeService.logout()
         return ResponseEntity(null, HttpStatus.OK)
+    }
+
+    @Operation(
+        summary = "Register user",
+        description = "Register user by given username and password",
+        tags = ["Authorization"],
+        responses = [
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "200",
+                description = "Successful operation"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "409",
+                description = "Username is already busy"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "500",
+                description = "Internal server error"
+            )
+        ]
+    )
+    @GetMapping("/registration/{username}")
+    fun register(
+        @Parameter(description = "Username of new user", required = true)
+        @PathVariable("username") username: String,
+        @Parameter(description = "Password for new user", required = true)
+        @RequestParam("password") password: String
+    ): ResponseEntity<*> {
+        val outAnswer: String
+        try {
+            outAnswer = facadeService.register(username, password)
+        } catch (exc: Exception) {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return if (outAnswer == "User already exists") ResponseEntity(null, HttpStatus.CONFLICT)
+        else ResponseEntity(null, HttpStatus.OK)
     }
 
     @Operation(

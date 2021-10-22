@@ -9,8 +9,8 @@ object UsersTable: Table()
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)
 
-    val id = integer("id").autoIncrement()
+    val id = integer("userid").autoIncrement()
     val username = varchar("username", 200).uniqueIndex()
     val password = varchar("password", 200)
-    val dbToken = varchar("dbTocken", 200)
+    val dbToken = varchar("dbtoken", 200)
 }

@@ -139,3 +139,27 @@ class UserRepositoryImpl(
     }
 }
 
+fun mapToUserDTO(it: ResultRow) =
+    UsersTable.UserDTO(it[UsersTable.id], it[UsersTable.username], it[UsersTable.password], it[UsersTable.dbToken])
+
+
+//fun main()
+//{
+//    val connection = PostgresConnection(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword, "localhost:5432/users")
+//
+//    val newToken = CharRepositoryImpl(
+//        NetworkConfig.influxdbURL,
+//        NetworkConfig.influxAdminToken,
+//        NetworkConfig.influxOrganization
+//    ).getNewTokenForUser("Yakuba Dmitry")
+//
+//    transaction(connection.getConnectionToDB())
+//    {
+//        UsersTable.insert {
+//            it[username] = "username"
+//            it[password] = "password"
+//            it[dbToken] = newToken
+//        }
+//    }
+//}
+
