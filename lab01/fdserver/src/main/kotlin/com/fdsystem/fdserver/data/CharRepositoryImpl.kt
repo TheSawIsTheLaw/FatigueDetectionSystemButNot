@@ -238,13 +238,14 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         apiString += "api/v2/authorizations"
 
         val orgID = getOrgIDByName(apiString, connection.getOrg())
+        // Тут требуется прописать все риды и райты + айдишники организации, походу
         val jsonContent = "{\n" +
                 "  \"status\": \"active\",\n" +
                 "  \"description\": \"$username token\",\n" +
                 "  \"orgID\": \"$orgID\",\n" +
                 "  \"permissions\": [\n" +
                 "    {\n" +
-                "      \"action\": \"read\",\n" +
+                "      \"action\": \"write\",\n" +
                 "      \"resource\": {\n" +
                 "        \"type\": \"buckets\"\n" +
                 "      }\n" +
@@ -273,46 +274,47 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return outBody.substring(regRes.range.first + 10, regRes.range.last)
     }
 
-    //??? Может понадобиться. Если понадобится - изменим метод и внесём туда "mode" с тем, что потребуется делать
-    fun getNewTokenForSender(username: String): String {
-        val httpClient = OkHttpClient()
-        var apiString = connection.getConnectionURL()
-        if (apiString.last() != '/') {
-            apiString += '/'
-        }
-        apiString += "api/v2/authorizations"
-
-        val orgID = getOrgIDByName(apiString, connection.getOrg())
-        val jsonContent = "{\n" +
-                "  \"description\": \"$username token\",\n" +
-                "  \"orgID\": \"$orgID\",\n" +
-                "  \"permissions\": [\n" +
-                "    {\n" +
-                "      \"action\": \"write\",\n" +
-                "      \"resource\": {\n" +
-                "        \"type\": \"buckets\",\n"
-        "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}"
-        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
-
-        val request = Request.Builder()
-            .url(apiString)
-            .addHeader(
-                "Authorization",
-                "Token ${NetworkConfig.influxAdminToken}"
-            )
-            .post(body)
-            .build()
-
-        var outBody: String
-
-        val response = httpClient.newCall(request).execute()
-        response.use { outBody = response.body()!!.string() }
-
-        val regex = "\"token\": \"[a-z0-9]+\"".toRegex()
-        val regRes = regex.find(outBody) ?: throw java.lang.Exception("Token was not created")
-        return outBody.substring(regRes.range.first + 10, regRes.range.last)
-    }
+//??? Может понадобиться. Если понадобится - изменим метод и внесём туда "mode" с тем, что потребуется делать
+//    Только тут структура запроса неправильная
+//    fun getNewTokenForSender(username: String): String {
+//        val httpClient = OkHttpClient()
+//        var apiString = connection.getConnectionURL()
+//        if (apiString.last() != '/') {
+//            apiString += '/'
+//        }
+//        apiString += "api/v2/authorizations"
+//
+//        val orgID = getOrgIDByName(apiString, connection.getOrg())
+//        val jsonContent = "{\n" +
+//                "  \"description\": \"$username token\",\n" +
+//                "  \"orgID\": \"$orgID\",\n" +
+//                "  \"permissions\": [\n" +
+//                "    {\n" +
+//                "      \"action\": \"write\",\n" +
+//                "      \"resource\": {\n" +
+//                "        \"type\": \"buckets\",\n"
+//        "      }\n" +
+//                "    }\n" +
+//                "  ]\n" +
+//                "}"
+//        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
+//
+//        val request = Request.Builder()
+//            .url(apiString)
+//            .addHeader(
+//                "Authorization",
+//                "Token ${NetworkConfig.influxAdminToken}"
+//            )
+//            .post(body)
+//            .build()
+//
+//        var outBody: String
+//
+//        val response = httpClient.newCall(request).execute()
+//        response.use { outBody = response.body()!!.string() }
+//
+//        val regex = "\"token\": \"[a-z0-9]+\"".toRegex()
+//        val regRes = regex.find(outBody) ?: throw java.lang.Exception("Token was not created")
+//        return outBody.substring(regRes.range.first + 10, regRes.range.last)
+//    }
 }
