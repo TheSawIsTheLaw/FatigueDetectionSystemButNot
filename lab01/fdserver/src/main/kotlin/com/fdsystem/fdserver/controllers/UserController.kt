@@ -16,6 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import javax.servlet.http.Cookie
@@ -184,5 +185,12 @@ class UserController(
         }
 
         return if (out) ResponseEntity(null, HttpStatus.OK) else ResponseEntity(null, HttpStatus.CONFLICT)
+    }
+
+    @GetMapping("/lol")
+    fun testGet(): String
+    {
+        val userDetails = SecurityContextHolder.getContext().authentication.details
+        return userDetails.toString()
     }
 }
