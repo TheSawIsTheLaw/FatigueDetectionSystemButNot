@@ -1,6 +1,6 @@
 package com.fdsystem.fdserver.controllers
 
-import com.fdsystem.fdserver.controllers.services.FacadeService
+import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -9,10 +9,11 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.security.Principal
 
 @RestController
 @RequestMapping("/api/v1/data")
-class DataController(val facadeService: FacadeService)
+class DataController(val dataService: DataService)
 {
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
     @Operation(
@@ -45,33 +46,36 @@ class DataController(val facadeService: FacadeService)
             description = "Name of measurement to get from bucket", required = true,
             example = "ArterialPressure"
         )
-        @RequestParam("charnames") characteristicsNames: List<String>
+        @RequestParam("charnames") characteristicsNames: List<String>,
+        principal: Principal
     ): ResponseEntity<*>
     {
-        if (!facadeService.checkAuth())
-            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
-
-        val outList: MutableList<MeasurementList> = mutableListOf()
-        try
-        {
-            // После этих слов в украинском поезде начался сущий кошмар
-            for (curChar in characteristicsNames)
-            {
-                val addList = facadeService.getMeasurementFromBucket(bucket, curChar)
-                val convertedList: MutableList<MeasurementDTO> = mutableListOf()
-                for (i in addList)
-                {
-                    convertedList.add(MeasurementDTO(i.first, i.second))
-                }
-                outList.add(MeasurementList(curChar, convertedList))
-            }
-        }
-        catch (exc: Exception)
-        {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-
-        return ResponseEntity(outList.toList(), HttpStatus.OK)
+        return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+//        if (!dataService.checkAuth())
+//            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+//
+//        val outList: MutableList<MeasurementList> = mutableListOf()
+//        try
+//        {
+//            // После этих слов в украинском поезде начался сущий кошмар
+//            for (curChar in characteristicsNames)
+//            {
+//                // В фасад вынести конвертацию
+//                val addList = facadeService.getMeasurementFromBucket(bucket, curChar)
+//                val convertedList: MutableList<MeasurementDTO> = mutableListOf()
+//                for (i in addList)
+//                {
+//                    convertedList.add(MeasurementDTO(i.first, i.second))
+//                }
+//                outList.add(MeasurementList(curChar, convertedList))
+//            }
+//        }
+//        catch (exc: Exception)
+//        {
+//            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+//        }
+//
+//        return ResponseEntity(outList.toList(), HttpStatus.OK)
     }
 
     @Operation(
@@ -101,23 +105,25 @@ class DataController(val facadeService: FacadeService)
         @RequestBody charsList: List<MeasurementListLight>
     ): ResponseEntity<*>
     {
-        if (!facadeService.checkAuth())
-        {
-            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
-        }
-
-        try
-        {
-            for (curChar in charsList)
-            {
-                facadeService.sendToBucket(bucket, curChar.measurementName, curChar.measurements)
-            }
-        }
-        catch (exc: Exception)
-        {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-
-        return ResponseEntity(null, HttpStatus.OK)
+        return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+//        if (!facadeService.checkAuth())
+//        {
+//            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+//        }
+//
+//        try
+//        {
+//            for (curChar in charsList)
+//            {
+//                // Отсылка класса в бд. Может совпадать
+//                facadeService.sendToBucket(bucket, curChar.measurementName, curChar.measurements)
+//            }
+//        }
+//        catch (exc: Exception)
+//        {
+//            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+//        }
+//
+//        return ResponseEntity(null, HttpStatus.OK)
     }
 }

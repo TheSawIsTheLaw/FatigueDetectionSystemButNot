@@ -1,0 +1,31 @@
+package com.fdsystem.fdserver.controllers.services
+
+import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.controllers.UserController
+import com.fdsystem.fdserver.data.UserRepositoryImpl
+import com.fdsystem.fdserver.domain.UserCredentials
+import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UserDetailsService
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import org.springframework.stereotype.Service
+
+
+@Service
+class JwtUserDetailsService : UserDetailsService {
+    @Throws(UsernameNotFoundException::class)
+    override fun loadUserByUsername(username: String): UserDetails {
+        val repo = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
+        var user: UserCredentials
+        if (repo.userExists(username))
+        {
+            user = repo.getUserByUsername(username)
+        }
+        else
+        {
+            throw UsernameNotFoundException("User not found with username $username")
+        }
+
+        return User(user.username, user.password, arrayListOf())
+    }
+}

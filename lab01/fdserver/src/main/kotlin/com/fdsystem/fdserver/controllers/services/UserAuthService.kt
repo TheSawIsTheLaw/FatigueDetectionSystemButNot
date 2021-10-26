@@ -3,7 +3,9 @@ package com.fdsystem.fdserver.controllers.services
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
+import org.springframework.stereotype.Service
 
+@Service
 class UserAuthService
 {
     private var userRepository = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
@@ -20,15 +22,10 @@ class UserAuthService
         return "Success"
     }
 
-    fun login(username: String, password: String): CharRepositoryImpl?
+    fun userAuthSuccess(username: String, password: String): Boolean
     {
         val token = userRepository.getUserToken(username, password)
-        if (token == "User doesn't exist" || token == "Wrong password")
-        {
-            return null
-        }
-
-        return CharRepositoryImpl(NetworkConfig.influxdbURL, token, NetworkConfig.influxOrganization)
+        return (!(token == "User doesn't exist" || token == "Wrong password"))
     }
 
     fun changeUserInfo(oldUsername: String, newUsername: String, oldPassword: String, newPassword: String): Boolean

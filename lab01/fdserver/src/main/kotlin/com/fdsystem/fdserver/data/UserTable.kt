@@ -13,4 +13,5 @@ object UsersTable: Table()
     val username = varchar("username", 200).uniqueIndex()
     val password = varchar("password", 200)
     val dbToken = varchar("dbtoken", 200)
+    val currentJwtToken = varchar("currentjwttoken", 200)
 }

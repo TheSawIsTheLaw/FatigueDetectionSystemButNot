@@ -1,15 +1,47 @@
 package com.fdsystem.fdserver.controllers
 
-import com.fdsystem.fdserver.controllers.services.FacadeService
+import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
+import com.fdsystem.fdserver.controllers.jwt.JwtRequest
+import com.fdsystem.fdserver.controllers.jwt.JwtResponse
+import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
+import com.fdsystem.fdserver.controllers.services.UserAuthService
+import com.fdsystem.fdserver.domain.PasswordChangeEntity
+import com.fdsystem.fdserver.domain.UserCredentials
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.*
+import java.security.Principal
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletResponse
+
 
 @RestController
-@RequestMapping("/api/v1/user")
-class UserController(val facadeService: FacadeService) {
+@CrossOrigin
+@RequestMapping("/user")
+class UserController(
+    val userService: UserAuthService,
+    val authenticationManager: AuthenticationManager,
+    val jwtTokenUtil: JwtTokenUtil,
+    val userDetailsService: JwtUserDetailsService
+) {
+    @Throws(java.lang.Exception::class)
+    private fun authenticate(username: String, password: String) {
+        try {
+            authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
+        } catch (e: DisabledException) {
+            throw java.lang.Exception("USER_DISABLED", e)
+        } catch (e: BadCredentialsException) {
+            throw java.lang.Exception("INVALID_CREDENTIALS", e)
+        }
+    }
+
     @Operation(
         summary = "Logs in user",
         description = "Logs in user and uses his token for DB access",
@@ -29,22 +61,22 @@ class UserController(val facadeService: FacadeService) {
             )
         ]
     )
-    @GetMapping("/login/{username}")
+    @PostMapping("/login")
     fun login(
-        @Parameter(description = "Username of the user", required = true)
-        @PathVariable("username") username: String,
-        @Parameter(description = "Password for login", required = true)
-        @RequestParam("password") password: String
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "User credentials", required = true, content = [
+                Content(schema = Schema(implementation = UserCredentials::class))
+            ]
+        )
+        @RequestBody authenticationRequest: JwtRequest
     ): ResponseEntity<*> {
-        try {
-            facadeService.login(username, password)
-        } catch (exc: Exception) {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-        }
-
-        return if (facadeService.checkDBHealth() == "Authorized") ResponseEntity(null, HttpStatus.OK)
-        else ResponseEntity(null, HttpStatus.NOT_FOUND)
+        authenticate(authenticationRequest.username, authenticationRequest.password)
+        val userDetails = userDetailsService
+            .loadUserByUsername(authenticationRequest.username)
+        val token = jwtTokenUtil.generateToken(userDetails)
+        return ResponseEntity.ok<Any>(JwtResponse(token))
     }
+
 
     @Operation(
         summary = "Logs out user",
@@ -57,9 +89,16 @@ class UserController(val facadeService: FacadeService) {
             )
         ]
     )
-    @GetMapping("/logout")
-    fun logout(): ResponseEntity<*> {
-        facadeService.logout()
+
+    @PostMapping("/logout")
+    fun logout(response: HttpServletResponse): ResponseEntity<*> {
+        val authCookie = Cookie("FUCKING STUPID COOKIE uwu", null)
+        authCookie.maxAge = 0
+        authCookie.isHttpOnly = true
+        authCookie.path = "/"
+        authCookie.secure = true
+
+        response.addCookie(authCookie)
         return ResponseEntity(null, HttpStatus.OK)
     }
 
@@ -82,16 +121,18 @@ class UserController(val facadeService: FacadeService) {
             )
         ]
     )
-    @GetMapping("/registration/{username}")
+    @PostMapping("/registration")
     fun register(
-        @Parameter(description = "Username of new user", required = true)
-        @PathVariable("username") username: String,
-        @Parameter(description = "Password for new user", required = true)
-        @RequestParam("password") password: String
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "User credentials", required = true, content = [
+                Content(schema = Schema(implementation = UserCredentials::class))
+            ]
+        )
+        @RequestBody user: UserCredentials
     ): ResponseEntity<*> {
         val outAnswer: String
         try {
-            outAnswer = facadeService.register(username, password)
+            outAnswer = userService.register(user.username, user.password)
         } catch (exc: Exception) {
             println(exc.toString())
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
@@ -120,18 +161,24 @@ class UserController(val facadeService: FacadeService) {
             )
         ]
     )
-    @PatchMapping("/password/{username}")
+
+    @PatchMapping("/password")
     fun changePassword(
-        @Parameter(description = "Username of the user", required = true, example = "satan")
-        @PathVariable("username") username: String,
-        @Parameter(description = "Old user's password", required = true, example = "*******")
-        @RequestParam("oldPassword") oldPassword: String,
-        @Parameter(description = "New user's password", required = true, example = "*******")
-        @RequestParam("newPassword") newPassword: String
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Old and new passwords", required = true, content = [
+                Content(schema = Schema(implementation = PasswordChangeEntity::class))
+            ]
+        )
+        principal: Principal,
+        @RequestBody passwords: PasswordChangeEntity
     ): ResponseEntity<*> {
+        if (principal.name == null)
+            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+
         val out: Boolean
         try {
-            out = facadeService.changeUserInfo(username, username, oldPassword, newPassword)
+            out =
+                userService.changeUserInfo(principal.name, principal.name, passwords.oldPassword, passwords.newPassword)
         } catch (exc: Exception) {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }

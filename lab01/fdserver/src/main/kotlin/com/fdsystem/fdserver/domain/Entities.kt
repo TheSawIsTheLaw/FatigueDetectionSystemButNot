@@ -37,9 +37,12 @@ import java.time.Instant
 //    val facialExpression: FacialExpression = FacialExpression(),
 //    val speechRate: SpeechRate = SpeechRate()
 //)
-
+// Разбить файл
 data class MeasurementDTO(val value: String, val time: Instant)
 
 data class MeasurementList(val measurementName: String, val measurements: List<MeasurementDTO>)
 
 data class MeasurementListLight(val measurementName: String, val measurements: List<String>)
+
+data class UserCredentials(val username: String, val password: String)
+data class PasswordChangeEntity(val oldPassword: String, val newPassword: String)

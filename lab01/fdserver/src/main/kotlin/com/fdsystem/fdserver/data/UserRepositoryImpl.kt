@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.domain.UserCredentials
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -87,6 +88,23 @@ class UserRepositoryImpl(
         }
 
         return select.isNotEmpty()
+    }
+
+    override fun getUserByUsername(username: String): UserCredentials
+    {
+        if (!userExists(username))
+        {
+            return UserCredentials("","")
+        }
+
+        var select: List<UsersTable.UserDTO> = listOf()
+        transaction(connection.getConnectionToDB())
+        {
+            select = UsersTable.select { UsersTable.username.eq(username) }
+                .map { mapToUserDTO(it) }
+        }
+
+        return UserCredentials(select[0].username, select[0].password)
     }
 
     override fun changePasswordAndUsername(

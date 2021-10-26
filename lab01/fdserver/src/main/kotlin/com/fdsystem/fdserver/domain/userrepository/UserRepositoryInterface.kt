@@ -1,7 +1,8 @@
 package com.fdsystem.fdserver.domain.userrepository
 
-interface UserRepositoryInterface
-{
+import com.fdsystem.fdserver.domain.UserCredentials
+
+interface UserRepositoryInterface {
     fun userExists(username: String): Boolean
 
     fun checkPassword(username: String, password: String): Boolean
@@ -12,6 +13,8 @@ interface UserRepositoryInterface
         oldPassword: String,
         newPassword: String
     ): Boolean
+
+    fun getUserByUsername(username: String): UserCredentials
 
     // returns Token
     fun registerUser(username: String, password: String): String

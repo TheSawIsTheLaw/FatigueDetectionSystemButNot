@@ -1,8 +1,10 @@
 package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import org.springframework.stereotype.Service
 import java.time.Instant
 
+@Service
 class DataService
 {
     private var charRepository: CharRepositoryImpl? = null
