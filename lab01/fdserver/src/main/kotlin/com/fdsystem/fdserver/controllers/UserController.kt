@@ -12,6 +12,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.AuthenticationManager
+import org.springframework.security.authentication.BadCredentialsException
+import org.springframework.security.authentication.DisabledException
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.*
 import org.springframework.web.context.request.RequestContextHolder
 import org.springframework.web.context.request.ServletRequestAttributes
@@ -26,10 +30,26 @@ import javax.servlet.http.HttpServletResponse
 @RequestMapping("api/v1/user")
 class UserController(
     val userService: UserAuthService,
+    val authenticationManager: AuthenticationManager,
     val jwtTokenUtil: JwtTokenUtil,
     val userDetailsService: JwtUserDetailsService
 )
 {
+    @Throws(java.lang.Exception::class)
+    private fun authenticate(username: String, password: String)
+    {
+        try
+        {
+            authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
+        } catch (e: DisabledException)
+        {
+            throw java.lang.Exception("USER_DISABLED", e)
+        } catch (e: BadCredentialsException)
+        {
+            throw java.lang.Exception("INVALID_CREDENTIALS", e)
+        }
+    }
+
     @Operation(
         summary = "Logs in user",
         description = "Logs in user and uses his token for DB access",
@@ -56,21 +76,23 @@ class UserController(
                 Content(schema = Schema(implementation = UserCredentials::class))
             ]
         )
-        @RequestBody authenticationRequest: JwtRequest
+        @RequestBody authenticationRequest: UserCredentials
     ): ResponseEntity<*>
     {
-        // Короче тут всё-таки нужен этот authenticationManager
-        // Видимо. Я хз.
-        if (!userService.userAuthSuccess(authenticationRequest.username, authenticationRequest.password))
+        try
         {
-            return ResponseEntity(null, HttpStatus.NOT_FOUND)
+            authenticate(authenticationRequest.username, authenticationRequest.password)
+        } catch (exc: Exception)
+        {
+            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
         val userDetails = userDetailsService
             .loadUserByUsername(authenticationRequest.username)
+
         val token = jwtTokenUtil.generateToken(userDetails)
 
-        return ResponseEntity.ok<Any>(JwtResponse(token))
+        return ResponseEntity.ok(JwtResponse(token))
     }
 
 
@@ -85,17 +107,9 @@ class UserController(
             )
         ]
     )
-
     @PostMapping("/logout")
     fun logout(response: HttpServletResponse): ResponseEntity<*>
     {
-        val authCookie = Cookie("FUCKING STUPID COOKIE uwu", null)
-        authCookie.maxAge = 0
-        authCookie.isHttpOnly = true
-        authCookie.path = "/"
-        authCookie.secure = true
-
-        response.addCookie(authCookie)
         return ResponseEntity(null, HttpStatus.OK)
     }
 
@@ -134,7 +148,6 @@ class UserController(
             outAnswer = userService.register(user.username, user.password)
         } catch (exc: Exception)
         {
-            println(exc.toString())
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -161,7 +174,6 @@ class UserController(
             )
         ]
     )
-
     @PatchMapping("/password")
     fun changePassword(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
@@ -192,7 +204,6 @@ class UserController(
     @GetMapping("/lol")
     fun testGet(request: HttpServletRequest): ResponseEntity<*>
     {
-        val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
-        return ResponseEntity(request.getHeader("Authorization"), HttpStatus.OK)
+        return ResponseEntity(jwtTokenUtil.getUsernameFromToken(request.getHeader("Authorization")), HttpStatus.OK)
     }
 }

@@ -21,7 +21,8 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-class WebSecurityConfig : WebSecurityConfigurerAdapter() {
+class WebSecurityConfig : WebSecurityConfigurerAdapter()
+{
     @Autowired
     private val jwtAuthenticationEntryPoint: JwtAuthenticationEntryPoint? = null
 
@@ -33,7 +34,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
 
     @Autowired
     @Throws(Exception::class)
-    fun configureGlobal(auth: AuthenticationManagerBuilder) {
+    fun configureGlobal(auth: AuthenticationManagerBuilder)
+    {
         // configure AuthenticationManager so that it knows from where to load
         // user for matching credentials
         // Use BCryptPasswordEncoder
@@ -41,36 +43,33 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
     }
 
     @Bean
-    fun passwordEncoder(): PasswordEncoder {
+    fun passwordEncoder(): PasswordEncoder
+    {
         return BCryptPasswordEncoder()
     }
 
     @Bean
     @Throws(Exception::class)
-    override fun authenticationManagerBean(): AuthenticationManager {
+    override fun authenticationManagerBean(): AuthenticationManager
+    {
         return super.authenticationManagerBean()
     }
 
     @Throws(Exception::class)
-    override fun configure(httpSecurity: HttpSecurity) {
+    override fun configure(httpSecurity: HttpSecurity)
+    {
         httpSecurity
-            .csrf()
-            .disable() // don't authenticate this particular request
+            .csrf().disable() // don't authenticate this particular request
             .authorizeRequests()
-            .antMatchers("/api/v1/user/login")
-            .permitAll()
-            .antMatchers("/api/v1/user/registration")
-            .permitAll()
-            .antMatchers("/swagger-ui")
-            .permitAll()
-            .antMatchers("/swagger-ui/**")
-            .permitAll()
-            .antMatchers("/swagger-ui.html")
-            .permitAll()
-            .antMatchers("/v3/**")
-            .permitAll()
-            .anyRequest()
-            .authenticated()
+            .antMatchers(
+                "/api/v1/user/login",
+                "/api/v1/user/registration",
+                "/swagger-ui",
+                "/swagger-ui/**",
+                "/swagger-ui.html",
+                "/v3/**"
+            ).permitAll()
+            .anyRequest().authenticated()
             .and()
             .exceptionHandling()
             .authenticationEntryPoint(jwtAuthenticationEntryPoint)

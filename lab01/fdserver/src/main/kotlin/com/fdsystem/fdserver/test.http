@@ -2,7 +2,7 @@ POST http://localhost:9090/api/v1/user/registration
 Content-Type: application/json
 
 {
-  "username": "Lox",
+  "username": "222",
   "password": "123"
 }
 
@@ -12,10 +12,11 @@ POST http://localhost:9090/api/v1/user/login
 Content-Type: application/json
 
 {
-  "username": "Lox",
+  "username": "111",
   "password": "123"
 }
 
 ###
 
 GET http://localhost:9090/api/v1/user/lol
+"Authorization": "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxMTEiLCJpYXQiOjE2MzUzNDU2NjcsImV4cCI6MTYzNTM2MzY2N30.5lpBSgxhvBD1vn1_zW8HKrM9xa9_nSconzbOXBYcRpQ"
