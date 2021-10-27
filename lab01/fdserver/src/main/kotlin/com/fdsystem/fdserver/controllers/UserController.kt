@@ -204,6 +204,6 @@ class UserController(
     @GetMapping("/lol")
     fun testGet(request: HttpServletRequest): ResponseEntity<*>
     {
-        return ResponseEntity(jwtTokenUtil.getUsernameFromToken(request.getHeader("Authorization")), HttpStatus.OK)
+        return ResponseEntity(jwtTokenUtil.getUsernameFromToken(request.getHeader("Authorization").split(" ")[1].trim()), HttpStatus.OK)
     }
 }
