@@ -1,0 +1,8 @@
+{
+  "influxdbURL": "http://influxdb:8086",
+  "influxAdminToken": "S2BxreP0buWYzaFZ3H6wXMdu1zuJddAon_fJzjFtq64oftC4_YaqhHlWLGobjD5n9D2dBfO3NCFAoV0EchXPOA==",
+  "influxOrganization": "subjects",
+  "postgresURL": "postgres:5432/users",
+  "postgresUsername": "admin",
+  "postgresPassword": "satanIsHere"
+}
