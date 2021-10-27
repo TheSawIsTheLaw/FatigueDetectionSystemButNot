@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service
 class JwtUserDetailsService : UserDetailsService
 {
     @Throws(UsernameNotFoundException::class)
-    override fun loadUserByUsername(username: String): UserDetails
+    override fun loadUserByUsername(username: String): (UserDetails)
     {
         org.apache.commons.logging.LogFactory.getLog(javaClass)
             .warn("We are in custom Detail Service")

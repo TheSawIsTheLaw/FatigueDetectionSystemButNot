@@ -42,8 +42,8 @@ class JwtTokenUtil : Serializable
         return claimsResolver.apply(claims)
     }
 
-    //for retrieveing any information from token we will need the secret key
-    private fun getAllClaimsFromToken(token: String?): Claims
+    // for retrieving any information from token we will need the secret key
+    fun getAllClaimsFromToken(token: String?): Claims
     {
         return Jwts.parserBuilder().setSigningKey(secret).build()
             .parseClaimsJws(token).body
@@ -57,9 +57,9 @@ class JwtTokenUtil : Serializable
     }
 
     //generate token for user
-    fun generateToken(userDetails: UserDetails): String
+    fun generateToken(userDetails: UserDetails, userDBToken: String): String
     {
-        val claims: Map<String, Any?> = HashMap()
+        val claims: Map<String, Any> = hashMapOf("DBToken" to userDBToken)
         return doGenerateToken(claims, userDetails.username)
     }
 
@@ -69,7 +69,7 @@ class JwtTokenUtil : Serializable
     //3. According to JWS Compact Serialization(https://tools.ietf.org/html/draft-ietf-jose-json-web-signature-41#section-3.1)
     //   compaction of the JWT to a URL-safe string
     private fun doGenerateToken(
-        claims: Map<String, Any?>,
+        claims: Map<String, Any>,
         subject: String
     ): String
     {

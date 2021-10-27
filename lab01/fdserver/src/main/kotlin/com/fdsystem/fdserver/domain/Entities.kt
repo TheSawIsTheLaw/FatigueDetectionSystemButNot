@@ -40,9 +40,25 @@ import java.time.Instant
 // Разбить файл
 data class MeasurementDTO(val value: String, val time: Instant)
 
-data class MeasurementList(val measurementName: String, val measurements: List<MeasurementDTO>)
+data class MeasurementList(
+    val measurementName: String,
+    val measurements: List<MeasurementDTO>
+)
 
-data class MeasurementListLight(val measurementName: String, val measurements: List<String>)
+data class MeasurementListLight(
+    val measurementName: String,
+    val measurements: List<String>
+)
 
-data class UserCredentials(val username: String, val password: String)
-data class PasswordChangeEntity(val oldPassword: String, val newPassword: String)
+data class UserCredentials(
+    val username: String, val password: String, val dbToken: String
+)
+
+data class UserCredentialsToAuth(
+    val username: String, val password: String
+)
+
+data class PasswordChangeEntity(
+    val oldPassword: String,
+    val newPassword: String
+)

@@ -3,6 +3,7 @@ package com.fdsystem.fdserver.controllers.services
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
+import com.fdsystem.fdserver.domain.UserCredentials
 import org.springframework.stereotype.Service
 
 @Service
@@ -44,5 +45,12 @@ class UserAuthService
             oldPassword,
             newPassword
         )
+    }
+
+    fun getUserByUsername(
+        username: String
+    ): UserCredentials
+    {
+        return userRepository.getUserByUsername(username)
     }
 }

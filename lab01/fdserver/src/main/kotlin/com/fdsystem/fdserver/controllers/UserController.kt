@@ -1,15 +1,16 @@
 package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
-import com.fdsystem.fdserver.controllers.jwt.JwtRequest
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.PasswordChangeEntity
 import com.fdsystem.fdserver.domain.UserCredentials
+import com.fdsystem.fdserver.domain.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import org.apache.commons.logging.LogFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.authentication.AuthenticationManager
@@ -17,10 +18,7 @@ import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.web.bind.annotation.*
-import org.springframework.web.context.request.RequestContextHolder
-import org.springframework.web.context.request.ServletRequestAttributes
 import java.security.Principal
-import javax.servlet.http.Cookie
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -77,10 +75,11 @@ class UserController(
     fun login(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User credentials", required = true, content = [
-                Content(schema = Schema(implementation = UserCredentials::class))
+                Content(schema = Schema(implementation =
+                UserCredentialsToAuth::class))
             ]
         )
-        @RequestBody authenticationRequest: UserCredentials
+        @RequestBody authenticationRequest: UserCredentialsToAuth
     ): ResponseEntity<*>
     {
         try
@@ -98,8 +97,12 @@ class UserController(
         val userDetails = userDetailsService
             .loadUserByUsername(authenticationRequest.username)
 
-        val token = jwtTokenUtil.generateToken(userDetails)
+        val userDBToken = userService.getUserByUsername(
+            authenticationRequest
+                .username
+        ).dbToken
 
+        val token = jwtTokenUtil.generateToken(userDetails, userDBToken)
         return ResponseEntity.ok(JwtResponse(token))
     }
 
@@ -227,11 +230,10 @@ class UserController(
     fun testGet(request: HttpServletRequest): ResponseEntity<*>
     {
         return ResponseEntity(
-            jwtTokenUtil.getUsernameFromToken(
+            jwtTokenUtil.getAllClaimsFromToken(
                 request.getHeader(
                     "Authorization"
-                ).split(" ")[1].trim()
-            ), HttpStatus.OK
+                ).split(" ")[1].trim())["DBToken"], HttpStatus.OK
         )
     }
 }

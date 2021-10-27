@@ -107,7 +107,7 @@ class UserRepositoryImpl(
     {
         if (!userExists(username))
         {
-            return UserCredentials("", "")
+            return UserCredentials("", "", "")
         }
 
         var select: List<UsersTable.UserDTO> = listOf()
@@ -117,7 +117,8 @@ class UserRepositoryImpl(
                 .map { mapToUserDTO(it) }
         }
 
-        return UserCredentials(select[0].username, select[0].password)
+        return UserCredentials(select[0].username, select[0].password,
+            select[0].dbToken)
     }
 
     override fun changePasswordAndUsername(
