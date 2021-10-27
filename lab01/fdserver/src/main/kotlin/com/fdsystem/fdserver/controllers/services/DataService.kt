@@ -1,60 +1,83 @@
 package com.fdsystem.fdserver.controllers.services
 
+import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import com.fdsystem.fdserver.domain.DataServiceMeasurement
+import com.fdsystem.fdserver.domain.DataServiceMeasurementValue
+import com.fdsystem.fdserver.domain.DataServiceMeasurements
+import com.fdsystem.fdserver.domain.MeasurementDTO
 import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
 class DataService
 {
-    private var charRepository: CharRepositoryImpl? = null
+    private lateinit var charRepository: CharRepositoryImpl
 
-    fun loginToInflux(connectionString: String, token: String, org: String)
+    private fun loginToInflux(token: String, org: String)
     {
-        charRepository = CharRepositoryImpl(connectionString, token, org)
+        charRepository =
+            CharRepositoryImpl(NetworkConfig.influxdbURL, token, org)
     }
 
-    fun setCharRepository(repository: CharRepositoryImpl?)
-    {
-        charRepository = repository
-    }
-
-    fun repositoryIsNull(): Boolean
-    {
-        return charRepository == null
-    }
-
-    fun checkHealth(): String
-    {
-        charRepository ?: return "Dead"
-        return if (charRepository!!.checkHealth()) "Authorized" else "Error"
-    }
-
-    fun getMeasurement(
+    private fun getMeasurement(
         bucketName: String,
         charName: String
-    ): List<Pair<String, Instant>>
+    ): List<DataServiceMeasurement>
     {
-        val outList = mutableListOf<Pair<String, Instant>>()
-        if (charRepository != null)
-        {
-            val gotInformation =
-                charRepository!!.get(bucketName, Pair(0, 0), charName)
-            for (i in gotInformation)
-            {
-                outList.add(0, Pair(i.second.toString(), i.third))
-            }
-        }
+        val gotInformation = charRepository.get(
+            bucketName, Pair(0, 0),
+            charName
+        )
 
-        return outList.toList()
+        return gotInformation.map { DataServiceMeasurement(it.value, it.time) }
     }
 
-    fun sendMeasurement(
+    fun getMeasurements(
+        token: String,
+        bucketName: String,
+        charNames: List<String>
+    ): List<List<DataServiceMeasurement>>
+    {
+        loginToInflux(token, NetworkConfig.influxOrganization)
+
+        val outMeasurements: MutableList<List<DataServiceMeasurement>> =
+            mutableListOf()
+
+        for (charName in charNames)
+        {
+            outMeasurements.add(getMeasurement(bucketName, charName))
+        }
+
+        return outMeasurements
+    }
+
+    private fun sendMeasurement(
         bucketName: String,
         charName: String,
-        chars: List<String>
+        chars: List<DataServiceMeasurementValue>
     )
     {
-        charRepository?.add(bucketName, charName, chars)
+        charRepository.add(bucketName, chars.map {
+            MeasurementDTO(
+                charName, it
+                    .value,
+                Instant.MIN
+            )
+        })
+    }
+
+    fun sendMeasurements(
+        token: String,
+        bucketName: String,
+        chars: List<DataServiceMeasurements>
+    )
+    {
+        loginToInflux(token, NetworkConfig.influxOrganization)
+
+        for (char in chars)
+        {
+            sendMeasurement(bucketName, char.measurement, char.values)
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.domain.MeasurementDTO
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision
@@ -77,14 +78,14 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     override fun get(
         subjectName: String, timeRange: Pair<Int, Int>,
         charName: String
-    ): List<Triple<String, Any, Instant>>
+    ): List<MeasurementDTO>
     {
         if (connection.getConnectionToDB()
                 .health().status == HealthCheck.StatusEnum.FAIL
         ) // Исправить говно какое-то
             return listOf()
 
-        val outList: MutableList<Triple<String, Any, Instant>> = mutableListOf()
+        val outList: MutableList<MeasurementDTO> = mutableListOf()
         val client = connection.getConnectionToDB()
 
         val rng =
@@ -102,8 +103,9 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             {
                 val curVal = i.values
                 outList.add(
-                    Triple(
-                        curVal["_measurement"].toString(), curVal["_value"]!!,
+                    MeasurementDTO(
+                        curVal["_measurement"].toString(),
+                        curVal["_value"].toString(),
                         curVal["_time"] as Instant
                     )
                 )
@@ -210,7 +212,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return retVal
     }
 
-    override fun add(subjectName: String, charName: String, chars: List<String>)
+    override fun add(subjectName: String, chars: List<MeasurementDTO>)
     {
         if (bucketNotExists(subjectName))
         {
@@ -220,6 +222,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         val client = connection.getConnectionWrite(subjectName)
         val writeApi = client.getWriteKotlinApi()
 
+        val charName = chars[0].value
         runBlocking {
             for (i in chars)
             {
@@ -230,34 +233,34 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         connection.closeWriteConnection()
     }
 
-    fun checkHealth(): Boolean
-    {
-        val httpClient = OkHttpClient()
-
-        var apiString = connection.getConnectionURL()
-        if (apiString.last() != '/')
-        {
-            apiString += '/'
-        }
-        apiString += "api/v2/buckets"
-
-        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
-            .build()
-
-        val request = Request.Builder()
-            .url(urlWithParams)
-            .addHeader("Authorization", "Token ${connection.getToken()}")
-            .get()
-            .build()
-
-        val retVal: Boolean
-        val response = httpClient.newCall(request).execute()
-        response.use {
-            retVal = response.body()!!.string().contains("\"buckets\":")
-        }
-
-        return retVal
-    }
+//    fun checkHealth(): Boolean
+//    {
+//        val httpClient = OkHttpClient()
+//
+//        var apiString = connection.getConnectionURL()
+//        if (apiString.last() != '/')
+//        {
+//            apiString += '/'
+//        }
+//        apiString += "api/v2/buckets"
+//
+//        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
+//            .build()
+//
+//        val request = Request.Builder()
+//            .url(urlWithParams)
+//            .addHeader("Authorization", "Token ${connection.getToken()}")
+//            .get()
+//            .build()
+//
+//        val retVal: Boolean
+//        val response = httpClient.newCall(request).execute()
+//        response.use {
+//            retVal = response.body()!!.string().contains("\"buckets\":")
+//        }
+//
+//        return retVal
+//    }
 
     fun getNewTokenForUser(username: String): String
     {

@@ -1,6 +1,8 @@
 package com.fdsystem.fdserver.controllers
 
+import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
+import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.domain.*
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -8,13 +10,19 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
+import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
+import javax.servlet.http.HttpServletRequest
 
 @RestController
 @RequestMapping("/api/v1/data")
-class DataController(val dataService: DataService)
+class DataController(
+    val dataService: DataService,
+    val jwtTokenUtil: JwtTokenUtil,
+)
 {
+
     // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
     @Operation(
         summary = "Gets info about user",
@@ -25,7 +33,8 @@ class DataController(val dataService: DataService)
                 responseCode = "200",
                 description = "Successful operation",
                 content = [
-                    Content(schema = Schema(implementation = Array<MeasurementList>::class))
+                    Content(schema = Schema(implementation =
+                    Array<Array<DataServiceMeasurement>>::class))
                 ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -52,35 +61,26 @@ class DataController(val dataService: DataService)
             example = "ArterialPressure"
         )
         @RequestParam("charnames") characteristicsNames: List<String>,
-        principal: Principal
+        request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-//        if (!dataService.checkAuth())
-//            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
-//
-//        val outList: MutableList<MeasurementList> = mutableListOf()
-//        try
-//        {
-//            // После этих слов в украинском поезде начался сущий кошмар
-//            for (curChar in characteristicsNames)
-//            {
-//                // В фасад вынести конвертацию
-//                val addList = facadeService.getMeasurementFromBucket(bucket, curChar)
-//                val convertedList: MutableList<MeasurementDTO> = mutableListOf()
-//                for (i in addList)
-//                {
-//                    convertedList.add(MeasurementDTO(i.first, i.second))
-//                }
-//                outList.add(MeasurementList(curChar, convertedList))
-//            }
-//        }
-//        catch (exc: Exception)
-//        {
-//            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-//        }
-//
-//        return ResponseEntity(outList.toList(), HttpStatus.OK)
+        var outList: List<List<DataServiceMeasurement>> = listOf()
+        val token = jwtTokenUtil.getAllClaimsFromToken(
+            request.getHeader(
+                "Authorization"
+            ).split(" ")[1].trim()
+        )["DBToken"].toString()
+        try
+        {
+            outList =
+                dataService.getMeasurements(token, bucket, characteristicsNames)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return ResponseEntity(outList.toList(), HttpStatus.OK)
     }
 
     @Operation(
@@ -115,28 +115,23 @@ class DataController(val dataService: DataService)
             required = true,
             example = "Pulse"
         )
-        @RequestBody charsList: List<MeasurementListLight>
+        @RequestBody charsList: List<DataServiceMeasurements>,
+        request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-//        if (!facadeService.checkAuth())
-//        {
-//            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
-//        }
-//
-//        try
-//        {
-//            for (curChar in charsList)
-//            {
-//                // Отсылка класса в бд. Может совпадать
-//                facadeService.sendToBucket(bucket, curChar.measurementName, curChar.measurements)
-//            }
-//        }
-//        catch (exc: Exception)
-//        {
-//            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
-//        }
-//
-//        return ResponseEntity(null, HttpStatus.OK)
+        val token = jwtTokenUtil.getAllClaimsFromToken(
+            request.getHeader(
+                "Authorization"
+            ).split(" ")[1].trim()).toString()
+        try
+        {
+            dataService.sendMeasurements(token, bucket, charsList)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+        }
+
+        return ResponseEntity(null, HttpStatus.OK)
     }
 }

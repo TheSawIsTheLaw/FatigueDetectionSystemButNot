@@ -1,10 +1,10 @@
 package com.fdsystem.fdserver.domain.charrepository
 
-import java.time.Instant
-
+import com.fdsystem.fdserver.domain.MeasurementDTO
 
 interface CharRepositoryInterface
 {
-    fun get(subjectName: String, timeRange: Pair<Int, Int>, charName: String = ""): List<Triple<String, Any, Instant>>
-    fun add(subjectName: String, charName: String, chars: List<String>)
+    fun get(subjectName: String, timeRange: Pair<Int, Int>, charName: String
+    = ""): List<MeasurementDTO>
+    fun add(subjectName: String, chars: List<MeasurementDTO>)
 }
