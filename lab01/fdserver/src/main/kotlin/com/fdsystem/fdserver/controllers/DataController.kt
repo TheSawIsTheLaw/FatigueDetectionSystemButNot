@@ -22,11 +22,9 @@ class DataController(
     val jwtTokenUtil: JwtTokenUtil,
 )
 {
-
-    // Тут нужна ДТО для возврата. Получится лист дата классов со стрингом и инстантом, иначе очень плохо всё.
     @Operation(
-        summary = "Gets info about user",
-        description = "Gets necessary information from the bucket",
+        summary = "Gets info about the logged in user",
+        description = "Gets necessary information from the user's bucket",
         tags = ["Data operations"],
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -42,7 +40,7 @@ class DataController(
                 ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "401",
+                responseCode = "405",
                 description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -53,12 +51,14 @@ class DataController(
     )
     @GetMapping()
     fun getData(
-        @Parameter(
-            description = "Name of measurement to get from bucket",
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Names of measurements to get from bucket",
             required = true,
-            example = "ArterialPressure"
+            content = [
+                Content(schema = Schema(implementation = Array<String>::class))
+            ]
         )
-        @RequestParam("charnames") characteristicsNames: List<String>,
+        @RequestBody characteristicsNames: List<String>,
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
@@ -106,10 +106,12 @@ class DataController(
     )
     @PostMapping()
     fun addData(
-        @Parameter(
-            description = "Names of measurements to add and it's values",
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "List of measurements with values to send",
             required = true,
-            example = "Pulse"
+            content = [
+                Content(schema = Schema(implementation = Array<DataServiceMeasurements>::class))
+            ]
         )
         @RequestBody charsList: List<DataServiceMeasurements>,
         request: HttpServletRequest

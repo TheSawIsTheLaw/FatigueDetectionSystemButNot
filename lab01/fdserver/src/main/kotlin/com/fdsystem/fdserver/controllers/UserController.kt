@@ -5,6 +5,7 @@ import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.PasswordChangeEntity
+import com.fdsystem.fdserver.domain.PasswordChangeInformation
 import com.fdsystem.fdserver.domain.UserCredentials
 import com.fdsystem.fdserver.domain.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
@@ -17,6 +18,7 @@ import org.springframework.security.authentication.AuthenticationManager
 import org.springframework.security.authentication.BadCredentialsException
 import org.springframework.security.authentication.DisabledException
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
+import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import java.security.Principal
 import javax.servlet.http.HttpServletRequest
@@ -33,7 +35,6 @@ class UserController(
     val userDetailsService: JwtUserDetailsService
 )
 {
-    @Throws(java.lang.Exception::class)
     private fun authenticate(username: String, password: String)
     {
         try
@@ -54,7 +55,7 @@ class UserController(
 
     @Operation(
         summary = "Logs in user",
-        description = "Logs in user and uses his token for DB access",
+        description = "Logs the user into the system",
         tags = ["Authorization"],
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -75,8 +76,12 @@ class UserController(
     fun login(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User credentials", required = true, content = [
-                Content(schema = Schema(implementation =
-                UserCredentialsToAuth::class))
+                Content(
+                    schema = Schema(
+                        implementation =
+                        UserCredentialsToAuth::class
+                    )
+                )
             ]
         )
         @RequestBody authenticationRequest: UserCredentialsToAuth
@@ -91,11 +96,22 @@ class UserController(
         }
         catch (exc: Exception)
         {
-            ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseEntity(
+                "Lol, auth fucked up", HttpStatus
+                    .INTERNAL_SERVER_ERROR
+            )
         }
 
-        val userDetails = userDetailsService
-            .loadUserByUsername(authenticationRequest.username)
+        val userDetails: UserDetails
+        try
+        {
+            userDetails = userDetailsService
+                .loadUserByUsername(authenticationRequest.username)
+        }
+        catch (exc: Exception)
+        {
+            return ResponseEntity(null, HttpStatus.NOT_FOUND)
+        }
 
         val userDBToken = userService.getUserByUsername(
             authenticationRequest
@@ -153,17 +169,18 @@ class UserController(
         @RequestBody user: UserCredentials
     ): ResponseEntity<*>
     {
-        val outAnswer: String
+        val userRegistrationStatus: String
         try
         {
-            outAnswer = userService.register(user.username, user.password)
+            userRegistrationStatus =
+                userService.register(user.username, user.password)
         }
         catch (exc: Exception)
         {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
-        return if (outAnswer == "User already exists") ResponseEntity(
+        return if (userRegistrationStatus == "User already exists") ResponseEntity(
             null,
             HttpStatus.CONFLICT
         )
@@ -171,8 +188,8 @@ class UserController(
     }
 
     @Operation(
-        summary = "Change user info",
-        description = "Allows to change user's password",
+        summary = "Change user password",
+        description = "Allows to change current user's password",
         tags = ["Authorization"],
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -181,7 +198,11 @@ class UserController(
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404",
-                description = "Username not found or invalid password"
+                description = "Invalid password"
+            ),
+            io.swagger.v3.oas.annotations.responses.ApiResponse(
+                responseCode = "405",
+                description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
@@ -193,25 +214,29 @@ class UserController(
     fun changePassword(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Old and new passwords", required = true, content = [
-                Content(schema = Schema(implementation = PasswordChangeEntity::class))
+                Content(schema = Schema(implementation = PasswordChangeInformation::class))
             ]
         )
-        principal: Principal,
-        @RequestBody passwords: PasswordChangeEntity
+        @RequestBody changeInformation: PasswordChangeInformation,
+        request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        if (principal.name == null)
-            return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
+        val userJwtToken =
+            request.getHeader("Authorization")
+                .split(" ")[1]
+                .trim()
+
+        val username = jwtTokenUtil.getUsernameFromToken(userJwtToken)
 
         val out: Boolean
         try
         {
             out =
                 userService.changeUserInfo(
-                    principal.name,
-                    principal.name,
-                    passwords.oldPassword,
-                    passwords.newPassword
+                    username,
+                    username,
+                    changeInformation.oldPassword,
+                    changeInformation.newPassword
                 )
         }
         catch (exc: Exception)
@@ -226,14 +251,14 @@ class UserController(
         )
     }
 
-    @GetMapping("/lol")
-    fun testGet(request: HttpServletRequest): ResponseEntity<*>
-    {
-        return ResponseEntity(
-            jwtTokenUtil.getAllClaimsFromToken(
-                request.getHeader(
-                    "Authorization"
-                ).split(" ")[1].trim())["DBToken"], HttpStatus.OK
-        )
-    }
+//    @GetMapping("/lol")
+//    fun testGet(request: HttpServletRequest): ResponseEntity<*>
+//    {
+//        return ResponseEntity(
+//            jwtTokenUtil.getAllClaimsFromToken(
+//                request.getHeader(
+//                    "Authorization"
+//                ).split(" ")[1].trim())["DBToken"], HttpStatus.OK
+//        )
+//    }
 }

@@ -32,7 +32,7 @@ data class UserCredentialsToAuth(
     val username: String, val password: String
 )
 
-data class PasswordChangeEntity(
+data class PasswordChangeInformation(
     val oldPassword: String,
     val newPassword: String
 )
