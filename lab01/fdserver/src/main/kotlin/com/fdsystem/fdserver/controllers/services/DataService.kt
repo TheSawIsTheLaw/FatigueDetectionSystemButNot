@@ -30,12 +30,16 @@ class DataService
         return if (charRepository!!.checkHealth()) "Authorized" else "Error"
     }
 
-    fun getMeasurement(bucketName: String, charName: String): List<Pair<String, Instant>>
+    fun getMeasurement(
+        bucketName: String,
+        charName: String
+    ): List<Pair<String, Instant>>
     {
         val outList = mutableListOf<Pair<String, Instant>>()
         if (charRepository != null)
         {
-            val gotInformation = charRepository!!.get(bucketName, Pair(0, 0), charName)
+            val gotInformation =
+                charRepository!!.get(bucketName, Pair(0, 0), charName)
             for (i in gotInformation)
             {
                 outList.add(0, Pair(i.second.toString(), i.third))
@@ -45,7 +49,11 @@ class DataService
         return outList.toList()
     }
 
-    fun sendMeasurement(bucketName: String, charName: String, chars: List<String>)
+    fun sendMeasurement(
+        bucketName: String,
+        charName: String,
+        chars: List<String>
+    )
     {
         charRepository?.add(bucketName, charName, chars)
     }

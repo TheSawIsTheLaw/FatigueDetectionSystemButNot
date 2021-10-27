@@ -40,11 +40,15 @@ class UserController(
     {
         try
         {
-            authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
-        } catch (e: DisabledException)
+            authenticationManager.authenticate(
+                UsernamePasswordAuthenticationToken(username, password)
+            )
+        }
+        catch (e: DisabledException)
         {
             throw java.lang.Exception("USER_DISABLED", e)
-        } catch (e: BadCredentialsException)
+        }
+        catch (e: BadCredentialsException)
         {
             throw java.lang.Exception("INVALID_CREDENTIALS", e)
         }
@@ -81,8 +85,12 @@ class UserController(
     {
         try
         {
-            authenticate(authenticationRequest.username, authenticationRequest.password)
-        } catch (exc: Exception)
+            authenticate(
+                authenticationRequest.username,
+                authenticationRequest.password
+            )
+        }
+        catch (exc: Exception)
         {
             ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -146,12 +154,16 @@ class UserController(
         try
         {
             outAnswer = userService.register(user.username, user.password)
-        } catch (exc: Exception)
+        }
+        catch (exc: Exception)
         {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
-        return if (outAnswer == "User already exists") ResponseEntity(null, HttpStatus.CONFLICT)
+        return if (outAnswer == "User already exists") ResponseEntity(
+            null,
+            HttpStatus.CONFLICT
+        )
         else ResponseEntity(null, HttpStatus.OK)
     }
 
@@ -192,18 +204,34 @@ class UserController(
         try
         {
             out =
-                userService.changeUserInfo(principal.name, principal.name, passwords.oldPassword, passwords.newPassword)
-        } catch (exc: Exception)
+                userService.changeUserInfo(
+                    principal.name,
+                    principal.name,
+                    passwords.oldPassword,
+                    passwords.newPassword
+                )
+        }
+        catch (exc: Exception)
         {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
-        return if (out) ResponseEntity(null, HttpStatus.OK) else ResponseEntity(null, HttpStatus.CONFLICT)
+        return if (out) ResponseEntity(null, HttpStatus.OK)
+        else ResponseEntity(
+            null,
+            HttpStatus.CONFLICT
+        )
     }
 
     @GetMapping("/lol")
     fun testGet(request: HttpServletRequest): ResponseEntity<*>
     {
-        return ResponseEntity(jwtTokenUtil.getUsernameFromToken(request.getHeader("Authorization").split(" ")[1].trim()), HttpStatus.OK)
+        return ResponseEntity(
+            jwtTokenUtil.getUsernameFromToken(
+                request.getHeader(
+                    "Authorization"
+                ).split(" ")[1].trim()
+            ), HttpStatus.OK
+        )
     }
 }

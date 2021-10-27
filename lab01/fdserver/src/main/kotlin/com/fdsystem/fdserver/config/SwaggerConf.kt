@@ -18,9 +18,10 @@ class OpenApiConfig
         return OpenAPI()
             .components(Components())
             .info(
-                Info().title("FDSystem (in russian СРУ, it's funny) API").description(
-                    "All necessary operations for work in FDSystem. Welcome, subject ;-;"
-                )
+                Info().title("FDSystem (in russian СРУ, it's funny) API")
+                    .description(
+                        "All necessary operations for work in FDSystem. Welcome, subject ;-;"
+                    )
             )
     }
 }

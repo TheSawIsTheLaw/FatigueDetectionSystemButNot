@@ -2,9 +2,14 @@ package com.fdsystem.fdserver.data
 
 import org.jetbrains.exposed.sql.Table
 
-object UsersTable: Table()
+object UsersTable : Table()
 {
-    data class UserDTO(val id: Int, val username: String, val password: String, val dbToken: String)
+    data class UserDTO(
+        val id: Int,
+        val username: String,
+        val password: String,
+        val dbToken: String
+    )
 
     override val primaryKey: PrimaryKey
         get() = PrimaryKey(id)

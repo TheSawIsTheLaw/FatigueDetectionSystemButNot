@@ -8,7 +8,10 @@ import org.springframework.stereotype.Service
 @Service
 class UserAuthService
 {
-    private var userRepository = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
+    private var userRepository = UserRepositoryImpl(
+        NetworkConfig.postgresUsername,
+        NetworkConfig.postgresPassword
+    )
 
     fun register(username: String, password: String): String
     {
@@ -28,8 +31,18 @@ class UserAuthService
         return (!(token == "User doesn't exist" || token == "Wrong password"))
     }
 
-    fun changeUserInfo(oldUsername: String, newUsername: String, oldPassword: String, newPassword: String): Boolean
+    fun changeUserInfo(
+        oldUsername: String,
+        newUsername: String,
+        oldPassword: String,
+        newPassword: String
+    ): Boolean
     {
-        return userRepository.changePasswordAndUsername(oldUsername, newUsername, oldPassword, newPassword)
+        return userRepository.changePasswordAndUsername(
+            oldUsername,
+            newUsername,
+            oldPassword,
+            newPassword
+        )
     }
 }

@@ -29,10 +29,19 @@ class UserRepositoryImpl(
     postgresPassword_: String
 ) : UserRepositoryInterface
 {
-    private val connection = PostgresConnection(postgresUsername_, postgresPassword_, NetworkConfig.postgresURL)
+    private val connection = PostgresConnection(
+        postgresUsername_,
+        postgresPassword_,
+        NetworkConfig.postgresURL
+    )
 
     private fun mapToUserDTO(it: ResultRow) =
-        UsersTable.UserDTO(it[UsersTable.id], it[UsersTable.username], it[UsersTable.password], it[UsersTable.dbToken])
+        UsersTable.UserDTO(
+            it[UsersTable.id],
+            it[UsersTable.username],
+            it[UsersTable.password],
+            it[UsersTable.dbToken]
+        )
 
     override fun userExists(username: String): Boolean
     {
@@ -83,7 +92,11 @@ class UserRepositoryImpl(
         transaction(connection.getConnectionToDB())
         {
             select = UsersTable
-                .select { UsersTable.username.eq(username) and UsersTable.password.eq(password) }
+                .select {
+                    UsersTable.username.eq(username) and UsersTable.password.eq(
+                        password
+                    )
+                }
                 .map { mapToUserDTO(it) }
         }
 
@@ -94,7 +107,7 @@ class UserRepositoryImpl(
     {
         if (!userExists(username))
         {
-            return UserCredentials("","")
+            return UserCredentials("", "")
         }
 
         var select: List<UsersTable.UserDTO> = listOf()
@@ -144,7 +157,11 @@ class UserRepositoryImpl(
         var select: List<UsersTable.UserDTO> = listOf()
         transaction(connection.getConnectionToDB())
         {
-            select = UsersTable.select { UsersTable.username.eq(username) and UsersTable.password.eq(password) }
+            select = UsersTable.select {
+                UsersTable.username.eq(username) and UsersTable.password.eq(
+                    password
+                )
+            }
                 .map { mapToUserDTO(it) }
         }
 

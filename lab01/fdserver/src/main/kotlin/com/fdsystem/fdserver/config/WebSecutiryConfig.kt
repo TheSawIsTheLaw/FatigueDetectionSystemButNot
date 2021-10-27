@@ -39,7 +39,8 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter()
         // configure AuthenticationManager so that it knows from where to load
         // user for matching credentials
         // Use BCryptPasswordEncoder
-        auth.userDetailsService(jwtUserDetailsService).passwordEncoder(passwordEncoder())
+        auth.userDetailsService(jwtUserDetailsService)
+            .passwordEncoder(passwordEncoder())
     }
 
     @Bean
@@ -78,6 +79,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter()
             .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
 
         // Add a filter to validate the tokens with every request
-        httpSecurity.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter::class.java)
+        httpSecurity.addFilterBefore(
+            jwtRequestFilter,
+            UsernamePasswordAuthenticationFilter::class.java
+        )
     }
 }

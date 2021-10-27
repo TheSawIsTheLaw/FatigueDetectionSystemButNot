@@ -11,11 +11,17 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class JwtUserDetailsService : UserDetailsService {
+class JwtUserDetailsService : UserDetailsService
+{
     @Throws(UsernameNotFoundException::class)
-    override fun loadUserByUsername(username: String): UserDetails {
-        org.apache.commons.logging.LogFactory.getLog(javaClass).warn("We are in custom Detail Service")
-        val repo = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
+    override fun loadUserByUsername(username: String): UserDetails
+    {
+        org.apache.commons.logging.LogFactory.getLog(javaClass)
+            .warn("We are in custom Detail Service")
+        val repo = UserRepositoryImpl(
+            NetworkConfig.postgresUsername,
+            NetworkConfig.postgresPassword
+        )
         val user: UserCredentials
         if (repo.userExists(username))
         {

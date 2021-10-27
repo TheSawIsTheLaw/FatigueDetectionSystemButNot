@@ -40,10 +40,15 @@ class DataController(val dataService: DataService)
     )
     @GetMapping("/{bucket}")
     fun getData(
-        @Parameter(description = "User's bucket to get info from", required = true, example = "Yuriy Stroganov")
+        @Parameter(
+            description = "User's bucket to get info from",
+            required = true,
+            example = "Yuriy Stroganov"
+        )
         @PathVariable("bucket") bucket: String,
         @Parameter(
-            description = "Name of measurement to get from bucket", required = true,
+            description = "Name of measurement to get from bucket",
+            required = true,
             example = "ArterialPressure"
         )
         @RequestParam("charnames") characteristicsNames: List<String>,
@@ -99,9 +104,17 @@ class DataController(val dataService: DataService)
     )
     @PostMapping("/{bucket}")
     fun addData(
-        @Parameter(description = "User's bucket to add info", required = true, example = "Yuriy Stroganov")
+        @Parameter(
+            description = "User's bucket to add info",
+            required = true,
+            example = "Yuriy Stroganov"
+        )
         @PathVariable("bucket") bucket: String,
-        @Parameter(description = "Names of measurements to add and it's values", required = true, example = "Pulse")
+        @Parameter(
+            description = "Names of measurements to add and it's values",
+            required = true,
+            example = "Pulse"
+        )
         @RequestBody charsList: List<MeasurementListLight>
     ): ResponseEntity<*>
     {
