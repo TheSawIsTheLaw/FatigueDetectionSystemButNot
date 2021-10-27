@@ -107,22 +107,22 @@ class UserController(
     }
 
 
-    @Operation(
-        summary = "Logs out user",
-        description = "Logs out current user",
-        tags = ["Authorization"],
-        responses = [
-            io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "200",
-                description = "Successful operation"
-            )
-        ]
-    )
-    @PostMapping("/logout")
-    fun logout(response: HttpServletResponse): ResponseEntity<*>
-    {
-        return ResponseEntity(null, HttpStatus.OK)
-    }
+//    @Operation(
+//        summary = "Logs out user",
+//        description = "Logs out current user",
+//        tags = ["Authorization"],
+//        responses = [
+//            io.swagger.v3.oas.annotations.responses.ApiResponse(
+//                responseCode = "200",
+//                description = "Successful operation"
+//            )
+//        ]
+//    )
+//    @PostMapping("/logout")
+//    fun logout(response: HttpServletResponse): ResponseEntity<*>
+//    {
+//        return ResponseEntity(null, HttpStatus.OK)
+//    }
 
     @Operation(
         summary = "Register user",
