@@ -1,0 +1,21 @@
+POST http://localhost:9090/api/v1/user/registration
+Content-Type: application/json
+
+{
+  "username": "Lox",
+  "password": "123"
+}
+
+###
+
+POST http://localhost:9090/api/v1/user/login
+Content-Type: application/json
+
+{
+  "username": "Lox",
+  "password": "123"
+}
+
+###
+
+GET http://localhost:9090/api/v1/user/lol

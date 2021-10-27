@@ -16,7 +16,7 @@ class JwtUserDetailsService : UserDetailsService {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): UserDetails {
         val repo = UserRepositoryImpl(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword)
-        var user: UserCredentials
+        val user: UserCredentials
         if (repo.userExists(username))
         {
             user = repo.getUserByUsername(username)

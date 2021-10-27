@@ -12,37 +12,24 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
-import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.web.bind.annotation.*
+import org.springframework.web.context.request.RequestContextHolder
+import org.springframework.web.context.request.ServletRequestAttributes
 import java.security.Principal
 import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 
 @RestController
 @CrossOrigin
-@RequestMapping("/user")
+@RequestMapping("api/v1/user")
 class UserController(
     val userService: UserAuthService,
-    val authenticationManager: AuthenticationManager,
     val jwtTokenUtil: JwtTokenUtil,
     val userDetailsService: JwtUserDetailsService
-) {
-    @Throws(java.lang.Exception::class)
-    private fun authenticate(username: String, password: String) {
-        try {
-            authenticationManager.authenticate(UsernamePasswordAuthenticationToken(username, password))
-        } catch (e: DisabledException) {
-            throw java.lang.Exception("USER_DISABLED", e)
-        } catch (e: BadCredentialsException) {
-            throw java.lang.Exception("INVALID_CREDENTIALS", e)
-        }
-    }
-
+)
+{
     @Operation(
         summary = "Logs in user",
         description = "Logs in user and uses his token for DB access",
@@ -70,11 +57,19 @@ class UserController(
             ]
         )
         @RequestBody authenticationRequest: JwtRequest
-    ): ResponseEntity<*> {
-        authenticate(authenticationRequest.username, authenticationRequest.password)
+    ): ResponseEntity<*>
+    {
+        // Короче тут всё-таки нужен этот authenticationManager
+        // Видимо. Я хз.
+        if (!userService.userAuthSuccess(authenticationRequest.username, authenticationRequest.password))
+        {
+            return ResponseEntity(null, HttpStatus.NOT_FOUND)
+        }
+
         val userDetails = userDetailsService
             .loadUserByUsername(authenticationRequest.username)
         val token = jwtTokenUtil.generateToken(userDetails)
+
         return ResponseEntity.ok<Any>(JwtResponse(token))
     }
 
@@ -92,7 +87,8 @@ class UserController(
     )
 
     @PostMapping("/logout")
-    fun logout(response: HttpServletResponse): ResponseEntity<*> {
+    fun logout(response: HttpServletResponse): ResponseEntity<*>
+    {
         val authCookie = Cookie("FUCKING STUPID COOKIE uwu", null)
         authCookie.maxAge = 0
         authCookie.isHttpOnly = true
@@ -130,11 +126,14 @@ class UserController(
             ]
         )
         @RequestBody user: UserCredentials
-    ): ResponseEntity<*> {
+    ): ResponseEntity<*>
+    {
         val outAnswer: String
-        try {
+        try
+        {
             outAnswer = userService.register(user.username, user.password)
-        } catch (exc: Exception) {
+        } catch (exc: Exception)
+        {
             println(exc.toString())
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
@@ -172,15 +171,18 @@ class UserController(
         )
         principal: Principal,
         @RequestBody passwords: PasswordChangeEntity
-    ): ResponseEntity<*> {
+    ): ResponseEntity<*>
+    {
         if (principal.name == null)
             return ResponseEntity(null, HttpStatus.UNAUTHORIZED)
 
         val out: Boolean
-        try {
+        try
+        {
             out =
                 userService.changeUserInfo(principal.name, principal.name, passwords.oldPassword, passwords.newPassword)
-        } catch (exc: Exception) {
+        } catch (exc: Exception)
+        {
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -188,9 +190,9 @@ class UserController(
     }
 
     @GetMapping("/lol")
-    fun testGet(): String
+    fun testGet(request: HttpServletRequest): ResponseEntity<*>
     {
-        val userDetails = SecurityContextHolder.getContext().authentication.details
-        return userDetails.toString()
+        val request = (RequestContextHolder.currentRequestAttributes() as ServletRequestAttributes).request
+        return ResponseEntity(request.getHeader("Authorization"), HttpStatus.OK)
     }
 }

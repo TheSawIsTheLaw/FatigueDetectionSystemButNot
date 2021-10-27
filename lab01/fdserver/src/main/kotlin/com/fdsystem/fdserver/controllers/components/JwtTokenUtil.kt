@@ -9,6 +9,7 @@ import org.springframework.stereotype.Component
 import java.io.Serializable
 import java.util.*
 import java.util.function.Function
+import javax.crypto.KeyGenerator
 
 
 @Component
@@ -35,7 +36,7 @@ class JwtTokenUtil : Serializable {
 
     //for retrieveing any information from token we will need the secret key
     private fun getAllClaimsFromToken(token: String?): Claims {
-        return Jwts.parser().setSigningKey(secret).parseClaimsJws(token).body
+        return Jwts.parserBuilder().setSigningKey(secret).build().parseClaimsJws(token).body
     }
 
     //check if the token has expired
@@ -58,7 +59,7 @@ class JwtTokenUtil : Serializable {
     private fun doGenerateToken(claims: Map<String, Any?>, subject: String): String {
         return Jwts.builder().setClaims(claims).setSubject(subject).setIssuedAt(Date(System.currentTimeMillis()))
             .setExpiration(Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
-            .signWith(SignatureAlgorithm.HS512, secret).compact()
+            .signWith(SignatureAlgorithm.HS256, secret).compact()
     }
 
     //validate token

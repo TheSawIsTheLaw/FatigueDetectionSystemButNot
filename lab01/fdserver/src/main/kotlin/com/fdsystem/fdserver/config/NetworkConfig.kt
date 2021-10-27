@@ -5,7 +5,7 @@ object NetworkConfig
     // InfluxDB necessary info
     val influxdbURL: String = "http://influxdb:8086"
     val influxAdminToken: String =
-        "qG8iPh0Uz4aKw70lZQYzFoL0HL8oFuPuvfZQoDkMTj59c-efmnaTixWAkAT2pwtOyLYZFkGWgZPKSYFQX3-7fQ=="
+        "S2BxreP0buWYzaFZ3H6wXMdu1zuJddAon_fJzjFtq64oftC4_YaqhHlWLGobjD5n9D2dBfO3NCFAoV0EchXPOA=="
     val influxOrganization: String = "subjects"
 
     // Postgres necessary info

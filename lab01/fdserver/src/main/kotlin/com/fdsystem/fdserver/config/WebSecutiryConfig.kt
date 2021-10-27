@@ -57,7 +57,9 @@ class WebSecurityConfig : WebSecurityConfigurerAdapter() {
             .csrf()
             .disable() // don't authenticate this particular request
             .authorizeRequests()
-            .antMatchers("/user/login")
+            .antMatchers("/api/v1/user/login")
+            .permitAll()
+            .antMatchers("/api/v1/user/registration")
             .permitAll()
             .antMatchers("/swagger-ui")
             .permitAll()
