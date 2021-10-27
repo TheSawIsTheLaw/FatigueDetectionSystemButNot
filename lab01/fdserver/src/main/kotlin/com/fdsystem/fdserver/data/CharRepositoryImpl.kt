@@ -273,12 +273,16 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         apiString += "api/v2/authorizations"
 
         val orgID = getOrgIDByName(apiString, connection.getOrg())
-        // Тут требуется прописать все риды и райты + айдишники организации, походу
         val jsonContent = "{\n" +
                 "  \"status\": \"active\",\n" +
                 "  \"description\": \"$username token\",\n" +
                 "  \"orgID\": \"$orgID\",\n" +
                 "  \"permissions\": [\n" +
+                "    {\n" +
+                "      \"action\": \"read\",\n" +
+                "      \"resource\": {\n" +
+                "        \"type\": \"buckets\"\n" +
+                "      },\n" +
                 "    {\n" +
                 "      \"action\": \"write\",\n" +
                 "      \"resource\": {\n" +

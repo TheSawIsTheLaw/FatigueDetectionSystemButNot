@@ -33,8 +33,12 @@ class DataController(
                 responseCode = "200",
                 description = "Successful operation",
                 content = [
-                    Content(schema = Schema(implementation =
-                    Array<Array<DataServiceMeasurement>>::class))
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            Array<Array<DataServiceMeasurement>>::class
+                        )
+                    )
                 ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -47,14 +51,8 @@ class DataController(
             )
         ]
     )
-    @GetMapping("/{bucket}")
+    @GetMapping()
     fun getData(
-        @Parameter(
-            description = "User's bucket to get info from",
-            required = true,
-            example = "Yuriy Stroganov"
-        )
-        @PathVariable("bucket") bucket: String,
         @Parameter(
             description = "Name of measurement to get from bucket",
             required = true,
@@ -64,12 +62,16 @@ class DataController(
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        var outList: List<List<DataServiceMeasurement>> = listOf()
-        val token = jwtTokenUtil.getAllClaimsFromToken(
-            request.getHeader(
-                "Authorization"
-            ).split(" ")[1].trim()
-        )["DBToken"].toString()
+        val outList: List<List<DataServiceMeasurement>>
+        val userJwtToken =
+            request.getHeader("Authorization")
+                .split(" ")[1]
+                .trim()
+
+        val bucket = jwtTokenUtil.getUsernameFromToken(userJwtToken)
+        val token =
+            jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
+
         try
         {
             outList =
@@ -102,14 +104,8 @@ class DataController(
             )
         ]
     )
-    @PostMapping("/{bucket}")
+    @PostMapping()
     fun addData(
-        @Parameter(
-            description = "User's bucket to add info",
-            required = true,
-            example = "Yuriy Stroganov"
-        )
-        @PathVariable("bucket") bucket: String,
         @Parameter(
             description = "Names of measurements to add and it's values",
             required = true,
@@ -119,10 +115,15 @@ class DataController(
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        val token = jwtTokenUtil.getAllClaimsFromToken(
-            request.getHeader(
-                "Authorization"
-            ).split(" ")[1].trim()).toString()
+        val userJwtToken =
+            request.getHeader("Authorization")
+                .split(" ")[1]
+                .trim()
+
+        val bucket = jwtTokenUtil.getUsernameFromToken(userJwtToken)
+        val token =
+            jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
+
         try
         {
             dataService.sendMeasurements(token, bucket, charsList)
