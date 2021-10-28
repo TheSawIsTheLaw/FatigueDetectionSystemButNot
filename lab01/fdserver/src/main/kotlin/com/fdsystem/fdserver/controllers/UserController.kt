@@ -7,6 +7,7 @@ import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
+import com.fdsystem.fdserver.domain.service.user.UserCredentials
 import com.fdsystem.fdserver.domain.service.user.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
@@ -17,7 +18,6 @@ import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
-import javax.servlet.http.HttpServletRequest
 
 
 @RestController
@@ -125,14 +125,9 @@ class UserController(
         }
         catch (exc: UsernameNotFoundException)
         {
-            val responseMessage = ResponseMessage(
-                404,
-                "User not found or invalid password",
+            return ResponseCreator.userNotFoundResponse(
+                "User not found",
                 "If you are unregistered - try to go to /registration"
-            )
-            return ResponseEntity(
-                responseMessage,
-                HttpStatus.NOT_FOUND
             )
         }
         catch (exc: Exception)
@@ -143,9 +138,16 @@ class UserController(
             )
         }
 
+        if (authenticationRequest.password != userDetails.password)
+        {
+            return ResponseCreator.userNotFoundResponse(
+                "User not found or invalid password",
+                "If you are unregistered - try to go to /registration"
+            )
+        }
+
         val userDBToken = userService.getUserByUsername(
-            authenticationRequest
-                .username
+            authenticationRequest.username
         ).dbToken
 
         val token = jwtTokenUtil.generateToken(userDetails, userDBToken)

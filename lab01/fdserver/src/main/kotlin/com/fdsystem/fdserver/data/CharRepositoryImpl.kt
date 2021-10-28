@@ -3,7 +3,6 @@ package com.fdsystem.fdserver.data
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
-import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
@@ -11,7 +10,6 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
-import org.apache.juli.logging.LogFactory
 import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)

@@ -35,4 +35,16 @@ object ResponseCreator
             HttpStatus.OK
         )
     }
+
+    fun userNotFoundResponse(
+        message: String,
+        description: String
+    ): ResponseEntity<ResponseMessage>
+    {
+        return ResponseEntity(
+            prepareMessage(404, message, description),
+            HttpStatus.NOT_FOUND
+        )
+    }
+
 }

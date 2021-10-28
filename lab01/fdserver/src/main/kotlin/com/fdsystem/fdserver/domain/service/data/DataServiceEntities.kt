@@ -7,10 +7,6 @@ data class DataServiceMeasurement(
     val time: Instant
 )
 
-data class RequiredMeasurementsNames(
-    val listOfMeasurementsNames: List<String>
-)
-
 data class Measurement(
     val measurement: String,
     val values: List<String>

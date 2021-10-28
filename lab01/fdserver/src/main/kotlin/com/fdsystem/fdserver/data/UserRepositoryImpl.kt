@@ -3,7 +3,6 @@ package com.fdsystem.fdserver.data
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.dtos.PasswordChangeDTO
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
-import com.fdsystem.fdserver.domain.service.user.UserCredentials
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
@@ -79,7 +78,7 @@ class UserRepositoryImpl(
             UsersTable.insert {
                 it[UsersTable.username] = username
                 it[UsersTable.password] = password
-                it[UsersTable.dbToken] = newToken
+                it[dbToken] = newToken
             }
         }
 
