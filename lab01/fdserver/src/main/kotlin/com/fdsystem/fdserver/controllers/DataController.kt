@@ -12,6 +12,7 @@ import org.apache.commons.logging.LogFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+import java.util.logging.Logger
 import javax.servlet.http.HttpServletRequest
 
 @RestController
@@ -58,12 +59,12 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        RequiredMeasurementsNames::class
+                        Array<String>::class
                     )
                 )
             ]
         )
-        @RequestParam characteristicsNames: RequiredMeasurementsNames,
+        @RequestParam characteristicsNames: List<String>,
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
@@ -87,6 +88,11 @@ class DataController(
         }
         catch (exc: Exception)
         {
+            LogFactory.getLog(javaClass).error("FUCK")
+            LogFactory.getLog(javaClass).error(exc.javaClass)
+            LogFactory.getLog(javaClass).error(exc.stackTrace)
+            LogFactory.getLog(javaClass).error(exc.cause)
+            LogFactory.getLog(javaClass).error(exc.localizedMessage)
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
@@ -121,7 +127,7 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        MeasurementsToSend::class
+                        Array<String>::class
                     )
                 )]
         )

@@ -19,9 +19,6 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     private val connectionString = connectionString_
     private val token = token_
     private val org = org_
-    private var connection = InfluxDBClientKotlinFactory
-        .create(connectionString, token.toCharArray(), org)
-    private var writeApiConnection: InfluxDBClientKotlin? = null
 
     fun getConnectionURL(): String
     {
@@ -40,34 +37,21 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 
     fun getConnectionToDB(): InfluxDBClientKotlin
     {
-//        if (connection.health().status.toString() == "fail")
-//        {
-//            connection = InfluxDBClientKotlinFactory
-//                .create(connectionString, token.toCharArray(), org)
-//        }
-        return connection
+        return InfluxDBClientKotlinFactory.create(
+            connectionString, token
+                .toCharArray(), org
+        )
     }
 
     fun getConnectionWrite(bucketName: String): InfluxDBClientKotlin
     {
-//        if (writeApiConnection.health().status == HealthCheck.StatusEnum.FAIL)
-//        {
-        writeApiConnection?.close()
-
-        writeApiConnection = InfluxDBClientKotlinFactory
-            .create(connectionString, token.toCharArray(), org, bucketName)
-//        }
-        return writeApiConnection as InfluxDBClientKotlin
-    }
-
-    fun closeConnection()
-    {
-        connection.close()
-    }
-
-    fun closeWriteConnection()
-    {
-        writeApiConnection?.close()
+        return InfluxDBClientKotlinFactory
+            .create(
+                connectionString,
+                token.toCharArray(),
+                org,
+                bucketName
+            )
     }
 }
 
@@ -81,38 +65,32 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         charName: String
     ): List<MeasurementDTO>
     {
-        if (connection.getConnectionToDB()
-                .health().status == HealthCheck.StatusEnum.FAIL
-        ) // Исправить говно какое-то
-            return listOf()
-
         val outList: MutableList<MeasurementDTO> = mutableListOf()
-        val client = connection.getConnectionToDB()
-
-        val rng =
-            if (timeRange.second == 0) "start: ${timeRange.first}" else "start: ${timeRange.first}, stop: ${timeRange.second}}"
-        var query: String = "from(bucket: \"$subjectName\")\n" +
-                "|> range($rng)"
-        if (charName.isNotBlank())
-        {
-            query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == \"$charName\"))"
-        }
-        val result = client.getQueryKotlinApi().query(query)
-
-        runBlocking {
-            for (i in result)
+        connection.getConnectionToDB().use {
+            val rng =
+                if (timeRange.second == 0) "start: ${timeRange.first}" else "start: ${timeRange.first}, stop: ${timeRange.second}}"
+            var query: String = "from(bucket: \"$subjectName\")\n" +
+                    "|> range($rng)"
+            if (charName.isNotBlank())
             {
-                val curVal = i.values
-                outList.add(
-                    MeasurementDTO(
-                        curVal["_measurement"].toString(),
-                        curVal["_value"].toString(),
-                        curVal["_time"] as Instant
+                query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == \"$charName\"))"
+            }
+            val result = it.getQueryKotlinApi().query(query)
+
+            runBlocking {
+                for (i in result)
+                {
+                    val curVal = i.values
+                    outList.add(
+                        MeasurementDTO(
+                            curVal["_measurement"].toString(),
+                            curVal["_value"].toString(),
+                            curVal["_time"] as Instant
+                        )
                     )
-                )
+                }
             }
         }
-        connection.closeConnection()
 
         return outList.toList()
     }
@@ -220,19 +198,20 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             createBucket(subjectName)
         }
 
-        val client = connection.getConnectionWrite(subjectName)
-        val writeApi = client.getWriteKotlinApi()
+        connection.getConnectionWrite(subjectName).use {
+            val writeApi = it.getWriteKotlinApi()
 
-        val charName = chars.first().measurement
-        runBlocking {
-            for (i in chars)
-            {
-                writeApi.writeRecord("$charName $charName=${i.value}",
-                    WritePrecision.S)
+            val charName = chars.first().measurement
+            runBlocking {
+                for (i in chars)
+                {
+                    writeApi.writeRecord(
+                        "$charName $charName=${i.value}",
+                        WritePrecision.S
+                    )
+                }
             }
         }
-
-        connection.closeWriteConnection()
     }
 
 //    fun checkHealth(): Boolean
