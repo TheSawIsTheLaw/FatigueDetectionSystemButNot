@@ -274,23 +274,25 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val orgID = getOrgIDByName(apiString, connection.getOrg())
         val jsonContent = "{\n" +
-                "  \"status\": \"active\",\n" +
-                "  \"description\": \"$username token\",\n" +
-                "  \"orgID\": \"$orgID\",\n" +
-                "  \"permissions\": [\n" +
-                "    {\n" +
-                "      \"action\": \"read\",\n" +
-                "      \"resource\": {\n" +
-                "        \"type\": \"buckets\"\n" +
-                "      },\n" +
-                "    {\n" +
-                "      \"action\": \"write\",\n" +
-                "      \"resource\": {\n" +
-                "        \"type\": \"buckets\"\n" +
-                "      }\n" +
-                "    }\n" +
-                "  ]\n" +
-                "}"
+                "            \"description\": \"$username token\",\n" +
+                "            \"status\": \"active\",\n" +
+                "            \"orgID\": \"$orgID\",\n" +
+                "            \"permissions\": [\n" +
+                "            {\n" +
+                "                \"action\": \"read\",\n" +
+                "                \"resource\": {\n" +
+                "                \"type\": \"buckets\"\n" +
+                "            }\n" +
+                "            },\n" +
+                "            {\n" +
+                "                \"action\": \"write\",\n" +
+                "                \"resource\": {\n" +
+                "                \"type\": \"buckets\"\n" +
+                "            }\n" +
+                "            }\n" +
+                "            ]\n" +
+                "        }"
+
 
         val body = okhttp3.RequestBody.create(
             okhttp3.MediaType.parse("application/json"),

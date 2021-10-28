@@ -106,8 +106,12 @@ class DataController(
             description = "List of measurements with values to send",
             required = true,
             content = [
-                Content(schema = Schema(implementation = Array<DataServiceMeasurements>::class))
-            ]
+                Content(
+                    schema = Schema(
+                        implementation =
+                        Array<DataServiceMeasurements>::class
+                    )
+                )]
         )
         @RequestBody charsList: List<DataServiceMeasurements>,
         request: HttpServletRequest

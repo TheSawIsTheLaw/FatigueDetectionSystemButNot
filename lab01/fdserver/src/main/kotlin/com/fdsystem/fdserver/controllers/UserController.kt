@@ -5,6 +5,7 @@ import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.PasswordChangeInformation
+import com.fdsystem.fdserver.domain.UserAuth
 import com.fdsystem.fdserver.domain.UserCredentials
 import com.fdsystem.fdserver.domain.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
@@ -83,20 +84,20 @@ class UserController(
         @RequestBody authenticationRequest: UserCredentialsToAuth
     ): ResponseEntity<*>
     {
-        try
-        {
-            authenticate(
-                authenticationRequest.username,
-                authenticationRequest.password
-            )
-        }
-        catch (exc: Exception)
-        {
-            return ResponseEntity(
-                "Lol, auth fucked up", HttpStatus
-                    .INTERNAL_SERVER_ERROR
-            )
-        }
+//        try
+//        {
+//            authenticate(
+//                authenticationRequest.username,
+//                authenticationRequest.password
+//            )
+//        }
+//        catch (exc: Exception)
+//        {
+//            return ResponseEntity(
+//                "hm.", HttpStatus
+//                    .INTERNAL_SERVER_ERROR
+//            )
+//        }
 
         val userDetails: UserDetails
         try
@@ -159,10 +160,10 @@ class UserController(
     fun register(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User credentials", required = true, content = [
-                Content(schema = Schema(implementation = UserCredentials::class))
+                Content(schema = Schema(implementation = UserAuth::class))
             ]
         )
-        @RequestBody user: UserCredentials
+        @RequestBody user: UserAuth
     ): ResponseEntity<*>
     {
         val userRegistrationStatus: String

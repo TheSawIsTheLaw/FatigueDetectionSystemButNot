@@ -28,6 +28,10 @@ data class UserCredentials(
     val username: String, val password: String, val dbToken: String
 )
 
+data class UserAuth(
+    val username: String, val password: String
+)
+
 data class UserCredentialsToAuth(
     val username: String, val password: String
 )

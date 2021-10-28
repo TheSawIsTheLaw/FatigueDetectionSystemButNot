@@ -2,7 +2,7 @@ POST http://localhost:9090/api/v1/user/registration
 Content-Type: application/json
 
 {
-  "username": "222",
+  "username": "333",
   "password": "123"
 }
 
