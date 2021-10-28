@@ -1,7 +1,7 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
-import com.fdsystem.fdserver.domain.MeasurementDTO
+import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.influxdb.client.domain.HealthCheck
 import com.influxdb.client.domain.WritePrecision

@@ -2,9 +2,10 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
-import com.fdsystem.fdserver.domain.*
+import com.fdsystem.fdserver.domain.service.data.DataServiceMeasurement
+import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
+import com.fdsystem.fdserver.domain.service.data.RequiredMeasurementsNames
 import io.swagger.v3.oas.annotations.Operation
-import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
@@ -47,7 +48,7 @@ class DataController(
         ]
     )
     // Можно попробовать реквестить хедер и сразу из него брать токен
-    @GetMapping()
+    @GetMapping
     fun getData(
         @io.swagger.v3.oas.annotations.Parameter(
             description = "Names of measurements to get from bucket",
@@ -110,7 +111,7 @@ class DataController(
             )
         ]
     )
-    @PostMapping()
+    @PostMapping
     fun addData(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "List of measurements with values to send",

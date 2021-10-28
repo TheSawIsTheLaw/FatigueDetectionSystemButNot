@@ -1,10 +1,9 @@
 package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
-import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
-import com.fdsystem.fdserver.domain.UserCredentials
-import com.fdsystem.fdserver.domain.UserCredentialsToAuth
+import com.fdsystem.fdserver.domain.dtos.PasswordChangeDTO
+import com.fdsystem.fdserver.domain.service.user.*
 import org.springframework.stereotype.Service
 
 @Service
@@ -18,6 +17,7 @@ class UserAuthService
     fun register(user: UserCredentialsToAuth): String
     {
         val newToken = userRepository.registerUser(user.username, user.password)
+            .dbToken
 
         if (newToken.isEmpty())
         {
@@ -29,22 +29,20 @@ class UserAuthService
 
     fun userAuthSuccess(username: String, password: String): Boolean
     {
-        val token = userRepository.getUserToken(username, password)
+        val token = userRepository.getUserToken(username, password).dbToken
         return (!(token == "User doesn't exist" || token == "Wrong password"))
     }
 
     fun changeUserInfo(
-        oldUsername: String,
-        newUsername: String,
-        oldPassword: String,
-        newPassword: String
+        username: String,
+        userInfo: PasswordChangeInformation
     ): Boolean
     {
         return userRepository.changePasswordAndUsername(
-            oldUsername,
-            newUsername,
-            oldPassword,
-            newPassword
+            PasswordChangeDTO(
+                username, username,
+                userInfo.oldPassword, userInfo.newPassword
+            )
         )
     }
 
@@ -52,6 +50,8 @@ class UserAuthService
         username: String
     ): UserCredentials
     {
-        return userRepository.getUserByUsername(username)
+        val returnedDTO = userRepository.getUserByUsername(username)
+        return UserCredentials(returnedDTO.username, returnedDTO.password,
+            returnedDTO.dbToken)
     }
 }

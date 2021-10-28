@@ -1,0 +1,21 @@
+package com.fdsystem.fdserver.domain.service.data
+
+import java.time.Instant
+
+data class DataServiceMeasurement(
+    val value: String,
+    val time: Instant
+)
+
+data class RequiredMeasurementsNames(
+    val listOfMeasurementsNames: List<String>
+)
+
+data class Measurement(
+    val measurement: String,
+    val values: List<String>
+)
+
+data class MeasurementsToSend(
+    val measurements: List<Measurement>
+)

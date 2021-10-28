@@ -2,7 +2,8 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.*
+import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
+import com.fdsystem.fdserver.domain.service.data.*
 import org.springframework.stereotype.Service
 import java.time.Instant
 

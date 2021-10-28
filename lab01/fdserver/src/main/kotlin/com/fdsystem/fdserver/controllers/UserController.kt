@@ -4,17 +4,13 @@ import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
-import com.fdsystem.fdserver.domain.PasswordChangeInformation
-import com.fdsystem.fdserver.domain.UserCredentialsToAuth
+import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
+import com.fdsystem.fdserver.domain.service.user.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
-import org.springframework.security.authentication.AuthenticationManager
-import org.springframework.security.authentication.BadCredentialsException
-import org.springframework.security.authentication.DisabledException
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
@@ -25,7 +21,7 @@ import javax.servlet.http.HttpServletRequest
 @RequestMapping("api/v1/user")
 class UserController(
     val userService: UserAuthService,
-    val authenticationManager: AuthenticationManager,
+//    val authenticationManager: AuthenticationManager,
     val jwtTokenUtil: JwtTokenUtil,
     val userDetailsService: JwtUserDetailsService
 )
@@ -227,12 +223,7 @@ class UserController(
         try
         {
             out =
-                userService.changeUserInfo(
-                    username,
-                    username,
-                    changeInformation.oldPassword,
-                    changeInformation.newPassword
-                )
+                userService.changeUserInfo(username, changeInformation)
         }
         catch (exc: Exception)
         {
