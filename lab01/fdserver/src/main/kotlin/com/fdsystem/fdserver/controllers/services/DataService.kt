@@ -36,17 +36,21 @@ class DataService
         token: String,
         bucketName: String,
         requiredNames: List<String>
-    ): List<List<DataServiceMeasurement>>
+    ): List<MeasurementWithTime>
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
 
-        val outMeasurements: MutableList<List<DataServiceMeasurement>> =
+        val outMeasurements: MutableList<MeasurementWithTime> =
             mutableListOf()
 
         for (charName in requiredNames)
         {
             LogFactory.getLog(javaClass).error("Current charName: $charName")
-            outMeasurements.add(getMeasurement(bucketName, charName))
+            outMeasurements.add(
+                MeasurementWithTime(
+                    charName, getMeasurement(bucketName, charName)
+                )
+            )
         }
 
         LogFactory.getLog(javaClass).warn("All is ok, return from get method")

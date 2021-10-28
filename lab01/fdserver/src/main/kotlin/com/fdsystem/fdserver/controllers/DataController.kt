@@ -3,6 +3,7 @@ package com.fdsystem.fdserver.controllers
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.service.data.DataServiceMeasurement
+import com.fdsystem.fdserver.domain.service.data.MeasurementWithTime
 import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
 import com.fdsystem.fdserver.domain.service.data.RequiredMeasurementsNames
 import io.swagger.v3.oas.annotations.Operation
@@ -34,7 +35,7 @@ class DataController(
                     Content(
                         schema = Schema(
                             implementation =
-                            Array<Array<DataServiceMeasurement>>::class
+                            Array<MeasurementWithTime>::class
                         )
                     )
                 ]
@@ -68,7 +69,7 @@ class DataController(
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
-        val outList: List<List<DataServiceMeasurement>>
+        val outList: List<MeasurementWithTime>
         val userJwtToken =
             request.getHeader("Authorization")
                 .split(" ")[1]
@@ -88,11 +89,6 @@ class DataController(
         }
         catch (exc: Exception)
         {
-            LogFactory.getLog(javaClass).error("FUCK")
-            LogFactory.getLog(javaClass).error(exc.javaClass)
-            LogFactory.getLog(javaClass).error(exc.stackTrace)
-            LogFactory.getLog(javaClass).error(exc.cause)
-            LogFactory.getLog(javaClass).error(exc.localizedMessage)
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 

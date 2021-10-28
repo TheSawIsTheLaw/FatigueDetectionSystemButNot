@@ -16,6 +16,11 @@ data class Measurement(
     val values: List<String>
 )
 
+data class MeasurementWithTime(
+    val measurement: String,
+    val values: List<DataServiceMeasurement>
+)
+
 data class MeasurementsToSend(
     val measurements: List<Measurement>
 )
