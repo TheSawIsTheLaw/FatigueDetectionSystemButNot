@@ -39,7 +39,7 @@ class DataController(
                 ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "405",
+                responseCode = "401",
                 description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(

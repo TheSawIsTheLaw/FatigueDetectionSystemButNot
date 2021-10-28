@@ -59,7 +59,7 @@ class UserController(
                     Content(
                         schema = Schema(
                             implementation =
-                            String::class
+                            JwtResponse::class
                         )
                     )]
             ),
@@ -278,7 +278,7 @@ class UserController(
                     )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "405",
+                responseCode = "401",
                 description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
