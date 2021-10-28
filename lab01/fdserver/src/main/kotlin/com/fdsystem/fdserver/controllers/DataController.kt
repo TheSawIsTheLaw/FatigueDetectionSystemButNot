@@ -7,6 +7,8 @@ import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.data.MeasurementWithTime
 import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
+import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
@@ -70,14 +72,15 @@ class DataController(
             ]
         )
         @RequestParam characteristicsNames: List<String>,
-        request: HttpServletRequest
+        @Parameter(
+            description = "User JWToken",
+            required = true
+        )
+        @RequestHeader("Authorization") jwtToken: String
     ): ResponseEntity<*>
     {
         val outList: List<MeasurementWithTime>
-        val userJwtToken =
-            request.getHeader("Authorization")
-                .split(" ")[1]
-                .trim()
+        val userJwtToken = jwtToken.split(" ")[1].trim()
 
         val bucket = jwtTokenUtil.getUsernameFromToken(userJwtToken)
         val token =
@@ -149,13 +152,14 @@ class DataController(
                 )]
         )
         @RequestBody charsList: MeasurementsToSend,
-        request: HttpServletRequest
+        @Parameter(
+            description = "User JWToken",
+            required = true
+        )
+        @RequestHeader("Authorization") jwtToken: String
     ): ResponseEntity<*>
     {
-        val userJwtToken =
-            request.getHeader("Authorization")
-                .split(" ")[1]
-                .trim()
+        val userJwtToken = jwtToken.split(" ")[1].trim()
 
         val bucket = jwtTokenUtil.getUsernameFromToken(userJwtToken)
         val token =

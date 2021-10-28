@@ -9,6 +9,7 @@ import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
 import com.fdsystem.fdserver.domain.service.user.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
@@ -302,13 +303,14 @@ class UserController(
             ]
         )
         @RequestBody changeInformation: PasswordChangeInformation,
-        request: HttpServletRequest
+        @Parameter(
+            description = "User JWToken",
+            required = true
+        )
+        @RequestHeader("Authorization") jwtToken: String
     ): ResponseEntity<*>
     {
-        val userJwtToken =
-            request.getHeader("Authorization")
-                .split(" ")[1]
-                .trim()
+        val userJwtToken = jwtToken.split(" ")[1].trim()
 
         val username = jwtTokenUtil.getUsernameFromToken(userJwtToken)
 
