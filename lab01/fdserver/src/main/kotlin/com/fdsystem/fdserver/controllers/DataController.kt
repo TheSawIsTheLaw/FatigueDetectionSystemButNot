@@ -8,6 +8,7 @@ import com.fdsystem.fdserver.domain.service.data.RequiredMeasurementsNames
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import org.apache.commons.logging.LogFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
@@ -143,6 +144,7 @@ class DataController(
         }
         catch (exc: Exception)
         {
+            LogFactory.getLog(javaClass).error(exc.message)
             return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
         }
 

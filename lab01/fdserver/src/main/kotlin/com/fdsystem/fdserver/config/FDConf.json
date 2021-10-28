@@ -1,6 +1,6 @@
 {
   "influxdbURL": "http://influxdb:8086",
-  "influxAdminToken": "S2BxreP0buWYzaFZ3H6wXMdu1zuJddAon_fJzjFtq64oftC4_YaqhHlWLGobjD5n9D2dBfO3NCFAoV0EchXPOA==",
+  "influxAdminToken": "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==",
   "influxOrganization": "subjects",
   "postgresURL": "postgres:5432/users",
   "postgresUsername": "admin",

@@ -11,6 +11,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.juli.logging.LogFactory
 import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)
@@ -222,11 +223,12 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         val client = connection.getConnectionWrite(subjectName)
         val writeApi = client.getWriteKotlinApi()
 
-        val charName = chars[0].value
+        val charName = chars.first().measurement
         runBlocking {
             for (i in chars)
             {
-                writeApi.writeRecord("$charName value=$i", WritePrecision.S)
+                writeApi.writeRecord("$charName $charName=${i.value}",
+                    WritePrecision.S)
             }
         }
 

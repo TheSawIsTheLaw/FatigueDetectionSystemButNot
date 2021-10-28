@@ -4,6 +4,7 @@ import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.service.data.*
+import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -58,8 +59,9 @@ class DataService
     {
         charRepository.add(bucketName, chars.map {
             MeasurementDTO(
-                charName, it,
-                Instant.MIN
+                charName,
+                it,
+                Instant.EPOCH
             )
         })
     }
