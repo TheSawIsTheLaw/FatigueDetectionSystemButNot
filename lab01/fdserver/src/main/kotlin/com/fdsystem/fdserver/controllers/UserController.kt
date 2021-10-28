@@ -4,6 +4,8 @@ import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
+import com.fdsystem.fdserver.domain.response.ResponseCreator
+import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
 import com.fdsystem.fdserver.domain.service.user.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
@@ -12,6 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UserDetails
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
 import javax.servlet.http.HttpServletRequest
 
@@ -51,15 +54,36 @@ class UserController(
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
-                description = "Successful operation"
+                description = "Successful operation",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            String::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404",
-                description = "Username not found or invalid password"
+                description = "Username not found or invalid password",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
-                description = "Internal server error"
+                description = "Internal server error",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             )
         ]
     )
@@ -92,16 +116,30 @@ class UserController(
 //                    .INTERNAL_SERVER_ERROR
 //            )
 //        }
-
         val userDetails: UserDetails
         try
         {
             userDetails = userDetailsService
                 .loadUserByUsername(authenticationRequest.username)
         }
+        catch (exc: UsernameNotFoundException)
+        {
+            val responseMessage = ResponseMessage(
+                404,
+                "User not found or invalid password",
+                "If you are unregistered - try to go to /registration"
+            )
+            return ResponseEntity(
+                responseMessage,
+                HttpStatus.NOT_FOUND
+            )
+        }
         catch (exc: Exception)
         {
-            return ResponseEntity(null, HttpStatus.NOT_FOUND)
+            return ResponseCreator.internalServerErrorResponse(
+                "Something terrible with Postgres...",
+                "Try again later or send a message to a developer"
+            )
         }
 
         val userDBToken = userService.getUserByUsername(
@@ -112,7 +150,6 @@ class UserController(
         val token = jwtTokenUtil.generateToken(userDetails, userDBToken)
         return ResponseEntity.ok(JwtResponse(token))
     }
-
 
 //    @Operation(
 //        summary = "Logs out user",
@@ -138,15 +175,36 @@ class UserController(
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
-                description = "Successful operation"
+                description = "Successful operation",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "409",
-                description = "Username is already busy"
+                description = "Username is already busy",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
-                description = "Internal server error"
+                description = "Internal server error",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             )
         ]
     )
@@ -168,14 +226,28 @@ class UserController(
         }
         catch (exc: Exception)
         {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseCreator.internalServerErrorResponse(
+                "Auth server is dead :(",
+                "Let's dance on its grave!"
+            )
         }
 
-        return if (userRegistrationStatus == "User already exists") ResponseEntity(
-            null,
-            HttpStatus.CONFLICT
-        )
-        else ResponseEntity(null, HttpStatus.OK)
+        if (userRegistrationStatus == "User already exists")
+        {
+            val responseMessage = ResponseMessage(
+                409,
+                "User already exists",
+                "Try another username ;)"
+            )
+            return ResponseEntity(responseMessage, HttpStatus.CONFLICT)
+        }
+        else
+        {
+            return ResponseCreator.okResponse(
+                "Success!",
+                "You can now log into the system!"
+            )
+        }
     }
 
     @Operation(
@@ -185,11 +257,25 @@ class UserController(
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
-                description = "Successful operation"
+                description = "Successful operation",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "404",
-                description = "Invalid password"
+                description = "Invalid password",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "405",
@@ -197,7 +283,14 @@ class UserController(
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
-                description = "Internal server error"
+                description = "Internal server error",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             )
         ]
     )
@@ -222,19 +315,37 @@ class UserController(
         val out: Boolean
         try
         {
-            out =
-                userService.changeUserInfo(username, changeInformation)
+            out = userService.changeUserInfo(username, changeInformation)
         }
         catch (exc: Exception)
         {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+            val responseMessage = ResponseMessage(
+                500,
+                "Auth server is dead :(",
+                "Let's dance on its grave!"
+            )
+            return ResponseEntity(
+                responseMessage,
+                HttpStatus.INTERNAL_SERVER_ERROR
+            )
         }
 
-        return if (out) ResponseEntity(null, HttpStatus.OK)
-        else ResponseEntity(
-            null,
-            HttpStatus.CONFLICT
-        )
+        if (out)
+        {
+            return ResponseCreator.okResponse(
+                "Password changed successfully",
+                "It's your new life!.."
+            )
+        }
+        else
+        {
+            val responseMessage = ResponseMessage(
+                409,
+                "Password wasn't changed",
+                "Type your current password carefully"
+            )
+            return ResponseEntity(responseMessage, HttpStatus.CONFLICT)
+        }
     }
 
 //    @GetMapping("/lol")

@@ -2,18 +2,16 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
-import com.fdsystem.fdserver.domain.service.data.DataServiceMeasurement
+import com.fdsystem.fdserver.domain.response.ResponseCreator
+import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.data.MeasurementWithTime
 import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
-import com.fdsystem.fdserver.domain.service.data.RequiredMeasurementsNames
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
-import org.apache.commons.logging.LogFactory
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
-import java.util.logging.Logger
 import javax.servlet.http.HttpServletRequest
 
 @RestController
@@ -46,11 +44,17 @@ class DataController(
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
-                description = "Internal server error"
+                description = "Internal server error",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             )
         ]
     )
-    // Можно попробовать реквестить хедер и сразу из него брать токен
     @GetMapping
     fun getData(
         @io.swagger.v3.oas.annotations.Parameter(
@@ -89,7 +93,10 @@ class DataController(
         }
         catch (exc: Exception)
         {
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseCreator.internalServerErrorResponse(
+                "Data server is dead :(",
+                "Let's dance on its grave!"
+            )
         }
 
         return ResponseEntity(outList.toList(), HttpStatus.OK)
@@ -102,7 +109,14 @@ class DataController(
         responses = [
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "200",
-                description = "Successful operation"
+                description = "Successful operation",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "401",
@@ -110,7 +124,14 @@ class DataController(
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
                 responseCode = "500",
-                description = "Internal server error"
+                description = "Internal server error",
+                content = [
+                    Content(
+                        schema = Schema(
+                            implementation =
+                            ResponseMessage::class
+                        )
+                    )]
             )
         ]
     )
@@ -146,10 +167,15 @@ class DataController(
         }
         catch (exc: Exception)
         {
-            LogFactory.getLog(javaClass).error(exc.message)
-            return ResponseEntity(null, HttpStatus.INTERNAL_SERVER_ERROR)
+            return ResponseCreator.internalServerErrorResponse(
+                "Data server is dead :(",
+                "Let's dance on its grave!"
+            )
         }
 
-        return ResponseEntity(null, HttpStatus.OK)
+        return ResponseCreator.okResponse(
+            "Measurements were carefully sent",
+            "We know all about you now >:c"
+        )
     }
 }
