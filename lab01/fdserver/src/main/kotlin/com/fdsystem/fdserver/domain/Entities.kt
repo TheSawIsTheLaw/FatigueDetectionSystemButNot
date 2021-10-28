@@ -15,21 +15,17 @@ data class DataServiceMeasurement(
     val time: Instant
 )
 
-data class DataServiceMeasurementValue(
-    val value: String
+data class Measurement(
+    val measurement: String,
+    val values: List<String>
 )
 
-data class DataServiceMeasurements(
-    val measurement: String,
-    val values: List<DataServiceMeasurementValue>
+data class MeasurementsToSend(
+    val measurements: List<Measurement>
 )
 
 data class UserCredentials(
     val username: String, val password: String, val dbToken: String
-)
-
-data class UserAuth(
-    val username: String, val password: String
 )
 
 data class UserCredentialsToAuth(
@@ -39,4 +35,8 @@ data class UserCredentialsToAuth(
 data class PasswordChangeInformation(
     val oldPassword: String,
     val newPassword: String
+)
+
+data class RequiredMeasurementsNames(
+    val listOfMeasurementsNames: List<String>
 )

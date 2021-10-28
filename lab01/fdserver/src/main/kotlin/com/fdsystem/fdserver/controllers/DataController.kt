@@ -4,6 +4,7 @@ import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.*
 import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.headers.Header
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import org.springframework.http.HttpStatus
@@ -45,16 +46,22 @@ class DataController(
             )
         ]
     )
+    // Можно попробовать реквестить хедер и сразу из него брать токен
     @GetMapping()
     fun getData(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+        @io.swagger.v3.oas.annotations.Parameter(
             description = "Names of measurements to get from bucket",
             required = true,
             content = [
-                Content(schema = Schema(implementation = Array<String>::class))
+                Content(
+                    schema = Schema(
+                        implementation =
+                        RequiredMeasurementsNames::class
+                    )
+                )
             ]
         )
-        @RequestBody characteristicsNames: List<String>,
+        @RequestParam characteristicsNames: RequiredMeasurementsNames,
         request: HttpServletRequest
     ): ResponseEntity<*>
     {
@@ -71,7 +78,10 @@ class DataController(
         try
         {
             outList =
-                dataService.getMeasurements(token, bucket, characteristicsNames)
+                dataService.getMeasurements(
+                    token, bucket,
+                    characteristicsNames
+                )
         }
         catch (exc: Exception)
         {
@@ -109,11 +119,11 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        Array<DataServiceMeasurements>::class
+                        MeasurementsToSend::class
                     )
                 )]
         )
-        @RequestBody charsList: List<DataServiceMeasurements>,
+        @RequestBody charsList: MeasurementsToSend,
         request: HttpServletRequest
     ): ResponseEntity<*>
     {

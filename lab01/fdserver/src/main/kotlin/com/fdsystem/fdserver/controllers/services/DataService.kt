@@ -2,10 +2,7 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.DataServiceMeasurement
-import com.fdsystem.fdserver.domain.DataServiceMeasurementValue
-import com.fdsystem.fdserver.domain.DataServiceMeasurements
-import com.fdsystem.fdserver.domain.MeasurementDTO
+import com.fdsystem.fdserver.domain.*
 import org.springframework.stereotype.Service
 import java.time.Instant
 
@@ -36,7 +33,7 @@ class DataService
     fun getMeasurements(
         token: String,
         bucketName: String,
-        charNames: List<String>
+        requiredNames: RequiredMeasurementsNames
     ): List<List<DataServiceMeasurement>>
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
@@ -44,7 +41,7 @@ class DataService
         val outMeasurements: MutableList<List<DataServiceMeasurement>> =
             mutableListOf()
 
-        for (charName in charNames)
+        for (charName in requiredNames.listOfMeasurementsNames)
         {
             outMeasurements.add(getMeasurement(bucketName, charName))
         }
@@ -55,13 +52,12 @@ class DataService
     private fun sendMeasurement(
         bucketName: String,
         charName: String,
-        chars: List<DataServiceMeasurementValue>
+        chars: List<String>
     )
     {
         charRepository.add(bucketName, chars.map {
             MeasurementDTO(
-                charName, it
-                    .value,
+                charName, it,
                 Instant.MIN
             )
         })
@@ -70,12 +66,12 @@ class DataService
     fun sendMeasurements(
         token: String,
         bucketName: String,
-        chars: List<DataServiceMeasurements>
+        chars: MeasurementsToSend
     )
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
 
-        for (char in chars)
+        for (char in chars.measurements)
         {
             sendMeasurement(bucketName, char.measurement, char.values)
         }

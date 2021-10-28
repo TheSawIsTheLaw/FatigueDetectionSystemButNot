@@ -4,6 +4,7 @@ import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.UserCredentials
+import com.fdsystem.fdserver.domain.UserCredentialsToAuth
 import org.springframework.stereotype.Service
 
 @Service
@@ -14,9 +15,9 @@ class UserAuthService
         NetworkConfig.postgresPassword
     )
 
-    fun register(username: String, password: String): String
+    fun register(user: UserCredentialsToAuth): String
     {
-        val newToken = userRepository.registerUser(username, password)
+        val newToken = userRepository.registerUser(user.username, user.password)
 
         if (newToken.isEmpty())
         {

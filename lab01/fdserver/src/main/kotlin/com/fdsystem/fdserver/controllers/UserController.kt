@@ -5,8 +5,6 @@ import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.PasswordChangeInformation
-import com.fdsystem.fdserver.domain.UserAuth
-import com.fdsystem.fdserver.domain.UserCredentials
 import com.fdsystem.fdserver.domain.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -32,23 +30,23 @@ class UserController(
     val userDetailsService: JwtUserDetailsService
 )
 {
-    private fun authenticate(username: String, password: String)
-    {
-        try
-        {
-            authenticationManager.authenticate(
-                UsernamePasswordAuthenticationToken(username, password)
-            )
-        }
-        catch (e: DisabledException)
-        {
-            throw java.lang.Exception("USER_DISABLED", e)
-        }
-        catch (e: BadCredentialsException)
-        {
-            throw java.lang.Exception("INVALID_CREDENTIALS", e)
-        }
-    }
+//    private fun authenticate(username: String, password: String)
+//    {
+//        try
+//        {
+//            authenticationManager.authenticate(
+//                UsernamePasswordAuthenticationToken(username, password)
+//            )
+//        }
+//        catch (e: DisabledException)
+//        {
+//            throw java.lang.Exception("USER_DISABLED", e)
+//        }
+//        catch (e: BadCredentialsException)
+//        {
+//            throw java.lang.Exception("INVALID_CREDENTIALS", e)
+//        }
+//    }
 
     @Operation(
         summary = "Logs in user",
@@ -160,17 +158,17 @@ class UserController(
     fun register(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User credentials", required = true, content = [
-                Content(schema = Schema(implementation = UserAuth::class))
+                Content(schema = Schema(implementation = UserCredentialsToAuth::class))
             ]
         )
-        @RequestBody user: UserAuth
+        @RequestBody user: UserCredentialsToAuth
     ): ResponseEntity<*>
     {
         val userRegistrationStatus: String
         try
         {
             userRegistrationStatus =
-                userService.register(user.username, user.password)
+                userService.register(user)
         }
         catch (exc: Exception)
         {
