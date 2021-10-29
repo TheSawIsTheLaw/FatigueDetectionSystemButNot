@@ -106,7 +106,7 @@ class UserController(
             ]
         )
         @RequestBody authenticationRequest: UserCredentialsToAuth,
-        response: HttpServletResponse
+//        response: HttpServletResponse
     ): ResponseEntity<*>
     {
 //        try
@@ -157,13 +157,13 @@ class UserController(
         ).dbToken
 
         val token = jwtTokenUtil.generateToken(userDetails, userDBToken)
-        val jwtTokenCookie = Cookie("FDSystemAuth", token)
-        jwtTokenCookie.maxAge = 86400
-        jwtTokenCookie.secure = true
-        jwtTokenCookie.isHttpOnly = true
-        jwtTokenCookie.path = "/api/v1/data"
+//        val jwtTokenCookie = Cookie("FDSystemAuth", token)
+//        jwtTokenCookie.maxAge = 86400
+//        jwtTokenCookie.secure = true
+//        jwtTokenCookie.isHttpOnly = true
+//        jwtTokenCookie.path = "/api/v1/data"
 
-        response.addCookie(jwtTokenCookie)
+//        response.addCookie(jwtTokenCookie)
 
         return ResponseEntity.ok(JwtResponse(token))
     }
@@ -319,11 +319,16 @@ class UserController(
             ]
         )
         @RequestBody changeInformation: PasswordChangeInformation,
-        @Parameter(
+                @Parameter(
             description = "User JWToken",
             required = true
         )
-        @CookieValue("FDSystemAuth") jwtToken: String
+        @RequestHeader("Authorization") jwtToken: String
+//        @Parameter(
+//            description = "User JWToken",
+//            required = true
+//        )
+//        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val userJwtToken = jwtToken.split(" ")[1].trim()

@@ -6,6 +6,7 @@ import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.domain.service.data.MeasurementWithTime
 import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
+import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -74,7 +75,12 @@ class DataController(
             description = "User JWToken",
             required = true
         )
-        @CookieValue("FDSystemAuth") jwtToken: String
+        @RequestHeader("Authorization") jwtToken: String
+//        @Parameter(
+//            description = "User JWToken",
+//            required = true
+//        )
+//        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val outList: List<MeasurementWithTime>
@@ -154,7 +160,12 @@ class DataController(
             description = "User JWToken",
             required = true
         )
-        @CookieValue("FDSystemAuth") jwtToken: String
+        @RequestHeader("Authorization") jwtToken: String
+//        @Parameter(
+//            description = "User JWToken",
+//            required = true
+//        )
+//        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val userJwtToken = jwtToken.split(" ")[1].trim()

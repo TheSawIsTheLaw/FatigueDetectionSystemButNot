@@ -32,22 +32,14 @@ class JwtRequestFilter : OncePerRequestFilter()
         chain: FilterChain
     )
     {
-        logger.warn(request.cookies)
-        val cookie = if (request.cookies != null)
-        {
-            request.cookies.filter { it.name == "FDSystemAuth" }
-        }
-        else
-        {
-            listOf()
-        }
+        val requestTokenHeader = request.getHeader("Authorization")
         var username: String? = null
         var jwtToken: String? = null
         // JWT Token is in the form "Bearer token". Remove Bearer word and get
         // only the Token
-        if (cookie.isNotEmpty())
+        if (requestTokenHeader != null && requestTokenHeader.startsWith("Bearer "))
         {
-            jwtToken = cookie.first().value
+            jwtToken = requestTokenHeader.split(" ")[1].trim()
             try
             {
                 username = jwtTokenUtil!!.getUsernameFromToken(jwtToken)
@@ -64,7 +56,7 @@ class JwtRequestFilter : OncePerRequestFilter()
         }
         else
         {
-            logger.warn("No JWT cookie")
+            logger.warn("JWT Token does not begin with Bearer String")
         }
 
         // Once we get the token validate it.
