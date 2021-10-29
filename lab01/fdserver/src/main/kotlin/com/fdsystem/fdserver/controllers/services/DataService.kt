@@ -2,8 +2,8 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
-import com.fdsystem.fdserver.domain.service.data.*
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Service
 import java.time.Instant
@@ -22,32 +22,32 @@ class DataService
     private fun getMeasurement(
         bucketName: String,
         charName: String
-    ): List<DataServiceMeasurement>
+    ): List<DSMeasurement>
     {
         val gotInformation = charRepository.get(
             bucketName, Pair(0, 0),
             charName
         )
 
-        return gotInformation.map { DataServiceMeasurement(it.value, it.time) }
+        return gotInformation.map { DSMeasurement(it.value, it.time) }
     }
 
     fun getMeasurements(
         token: String,
         bucketName: String,
         requiredNames: List<String>
-    ): List<MeasurementWithTime>
+    ): List<DSMeasurementList>
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
 
-        val outMeasurements: MutableList<MeasurementWithTime> =
+        val outMeasurements: MutableList<DSMeasurementList> =
             mutableListOf()
 
         for (charName in requiredNames)
         {
             LogFactory.getLog(javaClass).error("Current charName: $charName")
             outMeasurements.add(
-                MeasurementWithTime(
+                DSMeasurementList(
                     charName, getMeasurement(bucketName, charName)
                 )
             )

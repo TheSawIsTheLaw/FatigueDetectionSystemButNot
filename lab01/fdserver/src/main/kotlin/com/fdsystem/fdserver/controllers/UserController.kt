@@ -4,11 +4,10 @@ import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
+import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
+import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
-import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
-import com.fdsystem.fdserver.domain.service.user.UserCredentials
-import com.fdsystem.fdserver.domain.service.user.UserCredentialsToAuth
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -100,12 +99,12 @@ class UserController(
                 Content(
                     schema = Schema(
                         implementation =
-                        UserCredentialsToAuth::class
+                        UserCredentialsDTO::class
                     )
                 )
             ]
         )
-        @RequestBody authenticationRequest: UserCredentialsToAuth,
+        @RequestBody authenticationRequest: UserCredentialsDTO,
 //        response: HttpServletResponse
     ): ResponseEntity<*>
     {
@@ -229,17 +228,22 @@ class UserController(
     fun register(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "User credentials", required = true, content = [
-                Content(schema = Schema(implementation = UserCredentialsToAuth::class))
+                Content(schema = Schema(implementation = UserCredentialsDTO::class))
             ]
         )
-        @RequestBody user: UserCredentialsToAuth
+        @RequestBody user: UserCredentialsDTO
     ): ResponseEntity<*>
     {
         val userRegistrationStatus: String
         try
         {
             userRegistrationStatus =
-                userService.register(user)
+                userService.register(
+                    UserCredentialsToAuth(
+                        user.username,
+                        user.password
+                    )
+                )
         }
         catch (exc: Exception)
         {
@@ -315,11 +319,15 @@ class UserController(
     fun changePassword(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Old and new passwords", required = true, content = [
-                Content(schema = Schema(implementation = PasswordChangeInformation::class))
+                Content(
+                    schema = Schema(
+                        implementation = NewPasswordDTO::class
+                    )
+                )
             ]
         )
-        @RequestBody changeInformation: PasswordChangeInformation,
-                @Parameter(
+        @RequestBody newPasswords: NewPasswordDTO,
+        @Parameter(
             description = "User JWToken",
             required = true
         )
@@ -338,7 +346,14 @@ class UserController(
         val out: Boolean
         try
         {
-            out = userService.changeUserInfo(username, changeInformation)
+            out = userService.changeUserInfo(
+                CredentialsToChange(
+                    username,
+                    username,
+                    newPasswords.oldPassword,
+                    newPasswords.newPassword
+                )
+            )
         }
         catch (exc: Exception)
         {

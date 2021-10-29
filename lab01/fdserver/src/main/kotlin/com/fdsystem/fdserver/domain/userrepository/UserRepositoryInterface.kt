@@ -14,9 +14,9 @@ interface UserRepositoryInterface
         credentialChangeInfo: USCredentialsChangeInfo
     ): Boolean
 
-    fun getUserByUsername(user: USUserCredentials): UserModel
+    fun getUserByUsername(user: USUserCredentials): USUserCredentials
 
-    fun registerUser(user: USUserCredentials): UserModel
+    fun registerUser(user: USUserCredentials): USUserCredentials
 
-    fun getUserToken(user: USUserCredentials): UserModel
+    fun getUserToken(user: USUserCredentials): USUserCredentials
 }

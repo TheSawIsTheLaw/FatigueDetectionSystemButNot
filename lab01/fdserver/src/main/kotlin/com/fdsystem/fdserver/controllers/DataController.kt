@@ -2,11 +2,9 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
+import com.fdsystem.fdserver.domain.dtos.*
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
-import com.fdsystem.fdserver.domain.service.data.MeasurementWithTime
-import com.fdsystem.fdserver.domain.service.data.MeasurementsToSend
-import com.fdsystem.fdserver.domain.service.user.PasswordChangeInformation
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
@@ -34,13 +32,13 @@ class DataController(
                     Content(
                         schema = Schema(
                             implementation =
-                            Array<MeasurementWithTime>::class
+                            ResponseMeasurementsDTO::class
                         )
                     )
                 ]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "401",
+                responseCode = "401, 405",
                 description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -65,12 +63,12 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        Array<String>::class
+                        MeasurementsNamesDTO::class
                     )
                 )
             ]
         )
-        @RequestParam characteristicsNames: List<String>,
+        @RequestParam measurementsNames: MeasurementsNamesDTO,
         @Parameter(
             description = "User JWToken",
             required = true
@@ -83,19 +81,19 @@ class DataController(
 //        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
-        val outList: List<MeasurementWithTime>
         val userJwtToken = jwtToken.split(" ")[1].trim()
 
         val bucket = jwtTokenUtil.getUsernameFromToken(userJwtToken)
         val token =
             jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
 
+        val outList: List<MeasurementDTO>
         try
         {
             outList =
                 dataService.getMeasurements(
                     token, bucket,
-                    characteristicsNames
+                    measurementsNames
                 )
         }
         catch (exc: Exception)
@@ -106,7 +104,7 @@ class DataController(
             )
         }
 
-        return ResponseEntity(outList.toList(), HttpStatus.OK)
+        return ResponseEntity(ResponseMeasurementsDTO(outList), HttpStatus.OK)
     }
 
     @Operation(
@@ -126,7 +124,7 @@ class DataController(
                     )]
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
-                responseCode = "401",
+                responseCode = "401, 405",
                 description = "Not authorized"
             ),
             io.swagger.v3.oas.annotations.responses.ApiResponse(
@@ -151,11 +149,11 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        Array<String>::class
+                        AcceptMeasurementsDTO::class
                     )
                 )]
         )
-        @RequestBody charsList: MeasurementsToSend,
+        @RequestBody measurementsList: AcceptMeasurementsDTO,
         @Parameter(
             description = "User JWToken",
             required = true
@@ -176,7 +174,7 @@ class DataController(
 
         try
         {
-            dataService.sendMeasurements(token, bucket, charsList)
+            dataService.sendMeasurements(token, bucket, )
         }
         catch (exc: Exception)
         {

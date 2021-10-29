@@ -2,8 +2,9 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.UserRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.PasswordChangeDTO
-import com.fdsystem.fdserver.domain.service.user.*
+import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
+import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
+import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import org.springframework.stereotype.Service
 
 @Service
@@ -14,7 +15,7 @@ class UserAuthService
         NetworkConfig.postgresPassword
     )
 
-    fun register(user: UserCredentialsToAuth): String
+    fun register(user: UserCredentialsDTO): String
     {
         val newToken = userRepository.registerUser(user.username, user.password)
             .dbToken
@@ -27,31 +28,26 @@ class UserAuthService
         return "Success"
     }
 
-    fun userAuthSuccess(username: String, password: String): Boolean
+    fun userAuthSuccess(user: UserCredentialsDTO): Boolean
     {
-        val token = userRepository.getUserToken(username, password).dbToken
+        val token = userRepository.getUserToken(user.username, user.password)
+            .dbToken
         return (!(token == "User doesn't exist" || token == "Wrong password"))
     }
 
-    fun changeUserInfo(
-        username: String,
-        userInfo: PasswordChangeInformation
-    ): Boolean
+    fun changeUserInfo(userInfo: NewPasswordDTOWithUsername): Boolean
     {
-        return userRepository.changePasswordAndUsername(
-            PasswordChangeDTO(
-                username, username,
-                userInfo.oldPassword, userInfo.newPassword
-            )
-        )
+        return userRepository.changePasswordAndUsername(userInfo)
     }
 
     fun getUserByUsername(
         username: String
-    ): UserCredentials
+    ): DSUserCredentials
     {
-        val returnedDTO = userRepository.getUserByUsername(username)
-        return UserCredentials(returnedDTO.username, returnedDTO.password,
-            returnedDTO.dbToken)
+        val userModel = userRepository.getUserByUsername(username)
+        return DSUserCredentials(
+            userModel.username, userModel.password,
+            userModel.dbToken
+        )
     }
 }

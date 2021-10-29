@@ -1,14 +1,11 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
-import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
-import com.fdsystem.fdserver.domain.models.UserModel
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
-import org.springframework.ui.Model
 
 class PostgresConnection(
     private val username: String,
@@ -62,12 +59,12 @@ class UserRepositoryImpl(
 
     override fun registerUser(
         user: USUserCredentials
-    ): UserModel
+    ): USUserCredentials
     {
         val username = user.username
         val password = user.password
 
-        val userWithoutToken = UserModel(username, password, "")
+        val userWithoutToken = USUserCredentials(username, password, "")
         if (userExists(username))
         {
             return userWithoutToken
@@ -88,7 +85,7 @@ class UserRepositoryImpl(
             }
         }
 
-        return UserModel(username, password, newToken)
+        return USUserCredentials(username, password, newToken)
     }
 
     override fun checkPassword(user: USUserCredentials): Boolean
@@ -113,11 +110,11 @@ class UserRepositoryImpl(
         return select.isNotEmpty()
     }
 
-    override fun getUserByUsername(user: USUserCredentials): UserModel
+    override fun getUserByUsername(user: USUserCredentials): USUserCredentials
     {
         if (!userExists(user.username))
         {
-            return UserModel("", "", "")
+            return USUserCredentials("", "", "")
         }
 
         var select: List<UsersTable.UserDTO> = listOf()
@@ -127,7 +124,7 @@ class UserRepositoryImpl(
                 .map { mapToUserDTO(it) }
         }
 
-        return UserModel(
+        return USUserCredentials(
             select[0].username, select[0].password,
             select[0].dbToken
         )
@@ -159,11 +156,11 @@ class UserRepositoryImpl(
 
     override fun getUserToken(
         user: USUserCredentials
-    ): UserModel
+    ): USUserCredentials
     {
         if (!userExists(user.username))
         {
-            return UserModel(user.username, user.password, "")
+            return USUserCredentials(user.username, user.password, "")
         }
 
         val username = user.username
@@ -182,10 +179,10 @@ class UserRepositoryImpl(
 
         if (select.isEmpty())
         {
-            return UserModel(username, password, "")
+            return USUserCredentials(username, password, "")
         }
 
-        return UserModel(username, password, select[0].dbToken)
+        return USUserCredentials(username, password, select[0].dbToken)
     }
 }
 

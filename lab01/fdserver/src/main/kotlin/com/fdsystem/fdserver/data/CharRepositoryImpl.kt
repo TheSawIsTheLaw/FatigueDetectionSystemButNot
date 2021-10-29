@@ -2,11 +2,7 @@ package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
-import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
-import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
-import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
-import com.fdsystem.fdserver.domain.models.CRMeasurement
-import com.fdsystem.fdserver.domain.models.UserModel
+import com.fdsystem.fdserver.domain.logicentities.*
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
@@ -47,13 +43,13 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 {
     private val connection = InfluxConnection(connectionString, token, org)
 
-    override fun get(dataAccessInfo: DSDataAccessInfo): List<CRMeasurement>
+    override fun get(dataAccessInfo: DSDataAccessInfo): List<DSMeasurement>
     {
         val timeRange = dataAccessInfo.timeRange
         val measurement = dataAccessInfo.measurementName
         val bucket = dataAccessInfo.bucketName
 
-        val outList: MutableList<CRMeasurement> = mutableListOf()
+        val outList: MutableList<DSMeasurement> = mutableListOf()
         connection.getConnectionToDB().use {
             var rng = "start: ${timeRange.first}"
             if (timeRange.second != 0)
@@ -75,7 +71,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
                 {
                     val curVal = i.values
                     outList.add(
-                        CRMeasurement(
+                        DSMeasurement(
                             curVal["_measurement"].toString(),
                             curVal["_value"].toString(),
                             curVal["_time"] as Instant
@@ -210,7 +206,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         }
     }
 
-    fun getNewTokenForUser(user: UserModel): String
+    fun getNewTokenForUser(user: USUserCredentials): String
     {
         val httpClient = OkHttpClient()
         var apiString = connection.connectionString
