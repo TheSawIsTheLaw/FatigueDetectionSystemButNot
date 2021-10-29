@@ -1,14 +1,12 @@
 package com.fdsystem.fdserver.domain.charrepository
 
-import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
+import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
+import com.fdsystem.fdserver.domain.models.CRMeasurement
 
 interface CharRepositoryInterface
 {
-    fun get(
-        subjectName: String,
-        timeRange: Pair<Int, Int>,
-        charName: String = ""
-    ): List<MeasurementDTO>
+    fun get(dataAccessInfo: DSDataAccessInfo): List<CRMeasurement>
 
-    fun add(subjectName: String, chars: List<MeasurementDTO>)
+    fun add(dataAddInfo: DSDataAddInfo)
 }

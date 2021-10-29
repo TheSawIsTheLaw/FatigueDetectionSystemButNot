@@ -3,6 +3,11 @@ package com.fdsystem.fdserver.data
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
+import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
+import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
+import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
+import com.fdsystem.fdserver.domain.models.CRMeasurement
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
@@ -14,24 +19,9 @@ import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)
 {
-    private val connectionString = connectionString_
-    private val token = token_
-    private val org = org_
-
-    fun getConnectionURL(): String
-    {
-        return connectionString
-    }
-
-    fun getToken(): String
-    {
-        return token
-    }
-
-    fun getOrg(): String
-    {
-        return org
-    }
+    val connectionString = connectionString_
+    val token = token_
+    val org = org_
 
     fun getConnectionToDB(): InfluxDBClientKotlin
     {
@@ -58,20 +48,26 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 {
     private val connection = InfluxConnection(connectionString, token, org)
 
-    override fun get(
-        subjectName: String, timeRange: Pair<Int, Int>,
-        charName: String
-    ): List<MeasurementDTO>
+    override fun get(dataAccessInfo: DSDataAccessInfo): List<CRMeasurement>
     {
-        val outList: MutableList<MeasurementDTO> = mutableListOf()
+        val timeRange = dataAccessInfo.timeRange
+        val measurement = dataAccessInfo.measurementName
+        val bucket = dataAccessInfo.bucketName
+
+        val outList: MutableList<CRMeasurement> = mutableListOf()
         connection.getConnectionToDB().use {
-            val rng =
-                if (timeRange.second == 0) "start: ${timeRange.first}" else "start: ${timeRange.first}, stop: ${timeRange.second}}"
-            var query: String = "from(bucket: \"$subjectName\")\n" +
-                    "|> range($rng)"
-            if (charName.isNotBlank())
+            var rng = "start: ${timeRange.first}"
+            if (timeRange.second != 0)
             {
-                query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == \"$charName\"))"
+                rng += ", stop: ${timeRange.second}}"
+            }
+
+            var query: String = "from(bucket: \"$bucket\")\n" +
+                    "|> range($rng)"
+            if (measurement.isNotBlank())
+            {
+                query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == " +
+                        "\"$measurement\"))"
             }
             val result = it.getQueryKotlinApi().query(query)
 
@@ -80,7 +76,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
                 {
                     val curVal = i.values
                     outList.add(
-                        MeasurementDTO(
+                        CRMeasurement(
                             curVal["_measurement"].toString(),
                             curVal["_value"].toString(),
                             curVal["_time"] as Instant
@@ -101,7 +97,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val request = Request.Builder()
             .url(urlWithParams)
-            .addHeader("Authorization", "Token ${connection.getToken()}")
+            .addHeader("Authorization", "Token ${connection.token}")
             .get()
             .build()
 
@@ -125,14 +121,14 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     private fun createBucket(subjectName: String)
     {
         val httpClient = OkHttpClient()
-        var apiString = connection.getConnectionURL()
+        var apiString = connection.connectionString
         if (apiString.last() != '/')
         {
             apiString += '/'
         }
         apiString += "api/v2/buckets"
 
-        val orgID = getOrgIDByName(apiString, connection.getOrg())
+        val orgID = getOrgIDByName(apiString, connection.org)
         val jsonContent = "{\n" +
                 "  \"orgID\": \"$orgID\",\n" +
                 "  \"name\": \"$subjectName\",\n" +
@@ -147,7 +143,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .url(apiString)
             .addHeader(
                 "Authorization",
-                "Token ${connection.getToken()}"
+                "Token ${connection.token}"
             )
             .post(body)
             .build()
@@ -159,7 +155,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     {
         val httpClient = OkHttpClient()
 
-        var apiString = connection.getConnectionURL()
+        var apiString = connection.connectionString
         if (apiString.last() != '/')
         {
             apiString += '/'
@@ -172,7 +168,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val request = Request.Builder()
             .url(urlWithParams)
-            .addHeader("Authorization", "Token ${connection.getToken()}")
+            .addHeader("Authorization", "Token ${connection.token}")
             .get()
             .build()
 
@@ -189,22 +185,25 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         return retVal
     }
 
-    override fun add(subjectName: String, chars: List<MeasurementDTO>)
+    override fun add(dataAddInfo: DSDataAddInfo)
     {
-        if (bucketNotExists(subjectName))
+        val bucket = dataAddInfo.bucket
+        val measurementList = dataAddInfo.measurementList
+
+        if (bucketNotExists(bucket))
         {
-            createBucket(subjectName)
+            createBucket(bucket)
         }
 
-        connection.getConnectionWrite(subjectName).use {
+        connection.getConnectionWrite(bucket).use {
             val writeApi = it.getWriteKotlinApi()
 
-            val charName = chars.first().measurement
             runBlocking {
-                for (i in chars)
+                val name = measurementList.name
+                for (i in measurementList.measurements)
                 {
                     writeApi.writeRecord(
-                        "$charName $charName=${i.value}",
+                        "$name $name=${i.value}",
                         WritePrecision.S
                     )
                 }
@@ -212,48 +211,19 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         }
     }
 
-//    fun checkHealth(): Boolean
-//    {
-//        val httpClient = OkHttpClient()
-//
-//        var apiString = connection.getConnectionURL()
-//        if (apiString.last() != '/')
-//        {
-//            apiString += '/'
-//        }
-//        apiString += "api/v2/buckets"
-//
-//        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
-//            .build()
-//
-//        val request = Request.Builder()
-//            .url(urlWithParams)
-//            .addHeader("Authorization", "Token ${connection.getToken()}")
-//            .get()
-//            .build()
-//
-//        val retVal: Boolean
-//        val response = httpClient.newCall(request).execute()
-//        response.use {
-//            retVal = response.body()!!.string().contains("\"buckets\":")
-//        }
-//
-//        return retVal
-//    }
-
-    fun getNewTokenForUser(username: String): String
+    fun getNewTokenForUser(user: DSUserCredentials): String
     {
         val httpClient = OkHttpClient()
-        var apiString = connection.getConnectionURL()
+        var apiString = connection.connectionString
         if (apiString.last() != '/')
         {
             apiString += '/'
         }
         apiString += "api/v2/authorizations"
 
-        val orgID = getOrgIDByName(apiString, connection.getOrg())
+        val orgID = getOrgIDByName(apiString, connection.org)
         val jsonContent = "{\n" +
-                "            \"description\": \"$username token\",\n" +
+                "            \"description\": \"${user.username} token\",\n" +
                 "            \"status\": \"active\",\n" +
                 "            \"orgID\": \"$orgID\",\n" +
                 "            \"permissions\": [\n" +
@@ -297,48 +267,33 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             ?: throw java.lang.Exception("Token was not created")
         return outBody.substring(regRes.range.first + 10, regRes.range.last)
     }
+}
 
-//??? Может понадобиться. Если понадобится - изменим метод и внесём туда "mode" с тем, что потребуется делать
-//    Только тут структура запроса неправильная
-//    fun getNewTokenForSender(username: String): String {
+//    fun checkHealth(): Boolean
+//    {
 //        val httpClient = OkHttpClient()
+//
 //        var apiString = connection.getConnectionURL()
-//        if (apiString.last() != '/') {
+//        if (apiString.last() != '/')
+//        {
 //            apiString += '/'
 //        }
-//        apiString += "api/v2/authorizations"
+//        apiString += "api/v2/buckets"
 //
-//        val orgID = getOrgIDByName(apiString, connection.getOrg())
-//        val jsonContent = "{\n" +
-//                "  \"description\": \"$username token\",\n" +
-//                "  \"orgID\": \"$orgID\",\n" +
-//                "  \"permissions\": [\n" +
-//                "    {\n" +
-//                "      \"action\": \"write\",\n" +
-//                "      \"resource\": {\n" +
-//                "        \"type\": \"buckets\",\n"
-//        "      }\n" +
-//                "    }\n" +
-//                "  ]\n" +
-//                "}"
-//        val body = okhttp3.RequestBody.create(okhttp3.MediaType.parse("application/json"), jsonContent)
-//
-//        val request = Request.Builder()
-//            .url(apiString)
-//            .addHeader(
-//                "Authorization",
-//                "Token ${NetworkConfig.influxAdminToken}"
-//            )
-//            .post(body)
+//        val urlWithParams = HttpUrl.parse(apiString)!!.newBuilder()
 //            .build()
 //
-//        var outBody: String
+//        val request = Request.Builder()
+//            .url(urlWithParams)
+//            .addHeader("Authorization", "Token ${connection.getToken()}")
+//            .get()
+//            .build()
 //
+//        val retVal: Boolean
 //        val response = httpClient.newCall(request).execute()
-//        response.use { outBody = response.body()!!.string() }
+//        response.use {
+//            retVal = response.body()!!.string().contains("\"buckets\":")
+//        }
 //
-//        val regex = "\"token\": \"[a-z0-9]+\"".toRegex()
-//        val regRes = regex.find(outBody) ?: throw java.lang.Exception("Token was not created")
-//        return outBody.substring(regRes.range.first + 10, regRes.range.last)
+//        return retVal
 //    }
-}
