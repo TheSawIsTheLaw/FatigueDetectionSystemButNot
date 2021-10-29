@@ -1,13 +1,12 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
-import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
-import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.models.CRMeasurement
+import com.fdsystem.fdserver.domain.models.UserModel
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
@@ -211,7 +210,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         }
     }
 
-    fun getNewTokenForUser(user: DSUserCredentials): String
+    fun getNewTokenForUser(user: UserModel): String
     {
         val httpClient = OkHttpClient()
         var apiString = connection.connectionString

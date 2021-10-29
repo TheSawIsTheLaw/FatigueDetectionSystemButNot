@@ -1,11 +1,14 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.NetworkConfig
-import com.fdsystem.fdserver.domain.dtos.PasswordChangeDTO
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
+import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
+import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
+import com.fdsystem.fdserver.domain.models.UserModel
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.ui.Model
 
 class PostgresConnection(
     private val username: String,
@@ -58,20 +61,23 @@ class UserRepositoryImpl(
 
 
     override fun registerUser(
-        username: String,
-        password: String
-    ): UserCredentialsDTO
+        user: USUserCredentials
+    ): UserModel
     {
+        val username = user.username
+        val password = user.password
+
+        val userWithoutToken = UserModel(username, password, "")
         if (userExists(username))
         {
-            return UserCredentialsDTO(username, password, "")
+            return userWithoutToken
         }
 
         val newToken = CharRepositoryImpl(
             NetworkConfig.influxdbURL,
             NetworkConfig.influxAdminToken,
             NetworkConfig.influxOrganization
-        ).getNewTokenForUser(username)
+        ).getNewTokenForUser(userWithoutToken)
 
         transaction(connection.getConnectionToDB())
         {
@@ -82,12 +88,12 @@ class UserRepositoryImpl(
             }
         }
 
-        return UserCredentialsDTO(username, password, newToken)
+        return UserModel(username, password, newToken)
     }
 
-    override fun checkPassword(username: String, password: String): Boolean
+    override fun checkPassword(user: USUserCredentials): Boolean
     {
-        if (!userExists(username))
+        if (!userExists(user.username))
         {
             return false
         }
@@ -97,8 +103,8 @@ class UserRepositoryImpl(
         {
             select = UsersTable
                 .select {
-                    UsersTable.username.eq(username) and UsersTable.password.eq(
-                        password
+                    UsersTable.username.eq(user.username) and UsersTable.password.eq(
+                        user.password
                     )
                 }
                 .map { mapToUserDTO(it) }
@@ -107,31 +113,31 @@ class UserRepositoryImpl(
         return select.isNotEmpty()
     }
 
-    override fun getUserByUsername(username: String): UserCredentialsDTO
+    override fun getUserByUsername(user: USUserCredentials): UserModel
     {
-        if (!userExists(username))
+        if (!userExists(user.username))
         {
-            return UserCredentialsDTO("", "", "")
+            return UserModel("", "", "")
         }
 
         var select: List<UsersTable.UserDTO> = listOf()
         transaction(connection.getConnectionToDB())
         {
-            select = UsersTable.select { UsersTable.username.eq(username) }
+            select = UsersTable.select { UsersTable.username.eq(user.username) }
                 .map { mapToUserDTO(it) }
         }
 
-        return UserCredentialsDTO(
+        return UserModel(
             select[0].username, select[0].password,
             select[0].dbToken
         )
     }
 
     override fun changePasswordAndUsername(
-        userInfo: PasswordChangeDTO
+        credentialChangeInfo: USCredentialsChangeInfo
     ): Boolean
     {
-        if (!userExists(userInfo.oldUsername))
+        if (!userExists(credentialChangeInfo.oldUsername))
         {
             return false
         }
@@ -139,12 +145,12 @@ class UserRepositoryImpl(
         transaction(connection.getConnectionToDB())
         {
             UsersTable.update({
-                UsersTable.username.eq(userInfo.oldUsername) and
-                        UsersTable.password.eq(userInfo.oldPassword)
+                UsersTable.username.eq(credentialChangeInfo.oldUsername) and
+                        UsersTable.password.eq(credentialChangeInfo.oldPassword)
             })
             {
-                it[username] = userInfo.newUsername
-                it[password] = userInfo.newPassword
+                it[username] = credentialChangeInfo.newUsername
+                it[password] = credentialChangeInfo.newPassword
             }
         }
 
@@ -152,14 +158,16 @@ class UserRepositoryImpl(
     }
 
     override fun getUserToken(
-        username: String,
-        password: String
-    ): UserCredentialsDTO
+        user: USUserCredentials
+    ): UserModel
     {
-        if (!userExists(username))
+        if (!userExists(user.username))
         {
-            return UserCredentialsDTO(username, password, "")
+            return UserModel(user.username, user.password, "")
         }
+
+        val username = user.username
+        val password = user.password
 
         var select: List<UsersTable.UserDTO> = listOf()
         transaction(connection.getConnectionToDB())
@@ -174,10 +182,10 @@ class UserRepositoryImpl(
 
         if (select.isEmpty())
         {
-            return UserCredentialsDTO(username, password, "")
+            return UserModel(username, password, "")
         }
 
-        return UserCredentialsDTO(username, password, select[0].dbToken)
+        return UserModel(username, password, select[0].dbToken)
     }
 }
 

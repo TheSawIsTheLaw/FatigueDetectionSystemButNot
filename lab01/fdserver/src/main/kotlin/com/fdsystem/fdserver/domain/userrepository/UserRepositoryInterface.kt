@@ -1,20 +1,22 @@
 package com.fdsystem.fdserver.domain.userrepository
 
-import com.fdsystem.fdserver.domain.dtos.PasswordChangeDTO
-import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
+import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
+import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
+import com.fdsystem.fdserver.domain.models.UserModel
 
 interface UserRepositoryInterface
 {
     fun userExists(username: String): Boolean
 
-    fun checkPassword(username: String, password: String): Boolean
+    fun checkPassword(user: USUserCredentials): Boolean
 
-    fun changePasswordAndUsername(userInfo: PasswordChangeDTO): Boolean
+    fun changePasswordAndUsername(
+        credentialChangeInfo: USCredentialsChangeInfo
+    ): Boolean
 
-    fun getUserByUsername(username: String): UserCredentialsDTO
+    fun getUserByUsername(user: USUserCredentials): UserModel
 
-    // returns Token
-    fun registerUser(username: String, password: String): UserCredentialsDTO
+    fun registerUser(user: USUserCredentials): UserModel
 
-    fun getUserToken(username: String, password: String): UserCredentialsDTO
+    fun getUserToken(user: USUserCredentials): UserModel
 }
