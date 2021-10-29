@@ -5,6 +5,7 @@ import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
 import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
+import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
@@ -237,13 +238,7 @@ class UserController(
         val userRegistrationStatus: String
         try
         {
-            userRegistrationStatus =
-                userService.register(
-                    UserCredentialsToAuth(
-                        user.username,
-                        user.password
-                    )
-                )
+            userRegistrationStatus = userService.register(user)
         }
         catch (exc: Exception)
         {
@@ -326,7 +321,7 @@ class UserController(
                 )
             ]
         )
-        @RequestBody newPasswords: NewPasswordDTO,
+        @RequestBody passwords: NewPasswordDTO,
         @Parameter(
             description = "User JWToken",
             required = true
@@ -347,12 +342,8 @@ class UserController(
         try
         {
             out = userService.changeUserInfo(
-                CredentialsToChange(
-                    username,
-                    username,
-                    newPasswords.oldPassword,
-                    newPasswords.newPassword
-                )
+                NewPasswordDTOWithUsername
+                    (username, passwords.oldPassword, passwords.newPassword)
             )
         }
         catch (exc: Exception)

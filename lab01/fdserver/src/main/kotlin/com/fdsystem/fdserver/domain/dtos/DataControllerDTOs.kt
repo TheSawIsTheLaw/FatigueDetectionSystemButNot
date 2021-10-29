@@ -25,6 +25,10 @@ data class AcceptMeasurementsDTO(
     val values: List<MeasurementDataWithoutTime>
 )
 
+data class AcceptMeasurementsListDTO(
+    val measurements: List<AcceptMeasurementsDTO>
+)
+
 data class MeasurementsNamesDTO(
     val measurementsNames: List<String>
 )

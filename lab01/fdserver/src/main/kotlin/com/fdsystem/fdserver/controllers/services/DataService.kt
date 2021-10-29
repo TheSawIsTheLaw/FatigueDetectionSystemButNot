@@ -2,6 +2,12 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
+import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsDTO
+import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
+import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
+import com.fdsystem.fdserver.domain.dtos.MeasurementsNamesDTO
+import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
+import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import org.apache.commons.logging.LogFactory
@@ -25,17 +31,20 @@ class DataService
     ): List<DSMeasurement>
     {
         val gotInformation = charRepository.get(
-            bucketName, Pair(0, 0),
-            charName
+            DSDataAccessInfo(
+                bucketName,
+                Pair(0, 0),
+                charName
+            )
         )
 
-        return gotInformation.map { DSMeasurement(it.value, it.time) }
+        return gotInformation.map { DSMeasurement(charName, it.value, it.time) }
     }
 
     fun getMeasurements(
         token: String,
         bucketName: String,
-        requiredNames: List<String>
+        requiredNames: MeasurementsNamesDTO
     ): List<DSMeasurementList>
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
@@ -43,7 +52,7 @@ class DataService
         val outMeasurements: MutableList<DSMeasurementList> =
             mutableListOf()
 
-        for (charName in requiredNames)
+        for (charName in requiredNames.measurementsNames)
         {
             LogFactory.getLog(javaClass).error("Current charName: $charName")
             outMeasurements.add(
@@ -60,29 +69,39 @@ class DataService
     private fun sendMeasurement(
         bucketName: String,
         charName: String,
-        chars: List<String>
+        chars: List<MeasurementDataWithoutTime>
     )
     {
-        charRepository.add(bucketName, chars.map {
-            MeasurementDTO(
-                charName,
-                it,
-                Instant.EPOCH
+        charRepository.add(
+            DSDataAddInfo(
+                bucketName, DSMeasurementList
+                    (
+                    charName,
+                    chars.map {
+                        DSMeasurement(
+                            charName,
+                            it.value,
+                            Instant.EPOCH
+                        )
+                    })
             )
-        })
+        )
     }
 
     fun sendMeasurements(
         token: String,
         bucketName: String,
-        chars: MeasurementsToSend
+        chars: AcceptMeasurementsListDTO
     )
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
 
-        for (char in chars.measurements)
+        for (measurement in chars.measurements)
         {
-            sendMeasurement(bucketName, char.measurement, char.values)
+            sendMeasurement(
+                bucketName, measurement.measurement, measurement
+                    .values
+            )
         }
     }
 }

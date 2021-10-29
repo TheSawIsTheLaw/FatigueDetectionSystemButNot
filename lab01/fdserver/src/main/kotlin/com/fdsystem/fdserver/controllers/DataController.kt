@@ -3,6 +3,8 @@ package com.fdsystem.fdserver.controllers
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.dtos.*
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
 import io.swagger.v3.oas.annotations.Operation
@@ -87,7 +89,7 @@ class DataController(
         val token =
             jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
 
-        val outList: List<MeasurementDTO>
+        val outList: List<DSMeasurementList>
         try
         {
             outList =
@@ -104,7 +106,17 @@ class DataController(
             )
         }
 
-        return ResponseEntity(ResponseMeasurementsDTO(outList), HttpStatus.OK)
+        // With these words, a real nightmare began on the Ukrainian train...
+        return ResponseEntity(
+            ResponseMeasurementsDTO(outList.map {
+                MeasurementDTO(it.name, it.measurements.map { innerIt ->
+                    MeasurementData(
+                        innerIt.value, innerIt.time
+                    )
+                })
+            }),
+            HttpStatus.OK
+        )
     }
 
     @Operation(
@@ -149,11 +161,11 @@ class DataController(
                 Content(
                     schema = Schema(
                         implementation =
-                        AcceptMeasurementsDTO::class
+                        AcceptMeasurementsListDTO::class
                     )
                 )]
         )
-        @RequestBody measurementsList: AcceptMeasurementsDTO,
+        @RequestBody measurementsList: AcceptMeasurementsListDTO,
         @Parameter(
             description = "User JWToken",
             required = true
@@ -174,7 +186,7 @@ class DataController(
 
         try
         {
-            dataService.sendMeasurements(token, bucket, )
+            dataService.sendMeasurements(token, bucket, measurementsList)
         }
         catch (exc: Exception)
         {
