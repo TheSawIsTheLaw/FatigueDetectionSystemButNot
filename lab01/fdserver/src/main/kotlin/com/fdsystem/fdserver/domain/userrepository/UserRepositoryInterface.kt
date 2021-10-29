@@ -2,7 +2,6 @@ package com.fdsystem.fdserver.domain.userrepository
 
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
-import com.fdsystem.fdserver.domain.models.UserModel
 
 interface UserRepositoryInterface
 {

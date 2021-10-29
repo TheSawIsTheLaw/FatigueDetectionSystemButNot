@@ -2,7 +2,6 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsDTO
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
 import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
 import com.fdsystem.fdserver.domain.dtos.MeasurementsNamesDTO
@@ -44,7 +43,7 @@ class DataService
     fun getMeasurements(
         token: String,
         bucketName: String,
-        requiredNames: MeasurementsNamesDTO
+        requiredNames: List<String>
     ): List<DSMeasurementList>
     {
         loginToInflux(token, NetworkConfig.influxOrganization)
@@ -52,7 +51,7 @@ class DataService
         val outMeasurements: MutableList<DSMeasurementList> =
             mutableListOf()
 
-        for (charName in requiredNames.measurementsNames)
+        for (charName in requiredNames)
         {
             LogFactory.getLog(javaClass).error("Current charName: $charName")
             outMeasurements.add(

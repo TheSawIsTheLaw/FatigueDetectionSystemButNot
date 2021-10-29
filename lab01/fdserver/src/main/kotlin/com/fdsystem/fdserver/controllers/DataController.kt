@@ -3,7 +3,6 @@ package com.fdsystem.fdserver.controllers
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.dtos.*
-import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.domain.response.ResponseCreator
 import com.fdsystem.fdserver.domain.response.ResponseMessage
@@ -64,13 +63,12 @@ class DataController(
             content = [
                 Content(
                     schema = Schema(
-                        implementation =
-                        MeasurementsNamesDTO::class
+                        implementation = Array<String>::class
                     )
                 )
             ]
         )
-        @RequestParam measurementsNames: MeasurementsNamesDTO,
+        @RequestParam measurementsNames: List<String>,
         @Parameter(
             description = "User JWToken",
             required = true

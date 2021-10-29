@@ -3,6 +3,7 @@ package com.fdsystem.fdserver.controllers.services
 import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
+import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UserDetailsService
@@ -22,10 +23,10 @@ class JwtUserDetailsService : UserDetailsService
             NetworkConfig.postgresUsername,
             NetworkConfig.postgresPassword
         )
-        val user: UserCredentialsDTO
+        val user: USUserCredentials
         if (repo.userExists(username))
         {
-            user = repo.getUserByUsername(username)
+            user = repo.getUserByUsername(USUserCredentials(username, "", ""))
         }
         else
         {
