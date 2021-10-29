@@ -1,111 +1,49 @@
-ab -n 3000 -c 100 http://localhost:9090/            ✔  04:57:08  
-
-This is ApacheBench, Version 2.3 <$Revision: 1879490 $>
-
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-
-
-Benchmarking localhost (be patient)
-
-Completed 300 requests
-
-Completed 600 requests
-
-Completed 900 requests
-
-Completed 1200 requests
-
-Completed 1500 requests
-
-Completed 1800 requests
-
-Completed 2100 requests
-
-Completed 2400 requests
-
-Completed 2700 requests
-
-Completed 3000 requests
-
-Finished 3000 requests
-
-
-
-
-
-Server Software:        nginx/1.21.3
-
+# На один сервер
+Итог запуска 30000 запросов с 1000 конкурирующих.
+```
+Server Software:        
 Server Hostname:        localhost
-
-Server Port:            9090
-
-
+Server Port:            8080
 
 Document Path:          /
+Document Length:        141 bytes
 
-Document Length:        280 bytes
-
-
-
-Concurrency Level:      100
-
-Time taken for tests:   0.208 seconds
-
-Complete requests:      3000
-
+Concurrency Level:      1000
+Time taken for tests:   3.625 seconds
+Complete requests:      30000
 Failed requests:        0
-
-Total transferred:      1593000 bytes
-
-HTML transferred:       840000 bytes
-
-Requests per second:    14433.97 [#/sec] (mean)
-
-Time per request:       6.928 [ms] (mean)
-
-Time per request:       0.069 [ms] (mean, across all concurrent requests)
-
-Transfer rate:          7484.80 [Kbytes/sec] received
-
-
+Non-2xx responses:      30000
+Total transferred:      14430000 bytes
+HTML transferred:       4230000 bytes
+Requests per second:    8275.36 [#/sec] (mean)
+Time per request:       120.841 [ms] (mean)
+Time per request:       0.121 [ms] (mean, across all concurrent requests)
+Transfer rate:          3887.15 [Kbytes/sec] received
 
 Connection Times (ms)
-
               min  mean[+/-sd] median   max
-
-Connect:        0    1   0.6      2       3
-
-Processing:     1    5   5.6      3      43
-
-Waiting:        1    5   5.6      3      43
-
-Total:          1    7   5.6      5      45
-
-WARNING: The median and mean for the initial connection time are not within a normal deviation
-
-        These results are probably not that reliable.
-
-
+Connect:        0   54 254.0      3    3189
+Processing:     3   57  42.1     45     360
+Waiting:        3   53  40.9     41     353
+Total:          5  111 257.5     52    3312
 
 Percentage of the requests served within a certain time (ms)
+  50%     52
+  66%     66
+  75%     79
+  80%     93
+  90%    146
+  95%    225
+  98%   1061
+  99%   1094
+ 100%   3312 (longest request)
+```
 
-  50%      5
-
-  66%      5
-
-  75%      6
-
-  80%      6
-
-  90%     12
-
-  95%     22
-
-  98%     26
-
-  99%     26
-
- 100%     45 (longest request)
+# На 3 сервера
+Круто. Сработал DDoSDeflate. Видимо. Я не знаю. За всё это время ничего, ни 
+единое приложение нормально не заработало. Я сдаюсь.
+```
+Benchmarking localhost (be patient)
+apr_socket_recv: Connection reset by peer (104)
+Total of 491 requests completed
+```
