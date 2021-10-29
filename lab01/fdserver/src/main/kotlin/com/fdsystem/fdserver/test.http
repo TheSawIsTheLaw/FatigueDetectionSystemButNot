@@ -2,9 +2,13 @@ POST http://localhost:9090/api/v1/user/registration
 Content-Type: application/json
 
 {
-  "username": "333",
-  "password": "123"
+  "username": "Romanov Alexey",
+  "password": "bullying"
 }
+
+###
+
+GET http://localhost:9090/api/v1/data?characteristicsNames=pulse,toparterialpressure
 
 ###
 
@@ -12,8 +16,8 @@ POST http://localhost:9090/api/v1/user/login
 Content-Type: application/json
 
 {
-  "username": "111",
-  "password": "123"
+  "username": "Romanov Alexey",
+  "password": "bullying"
 }
 
 ###

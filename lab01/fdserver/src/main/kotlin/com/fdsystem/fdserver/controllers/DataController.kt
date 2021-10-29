@@ -74,7 +74,7 @@ class DataController(
             description = "User JWToken",
             required = true
         )
-        @RequestHeader("Authorization") jwtToken: String
+        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val outList: List<MeasurementWithTime>
@@ -154,7 +154,7 @@ class DataController(
             description = "User JWToken",
             required = true
         )
-        @RequestHeader("Authorization") jwtToken: String
+        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val userJwtToken = jwtToken.split(" ")[1].trim()

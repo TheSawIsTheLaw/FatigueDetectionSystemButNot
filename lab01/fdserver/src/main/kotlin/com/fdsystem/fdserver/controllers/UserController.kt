@@ -13,11 +13,16 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.Parameter
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
+import org.springframework.http.HttpCookie
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import org.springframework.web.bind.annotation.*
+import java.net.URLEncoder
+import javax.servlet.http.Cookie
+import javax.servlet.http.HttpServletResponse
+import javax.servlet.http.HttpUtils
 
 
 @RestController
@@ -100,7 +105,8 @@ class UserController(
                 )
             ]
         )
-        @RequestBody authenticationRequest: UserCredentialsToAuth
+        @RequestBody authenticationRequest: UserCredentialsToAuth,
+        response: HttpServletResponse
     ): ResponseEntity<*>
     {
 //        try
@@ -151,6 +157,14 @@ class UserController(
         ).dbToken
 
         val token = jwtTokenUtil.generateToken(userDetails, userDBToken)
+        val jwtTokenCookie = Cookie("FDSystemAuth", token)
+        jwtTokenCookie.maxAge = 86400
+        jwtTokenCookie.secure = true
+        jwtTokenCookie.isHttpOnly = true
+        jwtTokenCookie.path = "/api/v1/data"
+
+        response.addCookie(jwtTokenCookie)
+
         return ResponseEntity.ok(JwtResponse(token))
     }
 
@@ -309,7 +323,7 @@ class UserController(
             description = "User JWToken",
             required = true
         )
-        @RequestHeader("Authorization") jwtToken: String
+        @CookieValue("FDSystemAuth") jwtToken: String
     ): ResponseEntity<*>
     {
         val userJwtToken = jwtToken.split(" ")[1].trim()
