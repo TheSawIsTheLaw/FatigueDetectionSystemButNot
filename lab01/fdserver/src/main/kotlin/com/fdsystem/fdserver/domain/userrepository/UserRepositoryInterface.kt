@@ -15,7 +15,7 @@ interface UserRepositoryInterface
 
     fun getUserByUsername(user: USUserCredentials): USUserCredentials
 
-    fun registerUser(user: USUserCredentials): USUserCredentials
+    fun registerUser(user: USUserCredentials): Boolean
 
     fun getUserToken(user: USUserCredentials): USUserCredentials
 }

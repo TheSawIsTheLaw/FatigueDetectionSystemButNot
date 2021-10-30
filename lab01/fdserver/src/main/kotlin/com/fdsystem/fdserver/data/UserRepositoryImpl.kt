@@ -1,11 +1,12 @@
 package com.fdsystem.fdserver.data
 
-import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.config.PostgresConfiguration
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.springframework.stereotype.Repository
 
 class PostgresConnection(
     private val username: String,
@@ -25,15 +26,15 @@ class PostgresConnection(
     }
 }
 
+@Repository
 class UserRepositoryImpl(
-    postgresUsername_: String,
-    postgresPassword_: String
+    private val config: PostgresConfiguration
 ) : UserRepositoryInterface
 {
     private val connection = PostgresConnection(
-        postgresUsername_,
-        postgresPassword_,
-        NetworkConfig.postgresURL
+        config.configData.postgresUsername,
+        config.configData.postgresPassword,
+        config.configData.postgresURL
     )
 
     private fun mapToUserDTO(it: ResultRow) =
@@ -59,33 +60,23 @@ class UserRepositoryImpl(
 
     override fun registerUser(
         user: USUserCredentials
-    ): USUserCredentials
+    ): Boolean
     {
-        val username = user.username
-        val password = user.password
-
-        val userWithoutToken = USUserCredentials(username, password, "")
-        if (userExists(username))
+        if (userExists(user.username))
         {
-            return userWithoutToken
+            return false
         }
-
-        val newToken = CharRepositoryImpl(
-            NetworkConfig.influxdbURL,
-            NetworkConfig.influxAdminToken,
-            NetworkConfig.influxOrganization
-        ).getNewTokenForUser(userWithoutToken)
 
         transaction(connection.getConnectionToDB())
         {
             UsersTable.insert {
-                it[UsersTable.username] = username
-                it[UsersTable.password] = password
-                it[dbToken] = newToken
+                it[username] = user.username
+                it[password] = user.password
+                it[dbToken] = user.dbToken
             }
         }
 
-        return USUserCredentials(username, password, newToken)
+        return true
     }
 
     override fun checkPassword(user: USUserCredentials): Boolean

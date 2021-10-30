@@ -6,6 +6,11 @@ data class USUserCredentials(
     val dbToken: String
 )
 
+data class TokenInformation(
+    val token: String,
+    val tokenID: String
+)
+
 data class USCredentialsChangeInfo(
     val oldUsername: String,
     val newUsername: String,

@@ -1,6 +1,6 @@
 package com.fdsystem.fdserver.controllers.services
 
-import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
@@ -10,26 +10,34 @@ import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.springframework.stereotype.Service
 
 @Service
-class UserAuthService
+class UserAuthService(
+    private val userRepository: UserRepositoryImpl,
+    private val influxRepository: CharRepositoryImpl
+)
 {
-    private var userRepository = UserRepositoryImpl(
-        NetworkConfig.postgresUsername,
-        NetworkConfig.postgresPassword
-    )
-
     fun register(user: UserCredentialsDTO): String
     {
-        val newToken = userRepository.registerUser(
-            USUserCredentials(
-                user
-                    .username, user.password, ""
-            )
+        val newToken = influxRepository.getNewTokenForUser(
+            USUserCredentials
+            (user.username, user.password, "")
         )
-            .dbToken
-
-        if (newToken.isEmpty())
+        try
         {
-            return "User already exists"
+            val registrationSuccess = userRepository.registerUser(
+                USUserCredentials(
+                    user
+                        .username, user.password, newToken.token
+                )
+            )
+            if (!registrationSuccess)
+            {
+                return "User already exists"
+            }
+        }
+        catch (exc: Exception)
+        {
+            influxRepository.deleteToken(newToken)
+            throw exc
         }
 
         return "Success"
@@ -61,8 +69,10 @@ class UserAuthService
         username: String
     ): DSUserCredentials
     {
-        val userModel = userRepository.getUserByUsername(USUserCredentials
-            (username, "", ""))
+        val userModel = userRepository.getUserByUsername(
+            USUserCredentials
+                (username, "", "")
+        )
         return DSUserCredentials(
             userModel.username, userModel.password,
             userModel.dbToken

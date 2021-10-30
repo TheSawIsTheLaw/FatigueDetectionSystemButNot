@@ -40,7 +40,7 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 }
 
 @Repository
-class CharRepositoryImpl(val config: InfluxdbConfiguration) :
+class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
     CharRepositoryInterface
 {
     override fun get(dataAccessInfo: DSDataAccessInfo): List<DSMeasurement>
@@ -221,7 +221,7 @@ class CharRepositoryImpl(val config: InfluxdbConfiguration) :
         }
     }
 
-    fun getNewTokenForUser(user: USUserCredentials): String
+    fun getNewTokenForUser(user: USUserCredentials): TokenInformation
     {
         val httpClient = OkHttpClient()
         var apiString = config.configData.influxdbURL
@@ -273,10 +273,40 @@ class CharRepositoryImpl(val config: InfluxdbConfiguration) :
         val response = httpClient.newCall(request).execute()
         response.use { outBody = response.body()!!.string() }
 
-        val regex = "\"token\": \"[^\"]*\"".toRegex()
-        val regRes = regex.find(outBody)
-            ?: throw java.lang.Exception("Token was not created")
-        return outBody.substring(regRes.range.first + 10, regRes.range.last)
+        var regex = "\"token\": \"[^\"]*\"".toRegex()
+        var regRes = regex.find(outBody) ?: throw Exception("Token parse error")
+
+        val newToken =
+            outBody.substring(regRes.range.first + 10, regRes.range.last)
+
+        regex = "\"id\": \"[^\"]*\"".toRegex()
+        regRes = regex.find(outBody) ?: throw Exception("ID parse error")
+        val tokenId =
+            outBody.substring(regRes.range.first + 7, regRes.range.last)
+
+        return TokenInformation(newToken, tokenId)
+    }
+
+    fun deleteToken(tokenToDelete: TokenInformation): Boolean
+    {
+        val httpClient = OkHttpClient()
+        var apiString = config.configData.influxdbURL
+        if (apiString.last() != '/')
+        {
+            apiString += '/'
+        }
+        apiString += "api/v2/authorizations/${tokenToDelete.tokenID}"
+
+        val request = Request.Builder()
+            .url(apiString)
+            .addHeader(
+                "Authorization",
+                "Token ${config.configData.influxdbAdminToken}"
+            )
+            .delete()
+            .build()
+
+        return (httpClient.newCall(request).execute().code() != 204)
     }
 }
 
