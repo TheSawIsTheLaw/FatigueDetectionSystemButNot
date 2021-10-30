@@ -12,23 +12,17 @@ import org.springframework.stereotype.Service
 import java.time.Instant
 
 @Service
-class DataService
+class DataService(private val charRepository: CharRepositoryImpl)
 {
-    private lateinit var charRepository: CharRepositoryImpl
-
-    private fun loginToInflux(token: String, org: String)
-    {
-        charRepository =
-            CharRepositoryImpl(NetworkConfig.influxdbURL, token, org)
-    }
-
     private fun getMeasurement(
+        token: String,
         bucketName: String,
         charName: String
     ): List<DSMeasurement>
     {
         val gotInformation = charRepository.get(
             DSDataAccessInfo(
+                token,
                 bucketName,
                 Pair(0, 0),
                 charName
@@ -44,8 +38,6 @@ class DataService
         requiredNames: List<String>
     ): List<DSMeasurementList>
     {
-        loginToInflux(token, NetworkConfig.influxOrganization)
-
         val outMeasurements: MutableList<DSMeasurementList> =
             mutableListOf()
 
@@ -64,6 +56,7 @@ class DataService
     }
 
     private fun sendMeasurement(
+        token: String,
         bucketName: String,
         charName: String,
         chars: List<MeasurementDataWithoutTime>
@@ -71,6 +64,7 @@ class DataService
     {
         charRepository.add(
             DSDataAddInfo(
+                token,
                 bucketName, DSMeasurementList
                     (
                     charName,
@@ -91,13 +85,11 @@ class DataService
         chars: AcceptMeasurementsListDTO
     )
     {
-        loginToInflux(token, NetworkConfig.influxOrganization)
-
         for (measurement in chars.measurements)
         {
             sendMeasurement(
-                bucketName, measurement.measurement, measurement
-                    .values
+                token, bucketName,
+                measurement.measurement, measurement.values
             )
         }
     }
