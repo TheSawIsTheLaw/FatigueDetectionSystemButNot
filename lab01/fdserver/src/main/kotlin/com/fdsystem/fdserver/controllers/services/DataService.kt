@@ -1,10 +1,8 @@
 package com.fdsystem.fdserver.controllers.services
 
-import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
 import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
-import com.fdsystem.fdserver.domain.dtos.MeasurementsNamesDTO
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement

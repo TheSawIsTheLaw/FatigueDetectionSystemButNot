@@ -28,7 +28,7 @@ import javax.servlet.http.HttpUtils
 @RestController
 @CrossOrigin
 @RequestMapping("api/v1/user")
-class UserController(
+class АНТИАНТИПРИВИЧОНИКUserController(
     val userService: UserAuthService,
 //    val authenticationManager: AuthenticationManager,
     val jwtTokenUtil: JwtTokenUtil,

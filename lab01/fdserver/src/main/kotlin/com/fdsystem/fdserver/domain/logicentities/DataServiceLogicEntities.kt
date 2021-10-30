@@ -14,12 +14,14 @@ data class DSMeasurement(
 )
 
 data class DSDataAccessInfo(
+    val token: String,
     val bucketName: String,
     val timeRange: Pair<Int, Int>,
     val measurementName: String
 )
 
 data class DSDataAddInfo(
+    val token: String,
     val bucket: String,
     val measurementList: DSMeasurementList
 )

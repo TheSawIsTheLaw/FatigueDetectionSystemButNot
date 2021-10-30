@@ -1,6 +1,6 @@
 package com.fdsystem.fdserver.data
 
-import com.fdsystem.fdserver.config.NetworkConfig
+import com.fdsystem.fdserver.config.InfluxdbConfiguration
 import com.fdsystem.fdserver.domain.charrepository.CharRepositoryInterface
 import com.fdsystem.fdserver.domain.logicentities.*
 import com.influxdb.client.domain.WritePrecision
@@ -10,13 +10,14 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.springframework.stereotype.Repository
 import java.time.Instant
 
 class InfluxConnection(connectionString_: String, token_: String, org_: String)
 {
-    val connectionString = connectionString_
-    val token = token_
-    val org = org_
+    private val connectionString = connectionString_
+    private val token = token_
+    private val org = org_
 
     fun getConnectionToDB(): InfluxDBClientKotlin
     {
@@ -38,11 +39,10 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
     }
 }
 
-class CharRepositoryImpl(connectionString: String, token: String, org: String) :
+@Repository
+class CharRepositoryImpl(val config: InfluxdbConfiguration) :
     CharRepositoryInterface
 {
-    private val connection = InfluxConnection(connectionString, token, org)
-
     override fun get(dataAccessInfo: DSDataAccessInfo): List<DSMeasurement>
     {
         val timeRange = dataAccessInfo.timeRange
@@ -50,7 +50,11 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
         val bucket = dataAccessInfo.bucketName
 
         val outList: MutableList<DSMeasurement> = mutableListOf()
-        connection.getConnectionToDB().use {
+        InfluxConnection(
+            config.configData.influxdbURL,
+            dataAccessInfo.token,
+            config.configData.influxdbOrganization
+        ).getConnectionToDB().use {
             var rng = "start: ${timeRange.first}"
             if (timeRange.second != 0)
             {
@@ -92,7 +96,10 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val request = Request.Builder()
             .url(urlWithParams)
-            .addHeader("Authorization", "Token ${connection.token}")
+            .addHeader(
+                "Authorization",
+                "Token ${config.configData.influxdbAdminToken}"
+            )
             .get()
             .build()
 
@@ -116,14 +123,15 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     private fun createBucket(subjectName: String)
     {
         val httpClient = OkHttpClient()
-        var apiString = connection.connectionString
+        var apiString = config.configData.influxdbURL
         if (apiString.last() != '/')
         {
             apiString += '/'
         }
         apiString += "api/v2/buckets"
 
-        val orgID = getOrgIDByName(apiString, connection.org)
+        val orgID =
+            getOrgIDByName(apiString, config.configData.influxdbOrganization)
         val jsonContent = "{\n" +
                 "  \"orgID\": \"$orgID\",\n" +
                 "  \"name\": \"$subjectName\",\n" +
@@ -138,7 +146,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .url(apiString)
             .addHeader(
                 "Authorization",
-                "Token ${connection.token}"
+                "Token ${config.configData.influxdbAdminToken}"
             )
             .post(body)
             .build()
@@ -150,7 +158,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     {
         val httpClient = OkHttpClient()
 
-        var apiString = connection.connectionString
+        var apiString = config.configData.influxdbURL
         if (apiString.last() != '/')
         {
             apiString += '/'
@@ -163,7 +171,10 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
 
         val request = Request.Builder()
             .url(urlWithParams)
-            .addHeader("Authorization", "Token ${connection.token}")
+            .addHeader(
+                "Authorization",
+                "Token ${config.configData.influxdbAdminToken}"
+            )
             .get()
             .build()
 
@@ -190,7 +201,11 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             createBucket(bucket)
         }
 
-        connection.getConnectionWrite(bucket).use {
+        InfluxConnection(
+            config.configData.influxdbURL,
+            dataAddInfo.token,
+            config.configData.influxdbOrganization
+        ).getConnectionWrite(bucket).use {
             val writeApi = it.getWriteKotlinApi()
 
             runBlocking {
@@ -209,14 +224,15 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
     fun getNewTokenForUser(user: USUserCredentials): String
     {
         val httpClient = OkHttpClient()
-        var apiString = connection.connectionString
+        var apiString = config.configData.influxdbURL
         if (apiString.last() != '/')
         {
             apiString += '/'
         }
         apiString += "api/v2/authorizations"
 
-        val orgID = getOrgIDByName(apiString, connection.org)
+        val orgID =
+            getOrgIDByName(apiString, config.configData.influxdbOrganization)
         val jsonContent = "{\n" +
                 "            \"description\": \"${user.username} token\",\n" +
                 "            \"status\": \"active\",\n" +
@@ -247,7 +263,7 @@ class CharRepositoryImpl(connectionString: String, token: String, org: String) :
             .url(apiString)
             .addHeader(
                 "Authorization",
-                "Token ${NetworkConfig.influxAdminToken}"
+                "Token ${config.configData.influxdbAdminToken}"
             )
             .post(body)
             .build()
