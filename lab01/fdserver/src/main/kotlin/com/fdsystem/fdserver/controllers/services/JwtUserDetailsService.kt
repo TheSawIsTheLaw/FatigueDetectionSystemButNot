@@ -1,8 +1,6 @@
 package com.fdsystem.fdserver.controllers.services
 
-import com.fdsystem.fdserver.config.NetworkConfig
 import com.fdsystem.fdserver.data.UserRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
@@ -12,21 +10,16 @@ import org.springframework.stereotype.Service
 
 
 @Service
-class JwtUserDetailsService : UserDetailsService
+class JwtUserDetailsService(private val userRepository: UserRepositoryImpl) :
+    UserDetailsService
 {
     @Throws(UsernameNotFoundException::class)
     override fun loadUserByUsername(username: String): (UserDetails)
     {
-        org.apache.commons.logging.LogFactory.getLog(javaClass)
-            .warn("We are in custom Detail Service")
-        val repo = UserRepositoryImpl(
-            NetworkConfig.postgresUsername,
-            NetworkConfig.postgresPassword
-        )
         val user: USUserCredentials
-        if (repo.userExists(username))
+        if (userRepository.userExists(username))
         {
-            user = repo.getUserByUsername(USUserCredentials(username, "", ""))
+            user = userRepository.getUserByUsername(USUserCredentials(username, "", ""))
         }
         else
         {
