@@ -3,6 +3,7 @@ package com.fdsystem.fdserver.controllers.services
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
@@ -11,12 +12,23 @@ import java.time.Instant
 
 internal class DataServiceTest
 {
+    // Все экспекты либо засандалить в подготовку данных,
+    // либо сделать отдельный дата класс...
     val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
-    private val gotMeasurementsGetTest: List<DSMeasurement> = listOf(
+    val serviceToTest = DataService(charRepositoryMock)
+
+    private val pulseListExampleExpectation:
+            List<DSMeasurement> = listOf(
         DSMeasurement("pulse", "60", Instant.MIN),
         DSMeasurement("pulse", "63", Instant.MIN)
+    )
+
+    private val arterialPressureListExampleExpectation:
+            List<DSMeasurement> = listOf(
+        DSMeasurement("arterialpressure", "60", Instant.MIN),
+        DSMeasurement("arterialpressure", "63", Instant.MIN)
     )
 
     init
@@ -30,7 +42,18 @@ internal class DataServiceTest
                     "pulse"
                 )
             )
-        ).thenReturn(gotMeasurementsGetTest)
+        ).thenReturn(pulseListExampleExpectation)
+
+        Mockito.`when`(
+            charRepositoryMock.get(
+                DSDataAccessInfo(
+                    "123",
+                    "someone",
+                    Pair(0, 0),
+                    "arterialpressure"
+                )
+            )
+        ).thenReturn(arterialPressureListExampleExpectation)
 
         Mockito.`when`(
             charRepositoryMock.get(
@@ -53,12 +76,9 @@ internal class DataServiceTest
         val bucketName = "someone"
         val charName = "pulse"
 
-        // Prepare Mock
-        val service = DataService(charRepositoryMock)
-
         // Set private method public
         val requiredPrivateMethod =
-            service.javaClass.getDeclaredMethod(
+            serviceToTest.javaClass.getDeclaredMethod(
                 "getMeasurement",
                 String::class.java, String::class.java, String::class.java
             )
@@ -72,10 +92,13 @@ internal class DataServiceTest
 
         // Act
         val returnedMeasurements =
-            requiredPrivateMethod.invoke(service, *privateMethodParameters)
+            requiredPrivateMethod.invoke(
+                serviceToTest,
+                *privateMethodParameters
+            )
 
         // Assert
-        assert(returnedMeasurements == gotMeasurementsGetTest)
+        assert(returnedMeasurements == pulseListExampleExpectation)
     }
 
     @Test
@@ -87,12 +110,9 @@ internal class DataServiceTest
         val bucketName = ""
         val charName = ""
 
-        // Prepare Mock
-        val service = DataService(charRepositoryMock)
-
         // Set private method public
         val requiredPrivateMethod =
-            service.javaClass.getDeclaredMethod(
+            serviceToTest.javaClass.getDeclaredMethod(
                 "getMeasurement",
                 String::class.java, String::class.java, String::class.java
             )
@@ -106,10 +126,76 @@ internal class DataServiceTest
 
         // Act
         val returnedMeasurements =
-            requiredPrivateMethod.invoke(service, *privateMethodParameters)
+            requiredPrivateMethod.invoke(
+                serviceToTest,
+                *privateMethodParameters
+            )
 
         // Assert
         assert(returnedMeasurements == listOf<DSMeasurement>())
+    }
+
+    @Test
+    fun getMeasurementsWithSeveralElementsReturned()
+    {
+        // Arrange
+        // Prepare parameters
+        val token = "123"
+        val bucketName = "someone"
+        val requiredNames = listOf("pulse", "arterialpressure")
+
+        // Act
+        val returnedMeasurements =
+            serviceToTest.getMeasurements(token, bucketName, requiredNames)
+
+        // Assert
+        assert(
+            returnedMeasurements == listOf<DSMeasurementList>(
+                DSMeasurementList("pulse", pulseListExampleExpectation),
+                DSMeasurementList(
+                    "arterialpressure",
+                    arterialPressureListExampleExpectation
+                )
+            )
+        )
+    }
+
+    @Test
+    fun getMeasurementsWithOneElementReturned()
+    {
+        // Arrange
+        // Prepare parameters
+        val token = "123"
+        val bucketName = "someone"
+        val requiredNames = listOf("pulse")
+
+        // Act
+        val returnedMeasurements =
+            serviceToTest.getMeasurements(token, bucketName, requiredNames)
+
+        // Assert
+        assert(
+            returnedMeasurements == listOf<DSMeasurementList>(
+                DSMeasurementList("pulse", pulseListExampleExpectation)
+            )
+        )
+    }
+
+    @Test
+    fun getMeasurementsWithNoElementsReturned()
+    {
+        // Arrange
+        // Prepare parameters
+        val token = ""
+        val bucketName = ""
+        val requiredNames = listOf<String>()
+
+        // Act
+        val returnedMeasurements =
+            serviceToTest.getMeasurements(token, bucketName, requiredNames)
+
+        // Assert
+        assert(returnedMeasurements == listOf<DSMeasurementList>())
     }
 
     @Test
