@@ -31,10 +31,21 @@ internal class DataServiceTest
                 )
             )
         ).thenReturn(gotMeasurementsGetTest)
+
+        Mockito.`when`(
+            charRepositoryMock.get(
+                DSDataAccessInfo(
+                    "",
+                    "",
+                    Pair(0, 0),
+                    ""
+                )
+            )
+        ).thenReturn(listOf())
     }
 
     @Test
-    fun getMeasurement()
+    fun getMeasurementWithFullListReturned()
     {
         // Arrange
         // Prepare parameters
@@ -65,6 +76,40 @@ internal class DataServiceTest
 
         // Assert
         assert(returnedMeasurements == gotMeasurementsGetTest)
+    }
+
+    @Test
+    fun getMeasurementWithEmptyListReturned()
+    {
+        // Arrange
+        // Prepare parameters
+        val token = ""
+        val bucketName = ""
+        val charName = ""
+
+        // Prepare Mock
+        val service = DataService(charRepositoryMock)
+
+        // Set private method public
+        val requiredPrivateMethod =
+            service.javaClass.getDeclaredMethod(
+                "getMeasurement",
+                String::class.java, String::class.java, String::class.java
+            )
+        requiredPrivateMethod.isAccessible = true
+
+        // Prepare method parameters
+        val privateMethodParameters = arrayOfNulls<Any>(3)
+        privateMethodParameters[0] = token
+        privateMethodParameters[1] = bucketName
+        privateMethodParameters[2] = charName
+
+        // Act
+        val returnedMeasurements =
+            requiredPrivateMethod.invoke(service, *privateMethodParameters)
+
+        // Assert
+        assert(returnedMeasurements == listOf<DSMeasurement>())
     }
 
     @Test
