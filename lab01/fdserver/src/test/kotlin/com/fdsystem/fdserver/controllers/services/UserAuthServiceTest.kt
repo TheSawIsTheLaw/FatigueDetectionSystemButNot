@@ -13,6 +13,7 @@ import org.apache.commons.logging.LogFactory
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.platform.commons.logging.LoggerFactory
+import org.mockito.Mock
 import org.mockito.Mockito
 import java.lang.RuntimeException
 
@@ -38,11 +39,11 @@ internal class UserAuthServiceTest
             "", ""
         ),
 
-        val successDSUserCredentials: DSUserCredentials = DSUserCredentials(
+        val successUSUserCredentials: USUserCredentials = USUserCredentials(
             "a", "ololo", "123"
         ),
 
-        val failDSUserCredentials: USUserCredentials = USUserCredentials(
+        val failUSUserCredentials: USUserCredentials = USUserCredentials(
             "", "", ""
         )
     )
@@ -175,7 +176,19 @@ internal class UserAuthServiceTest
             userRepositoryMock.getUserByUsername(
                 mockParameters.successGetUserByUsernameUsername
             )
-        ).thenReturn(mockExpectations.failDSUserCredentials)
+        ).thenReturn(mockExpectations.successUSUserCredentials)
+
+        Mockito.`when`(
+            userRepositoryMock.getUserByUsername(
+                mockParameters.failGetUserByUsernameUsername
+            )
+        ).thenReturn(mockExpectations.failUSUserCredentials)
+
+        Mockito.`when`(
+            userRepositoryMock.getUserByUsername(
+                mockParameters.exceptionGetUserByUsernameUsername
+            )
+        ).thenThrow(RuntimeException("Internal server error"))
     }
 
     private val mockExpectations: MockExpectations = MockExpectations()
@@ -273,7 +286,7 @@ internal class UserAuthServiceTest
     }
 
     @Test
-    fun changeUserInfoWithExceptrion()
+    fun changeUserInfoWithException()
     {
         // Arrange
         val userInfo = NewPasswordDTOWithUsername(
@@ -292,5 +305,51 @@ internal class UserAuthServiceTest
 
         // Assert
         assert(returnedStatus == null)
+    }
+
+    @Test
+    fun getUserByUsernameSuccess()
+    {
+        // Arrange
+        val username = "a"
+
+        // Act
+        val returnedUser = serviceToTest.getUserByUsername(username)
+
+        // Assert
+        assert(returnedUser == DSUserCredentials("a", "ololo", "123"))
+    }
+
+    @Test
+    fun getUserByUsernameFailure()
+    {
+        // Arrange
+        val username = "b"
+
+        // Act
+        val returnedUser = serviceToTest.getUserByUsername(username)
+
+        // Assert
+        assert(returnedUser == DSUserCredentials("", "", ""))
+    }
+
+    @Test
+    fun getUserByUsernameException()
+    {
+        // Arrange
+        val username = "c"
+
+        // Act
+        val returnedUser = try
+        {
+            serviceToTest.getUserByUsername(username)
+        }
+        catch (exc: Exception)
+        {
+            null
+        }
+
+        // Assert
+        assert(returnedUser == null)
     }
 }
