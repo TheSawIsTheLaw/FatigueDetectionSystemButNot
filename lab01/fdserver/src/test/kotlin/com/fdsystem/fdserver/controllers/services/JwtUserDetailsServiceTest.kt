@@ -2,10 +2,10 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
+import java.lang.RuntimeException
 
 internal class JwtUserDetailsServiceTest
 {
@@ -25,14 +25,17 @@ internal class JwtUserDetailsServiceTest
 
         val notExistingUser: String = "notExistingUser",
 
+        val exceptionUsername: String = "ecxUser",
+
         val usUserCredentialsForExistingUser: USUserCredentials =
-            USUserCredentials(existingUser, "pass", "123")
+            USUserCredentials(existingUser, "", ""),
+
+        val usUserCredentialsForExceptionCheck: USUserCredentials =
+            USUserCredentials(exceptionUsername, "", "")
     )
 
     private val mockExpectations = MockExpectations()
     private val mockParameters = MockParameters()
-
-    // check User("existingUser", "pass", arrayListOf())
 
     init
     {
@@ -47,5 +50,22 @@ internal class JwtUserDetailsServiceTest
         Mockito.`when`(
             userRepositoryImpl.getUserByUsername(mockParameters.usUserCredentialsForExistingUser)
         ).thenReturn(mockExpectations.existingUSUserCredentials)
+
+        Mockito.`when`(
+            userRepositoryImpl.getUserByUsername(mockParameters.usUserCredentialsForExceptionCheck)
+        ).thenThrow(RuntimeException("Internal server error"))
+    }
+
+    @Test
+    fun successLoadForUser()
+    {
+        // Arrange
+        val username = "existingUser"
+
+        // Action
+        val returnedUser = serviceToTest.loadUserByUsername(username)
+
+        // Assert
+        assert(returnedUser == User("existingUser", "pass", arrayListOf()))
     }
 }
