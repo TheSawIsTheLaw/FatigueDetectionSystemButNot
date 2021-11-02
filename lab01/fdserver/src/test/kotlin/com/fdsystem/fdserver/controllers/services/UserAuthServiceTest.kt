@@ -2,6 +2,8 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
+import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
+import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.logicentities.TokenInformation
@@ -53,8 +55,8 @@ internal class UserAuthServiceTest
         ),
 
         val usUserCredentialsExampleWithToken: USUserCredentials = USUserCredentials(
-            "Username",
-            "Password",
+            usUserCredentialsExample.username,
+            usUserCredentialsExample.password,
             "ololo"
         ),
 
@@ -71,22 +73,41 @@ internal class UserAuthServiceTest
             ""
         ),
 
+        val successNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
+            NewPasswordDTOWithUsername("Username", "oldPas", "newPas"),
+
         val successPasswordChangeUserInfo: USCredentialsChangeInfo =
             USCredentialsChangeInfo(
-                "Username", "Username",
-                "oldPas", "newPas"
+                successNewPasswordDTOWithUsername.username,
+                successNewPasswordDTOWithUsername.username,
+                successNewPasswordDTOWithUsername.oldPassword,
+                successNewPasswordDTOWithUsername.newPassword
+            ),
+
+        val failNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
+            NewPasswordDTOWithUsername(
+                "FailUsername", "FailPas", "FailNewPas"
             ),
 
         val failPasswordChangeUserInfo: USCredentialsChangeInfo =
             USCredentialsChangeInfo(
-                "FailUsername", "FailUsername",
-                "FailPas", "FailNewPas"
+                failNewPasswordDTOWithUsername.username,
+                failNewPasswordDTOWithUsername.username,
+                failNewPasswordDTOWithUsername.oldPassword,
+                failNewPasswordDTOWithUsername.newPassword
+            ),
+
+        val exceptionNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
+            NewPasswordDTOWithUsername(
+                "excUsername", "", ""
             ),
 
         val exceptionPasswordChangeUserInfo: USCredentialsChangeInfo =
             USCredentialsChangeInfo(
-                "excUsername", "excUsername",
-                "", ""
+                exceptionNewPasswordDTOWithUsername.username,
+                exceptionNewPasswordDTOWithUsername.username,
+                exceptionNewPasswordDTOWithUsername.oldPassword,
+                exceptionNewPasswordDTOWithUsername.newPassword
             ),
 
         val successGetUserByUsernameUsername: USUserCredentials =
@@ -170,13 +191,13 @@ internal class UserAuthServiceTest
     fun registerWithSuccessRegistration()
     {
         // Arrange
-        val userCredentialsDTO = UserCredentialsDTO(
+        val user = UserCredentialsDTO(
             "Username", "Password"
         )
 
         // Act
         val returnedRegistrationStatus =
-            serviceToTest.register(userCredentialsDTO)
+            serviceToTest.register(user)
 
         // Assert
         assert(returnedRegistrationStatus == "Success")
@@ -186,13 +207,13 @@ internal class UserAuthServiceTest
     fun registerWithAlreadyExistsFailure()
     {
         // Arrange
-        val userCredentialsDTO = UserCredentialsDTO(
+        val user = UserCredentialsDTO(
             "Username", "AnotherPasswordToCheckRetryOfRegistration"
         )
 
         // Act
         val returnedRegistrationStatus =
-            serviceToTest.register(userCredentialsDTO)
+            serviceToTest.register(user)
 
         // Assert
         LogFactory.getLog(javaClass).debug(returnedRegistrationStatus)
@@ -203,14 +224,14 @@ internal class UserAuthServiceTest
     fun registerWithInternalErrorException()
     {
         // Arrange
-        val userCredentialsDTO = UserCredentialsDTO(
+        val user = UserCredentialsDTO(
             "", ""
         )
 
         // Act
         val returnedRegistrationStatus = try
         {
-            serviceToTest.register(userCredentialsDTO)
+            serviceToTest.register(user)
         }
         catch (exc: Exception)
         {
@@ -219,5 +240,20 @@ internal class UserAuthServiceTest
 
         // Assert
         assert(returnedRegistrationStatus == null)
+    }
+
+    @Test
+    fun changeUserInfoWithSuccess()
+    {
+        // Arrange
+        val userInfo = NewPasswordDTOWithUsername(
+            "Username", "oldPas", "newPas"
+        )
+
+        // Act
+        val returnedStatus = serviceToTest.changeUserInfo(userInfo)
+
+        // Assert
+        assert(returnedStatus)
     }
 }

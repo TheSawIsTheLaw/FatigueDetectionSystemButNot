@@ -59,7 +59,7 @@ class UserAuthService(
         return userRepository.changePasswordAndUsername(
             USCredentialsChangeInfo(
                 userInfo.username, userInfo.username,
-                userInfo.oldPassword, userInfo.oldPassword
+                userInfo.oldPassword, userInfo.newPassword
             )
         )
     }
