@@ -5,6 +5,7 @@ import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
+import org.springframework.security.core.userdetails.UsernameNotFoundException
 import java.lang.RuntimeException
 
 internal class JwtUserDetailsServiceTest
@@ -67,5 +68,45 @@ internal class JwtUserDetailsServiceTest
 
         // Assert
         assert(returnedUser == User("existingUser", "pass", arrayListOf()))
+    }
+
+    @Test
+    fun failureUserNotFound()
+    {
+        // Arrange
+        val username = "notExistingUser"
+
+        // Action
+        val returnedUser = try
+        {
+            serviceToTest.loadUserByUsername(username)
+        }
+        catch (exc: UsernameNotFoundException)
+        {
+            null
+        }
+
+        // Assert
+        assert(returnedUser == null)
+    }
+
+    @Test
+    fun failureInternalError()
+    {
+        // Arrange
+        val username = "ecxUser"
+
+        // Action
+        val returnedUser = try
+        {
+            serviceToTest.loadUserByUsername(username)
+        }
+        catch (exc: Exception)
+        {
+            null
+        }
+
+        // Assert
+        assert(returnedUser == null)
     }
 }
