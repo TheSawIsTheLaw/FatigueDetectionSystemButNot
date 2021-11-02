@@ -25,8 +25,7 @@ class UserAuthService(
         {
             val registrationSuccess = userRepository.registerUser(
                 USUserCredentials(
-                    user
-                        .username, user.password, newToken.token
+                    user.username, user.password, newToken.token
                 )
             )
             if (!registrationSuccess)
