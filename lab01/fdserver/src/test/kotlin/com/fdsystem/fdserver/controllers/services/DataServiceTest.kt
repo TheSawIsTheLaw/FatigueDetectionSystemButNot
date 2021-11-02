@@ -15,10 +15,10 @@ import java.time.Instant
 
 internal class DataServiceTest
 {
-    val charRepositoryMock: CharRepositoryImpl =
+    private val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
-    val serviceToTest = DataService(charRepositoryMock)
+    private val serviceToTest = DataService(charRepositoryMock)
 
     private data class MockExpectation(
         val pulseListExample:
@@ -201,7 +201,7 @@ internal class DataServiceTest
 
         // Assert
         assert(
-            returnedMeasurements == listOf<DSMeasurementList>(
+            returnedMeasurements == listOf(
                 DSMeasurementList(
                     "pulse",
                     mockExpectation.pulseListExample
@@ -229,7 +229,7 @@ internal class DataServiceTest
 
         // Assert
         assert(
-            returnedMeasurements == listOf<DSMeasurementList>(
+            returnedMeasurements == listOf(
                 DSMeasurementList("pulse", mockExpectation.pulseListExample)
             )
         )
