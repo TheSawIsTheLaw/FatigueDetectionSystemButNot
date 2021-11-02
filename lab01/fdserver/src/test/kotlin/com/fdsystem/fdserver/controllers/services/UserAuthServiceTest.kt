@@ -256,4 +256,41 @@ internal class UserAuthServiceTest
         // Assert
         assert(returnedStatus)
     }
+
+    @Test
+    fun changeUserInfoWithFailurePassword()
+    {
+        // Arrange
+        val userInfo = NewPasswordDTOWithUsername(
+            "FailUsername", "FailOldPas", "FailNewPas"
+        )
+
+        // Act
+        val returnedStatus = serviceToTest.changeUserInfo(userInfo)
+
+        // Assert
+        assert(!returnedStatus)
+    }
+
+    @Test
+    fun changeUserInfoWithExceptrion()
+    {
+        // Arrange
+        val userInfo = NewPasswordDTOWithUsername(
+            "excUsername", "", ""
+        )
+
+        // Act
+        val returnedStatus = try
+        {
+            serviceToTest.changeUserInfo(userInfo)
+        }
+        catch (exc: Exception)
+        {
+            null
+        }
+
+        // Assert
+        assert(returnedStatus == null)
+    }
 }
