@@ -20,7 +20,7 @@ internal class DataServiceTest
 
     private val serviceToTest = DataService(charRepositoryMock)
 
-    private data class MockExpectation(
+    private data class MockExpectations(
         val pulseListExample:
         List<DSMeasurement> = listOf(
             DSMeasurement("pulse", "60", Instant.MIN),
@@ -86,7 +86,7 @@ internal class DataServiceTest
             )
     )
 
-    private val mockExpectation = MockExpectation()
+    private val mockExpectations = MockExpectations()
     private val mockParameters = MockParameters()
 
     init
@@ -95,13 +95,13 @@ internal class DataServiceTest
             charRepositoryMock.get(
                 mockParameters.dsDataAccessInfoWithFullInitPulse
             )
-        ).thenReturn(mockExpectation.pulseListExample)
+        ).thenReturn(mockExpectations.pulseListExample)
 
         Mockito.`when`(
             charRepositoryMock.get(
                 mockParameters.dsDataAccessInfoWithFullInitArterial
             )
-        ).thenReturn(mockExpectation.arterialPressureListExample)
+        ).thenReturn(mockExpectations.arterialPressureListExample)
 
         Mockito.`when`(
             charRepositoryMock.get(
@@ -149,7 +149,7 @@ internal class DataServiceTest
             )
 
         // Assert
-        assert(returnedMeasurements == mockExpectation.pulseListExample)
+        assert(returnedMeasurements == mockExpectations.pulseListExample)
     }
 
     @Test
@@ -204,11 +204,11 @@ internal class DataServiceTest
             returnedMeasurements == listOf(
                 DSMeasurementList(
                     "pulse",
-                    mockExpectation.pulseListExample
+                    mockExpectations.pulseListExample
                 ),
                 DSMeasurementList(
                     "arterialpressure",
-                    mockExpectation.arterialPressureListExample
+                    mockExpectations.arterialPressureListExample
                 )
             )
         )
@@ -230,7 +230,7 @@ internal class DataServiceTest
         // Assert
         assert(
             returnedMeasurements == listOf(
-                DSMeasurementList("pulse", mockExpectation.pulseListExample)
+                DSMeasurementList("pulse", mockExpectations.pulseListExample)
             )
         )
     }

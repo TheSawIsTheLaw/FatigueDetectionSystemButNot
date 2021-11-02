@@ -43,17 +43,17 @@ class UserAuthService(
         return "Success"
     }
 
-    fun userAuthSuccess(user: UserCredentialsDTO): Boolean
-    {
-        val token = userRepository.getUserToken(
-            USUserCredentials(
-                user
-                    .username, user.password, ""
-            )
-        )
-            .dbToken
-        return (!(token == "User doesn't exist" || token == "Wrong password"))
-    }
+//    fun userAuthSuccess(user: UserCredentialsDTO): Boolean
+//    {
+//        val token = userRepository.getUserToken(
+//            USUserCredentials(
+//                user
+//                    .username, user.password, ""
+//            )
+//        )
+//            .dbToken
+//        return (!(token == "User doesn't exist" || token == "Wrong password"))
+//    }
 
     fun changeUserInfo(userInfo: NewPasswordDTOWithUsername): Boolean
     {
