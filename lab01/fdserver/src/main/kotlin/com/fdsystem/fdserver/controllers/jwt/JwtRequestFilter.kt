@@ -21,7 +21,6 @@ class JwtRequestFilter(
     private val jwtTokenUtil: JwtTokenUtil
 ) : OncePerRequestFilter()
 {
-    @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,
         response: HttpServletResponse,
@@ -39,20 +38,20 @@ class JwtRequestFilter(
             try
             {
                 username = jwtTokenUtil.getUsernameFromToken(jwtToken)
-                logger.warn("Token is ok")
+                logger.debug("Token is ok, it's $username")
             }
             catch (e: IllegalArgumentException)
             {
-                logger.warn("Unable to get JWT Token")
+                logger.debug("Unable to get JWT Token")
             }
             catch (e: ExpiredJwtException)
             {
-                logger.warn("JWT Token has expired")
+                logger.debug("JWT Token has expired")
             }
         }
         else
         {
-            logger.warn("JWT Token does not begin with Bearer String")
+            logger.debug("JWT Token does not begin with Bearer String")
         }
 
         // Once we get the token validate it.
@@ -60,11 +59,13 @@ class JwtRequestFilter(
         {
             val userDetails =
                 jwtUserDetailsService.loadUserByUsername(username)
+            logger.debug("Username exists")
 
             // if token is valid configure Spring Security to manually set
             // authentication
             if (jwtTokenUtil.validateToken(jwtToken, userDetails))
             {
+                logger.debug("Token contains valid information")
                 val usernamePasswordAuthenticationToken =
                     UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.authorities
@@ -76,6 +77,10 @@ class JwtRequestFilter(
                 // Spring Security Configurations successfully.
                 SecurityContextHolder.getContext().authentication =
                     usernamePasswordAuthenticationToken
+            }
+            else
+            {
+                logger.debug("Token contains invalid information")
             }
         }
         chain.doFilter(request, response)
