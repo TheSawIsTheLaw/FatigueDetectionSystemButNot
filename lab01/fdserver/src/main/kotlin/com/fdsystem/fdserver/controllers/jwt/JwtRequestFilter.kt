@@ -3,7 +3,6 @@ package com.fdsystem.fdserver.controllers.jwt
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import io.jsonwebtoken.ExpiredJwtException
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken
 import org.springframework.security.core.context.SecurityContextHolder
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource
@@ -17,14 +16,11 @@ import javax.servlet.http.HttpServletResponse
 
 
 @Component
-class JwtRequestFilter : OncePerRequestFilter()
+class JwtRequestFilter(
+    private val jwtUserDetailsService: JwtUserDetailsService,
+    private val jwtTokenUtil: JwtTokenUtil
+) : OncePerRequestFilter()
 {
-    @Autowired
-    private val jwtUserDetailsService: JwtUserDetailsService? = null
-
-    @Autowired
-    private val jwtTokenUtil: JwtTokenUtil? = null
-
     @Throws(ServletException::class, IOException::class)
     override fun doFilterInternal(
         request: HttpServletRequest,
@@ -42,7 +38,7 @@ class JwtRequestFilter : OncePerRequestFilter()
             jwtToken = requestTokenHeader.split(" ")[1].trim()
             try
             {
-                username = jwtTokenUtil!!.getUsernameFromToken(jwtToken)
+                username = jwtTokenUtil.getUsernameFromToken(jwtToken)
                 logger.warn("Token is ok")
             }
             catch (e: IllegalArgumentException)
@@ -63,11 +59,11 @@ class JwtRequestFilter : OncePerRequestFilter()
         if (username != null && SecurityContextHolder.getContext().authentication == null)
         {
             val userDetails =
-                jwtUserDetailsService!!.loadUserByUsername(username)
+                jwtUserDetailsService.loadUserByUsername(username)
 
             // if token is valid configure Spring Security to manually set
             // authentication
-            if (jwtTokenUtil!!.validateToken(jwtToken, userDetails))
+            if (jwtTokenUtil.validateToken(jwtToken, userDetails))
             {
                 val usernamePasswordAuthenticationToken =
                     UsernamePasswordAuthenticationToken(
