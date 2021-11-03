@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.config
 
 import com.google.gson.Gson
+import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Component
 import java.io.File
 import java.io.InputStream
@@ -18,6 +19,19 @@ class InfluxdbConfiguration(
 
     final val configData: InfluxConfigData
 
+    private fun checkIsConfigValid()
+    {
+        // Yep, it can be null)))))))))))
+        // Noicely done, GSON!
+        if (configData.influxdbURL.isNullOrEmpty() ||
+            configData.influxdbAdminToken.isNullOrEmpty() ||
+            configData.influxdbOrganization.isNullOrEmpty()
+        )
+        {
+            throw Exception("No enough information in configuration JSON")
+        }
+    }
+
     init
     {
         val stream: InputStream
@@ -31,6 +45,9 @@ class InfluxdbConfiguration(
         }
 
         val jsonToConvert = stream.bufferedReader().use { it.readText() }
-        configData = Gson().fromJson(jsonToConvert, InfluxConfigData::class.java)
+        configData =
+            Gson().fromJson(jsonToConvert, InfluxConfigData::class.java)
+
+        checkIsConfigValid()
     }
 }
