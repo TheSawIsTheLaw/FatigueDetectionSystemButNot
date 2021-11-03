@@ -6,7 +6,9 @@ import java.io.File
 import java.io.InputStream
 
 @Component
-class PostgresConfiguration
+class PostgresConfiguration(
+    postgresConfigPath: String = "FDPostgresConf.json"
+)
 {
     data class PostgresConfigData(
         val postgresURL: String,
@@ -21,7 +23,7 @@ class PostgresConfiguration
         val stream: InputStream
         try
         {
-            stream = File("FDPostgresConf.json").inputStream()
+            stream = File(postgresConfigPath).inputStream()
         }
         catch (exc: Exception)
         {
@@ -29,6 +31,7 @@ class PostgresConfiguration
         }
 
         val jsonToConvert = stream.bufferedReader().use { it.readText() }
-        configData = Gson().fromJson(jsonToConvert, PostgresConfigData::class.java)
+        configData =
+            Gson().fromJson(jsonToConvert, PostgresConfigData::class.java)
     }
 }
