@@ -18,6 +18,18 @@ class PostgresConfiguration(
 
     final val configData: PostgresConfigData
 
+    private fun checkIsConfigValid()
+    {
+        // Yep, it can be null
+        // Thank you, GSON
+        if (configData.postgresPassword.isNullOrEmpty() ||
+                configData.postgresURL.isNullOrEmpty() ||
+                configData.postgresUsername.isNullOrEmpty())
+        {
+            throw Exception("Not enough information in configuration JSON")
+        }
+    }
+
     init
     {
         val stream: InputStream
@@ -33,5 +45,7 @@ class PostgresConfiguration(
         val jsonToConvert = stream.bufferedReader().use { it.readText() }
         configData =
             Gson().fromJson(jsonToConvert, PostgresConfigData::class.java)
+
+        checkIsConfigValid()
     }
 }
