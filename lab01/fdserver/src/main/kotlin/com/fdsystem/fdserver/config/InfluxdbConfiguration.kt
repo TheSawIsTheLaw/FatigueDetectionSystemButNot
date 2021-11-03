@@ -28,7 +28,7 @@ class InfluxdbConfiguration(
             configData.influxdbOrganization.isNullOrEmpty()
         )
         {
-            throw Exception("No enough information in configuration JSON")
+            throw Exception("Not enough information in configuration JSON")
         }
     }
 

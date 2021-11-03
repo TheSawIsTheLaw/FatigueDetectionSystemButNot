@@ -62,6 +62,6 @@ internal class InfluxdbConfigurationTest
         }
 
         LogFactory.getLog(javaClass).debug(excMessage)
-        assert(excMessage == "No enough information in configuration JSON")
+        assert(excMessage == "Not enough information in configuration JSON")
     }
 }
