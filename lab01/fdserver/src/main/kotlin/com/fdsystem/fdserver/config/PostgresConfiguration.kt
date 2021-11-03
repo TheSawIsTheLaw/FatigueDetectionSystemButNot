@@ -39,7 +39,7 @@ class PostgresConfiguration(
         }
         catch (exc: Exception)
         {
-            throw Exception("No influx configuration file")
+            throw Exception("No postgres configuration file")
         }
 
         val jsonToConvert = stream.bufferedReader().use { it.readText() }
