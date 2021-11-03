@@ -35,14 +35,20 @@ class JwtTokenUtil : Serializable
             .signWith(SignatureAlgorithm.HS256, secret).compact()
     }
 
-    fun getAllClaimsFromToken(token: String?): Claims
+    fun generateToken(userDetails: UserDetails, userDBToken: String): String
+    {
+        val claims: Map<String, Any> = hashMapOf("DBToken" to userDBToken)
+        return doGenerateToken(claims, userDetails.username)
+    }
+
+    fun getAllClaimsFromToken(token: String): Claims
     {
         return Jwts.parserBuilder().setSigningKey(secret).build()
             .parseClaimsJws(token).body
     }
 
     fun <T> getClaimFromToken(
-        token: String?,
+        token: String,
         claimsResolver: Function<Claims, T>
     ): T
     {
@@ -50,12 +56,12 @@ class JwtTokenUtil : Serializable
         return claimsResolver.apply(claims)
     }
 
-    fun getUsernameFromToken(token: String?): String
+    fun getUsernameFromToken(token: String): String
     {
         return getClaimFromToken(token, Claims::getSubject)
     }
 
-    fun getExpirationDateFromToken(token: String?): Date
+    fun getExpirationDateFromToken(token: String): Date
     {
         return getClaimFromToken(
             token,
@@ -63,19 +69,13 @@ class JwtTokenUtil : Serializable
         )
     }
 
-    private fun isTokenExpired(token: String?): Boolean
+    private fun isTokenExpired(token: String): Boolean
     {
         val expiration = getExpirationDateFromToken(token)
         return expiration.before(Date())
     }
 
-    fun generateToken(userDetails: UserDetails, userDBToken: String): String
-    {
-        val claims: Map<String, Any> = hashMapOf("DBToken" to userDBToken)
-        return doGenerateToken(claims, userDetails.username)
-    }
-
-    fun validateToken(token: String?, userDetails: UserDetails): Boolean
+    fun validateToken(token: String, userDetails: UserDetails): Boolean
     {
         val username = getUsernameFromToken(token)
         return username == userDetails.username && !isTokenExpired(token)
