@@ -236,7 +236,7 @@ internal class JwtRequestFilterTest
         requiredPrivateMethod.invoke(filterToTest, *privateMethodParameters)
 
         // Assert
-        
+
         // There is no assert because of no return value.
         // Make it with gradle test --info to check all log messages
         // It should contain "Token contains invalid information"
