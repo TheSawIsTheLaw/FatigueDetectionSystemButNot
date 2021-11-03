@@ -6,7 +6,9 @@ import java.io.File
 import java.io.InputStream
 
 @Component
-class InfluxdbConfiguration
+class InfluxdbConfiguration(
+    configPath: String = "FDInfluxConf.json"
+)
 {
     data class InfluxConfigData(
         val influxdbURL: String,
@@ -21,7 +23,7 @@ class InfluxdbConfiguration
         val stream: InputStream
         try
         {
-            stream = File("FDInfluxConf.json").inputStream()
+            stream = File(configPath).inputStream()
         }
         catch (exc: Exception)
         {
