@@ -13,7 +13,9 @@ import okhttp3.Request
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
-class InfluxConnection(connectionString_: String, token_: String, org_: String)
+open class InfluxConnection(
+    connectionString_: String, token_: String, org_: String
+)
 {
     private val connectionString = connectionString_
     private val token = token_
@@ -53,20 +55,22 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
         val bucket = dataAccessInfo.bucketName
 
         val outList: MutableList<DSMeasurement> = mutableListOf()
-        connection.getConnectionToDB().use {
-            var rng = "start: ${timeRange.first}"
-            if (timeRange.second != 0)
-            {
-                rng += ", stop: ${timeRange.second}}"
-            }
 
-            var query: String = "from(bucket: \"$bucket\")\n" +
-                    "|> range($rng)"
-            if (measurement.isNotBlank())
-            {
-                query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == " +
-                        "\"$measurement\"))"
-            }
+        var rng = "start: ${timeRange.first}"
+        if (timeRange.second != 0)
+        {
+            rng += ", stop: ${timeRange.second}}"
+        }
+
+        var query: String = "from(bucket: \"$bucket\")\n" +
+                "|> range($rng)"
+        if (measurement.isNotBlank())
+        {
+            query += "\n|> filter(fn: (r) => (r[\"_measurement\"] == " +
+                    "\"$measurement\"))"
+        }
+
+        connection.getConnectionToDB().use {
             val result = it.getQueryKotlinApi().query(query)
 
             runBlocking {
@@ -214,8 +218,8 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
         connection.getConnectionWrite(bucket).use {
             val writeApi = it.getWriteKotlinApi()
 
+            val name = measurementList.name
             runBlocking {
-                val name = measurementList.name
                 for (i in measurementList.measurements)
                 {
                     writeApi.writeRecord(
