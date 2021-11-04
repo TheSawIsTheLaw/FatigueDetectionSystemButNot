@@ -43,18 +43,17 @@ class InfluxConnection(connectionString_: String, token_: String, org_: String)
 class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
     CharRepositoryInterface
 {
-    override fun get(dataAccessInfo: DSDataAccessInfo): List<DSMeasurement>
+    private fun get(
+        dataAccessInfo: DSDataAccessInfo,
+        connection: InfluxConnection
+    ): List<DSMeasurement>
     {
         val timeRange = dataAccessInfo.timeRange
         val measurement = dataAccessInfo.measurementName
         val bucket = dataAccessInfo.bucketName
 
         val outList: MutableList<DSMeasurement> = mutableListOf()
-        InfluxConnection(
-            config.configData.influxdbURL,
-            dataAccessInfo.token,
-            config.configData.influxdbOrganization
-        ).getConnectionToDB().use {
+        connection.getConnectionToDB().use {
             var rng = "start: ${timeRange.first}"
             if (timeRange.second != 0)
             {
@@ -86,6 +85,17 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
         }
 
         return outList.toList()
+    }
+
+    override fun get(dataAccessInfo: DSDataAccessInfo): List<DSMeasurement>
+    {
+        return get(
+            dataAccessInfo, InfluxConnection(
+                config.configData.influxdbURL,
+                dataAccessInfo.token,
+                config.configData.influxdbOrganization
+            )
+        )
     }
 
     private fun getOrgIDByName(apiString: String, orgName: String): String
@@ -191,7 +201,7 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
         return retVal
     }
 
-    override fun add(dataAddInfo: DSDataAddInfo)
+    private fun add(dataAddInfo: DSDataAddInfo, connection: InfluxConnection)
     {
         val bucket = dataAddInfo.bucket
         val measurementList = dataAddInfo.measurementList
@@ -201,11 +211,7 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
             createBucket(bucket)
         }
 
-        InfluxConnection(
-            config.configData.influxdbURL,
-            dataAddInfo.token,
-            config.configData.influxdbOrganization
-        ).getConnectionWrite(bucket).use {
+        connection.getConnectionWrite(bucket).use {
             val writeApi = it.getWriteKotlinApi()
 
             runBlocking {
@@ -219,6 +225,17 @@ class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
                 }
             }
         }
+    }
+
+    override fun add(dataAddInfo: DSDataAddInfo)
+    {
+        add(
+            dataAddInfo, InfluxConnection(
+                config.configData.influxdbURL,
+                dataAddInfo.token,
+                config.configData.influxdbOrganization
+            )
+        )
     }
 
     fun getNewTokenForUser(user: USUserCredentials): TokenInformation
