@@ -216,7 +216,7 @@ class UserController(
         {
             val responseMessage = ResponseMessage(
                 409,
-                "User already exists",
+                userRegistrationStatus,
                 "Try another username ;)"
             )
             return ResponseEntity(responseMessage, HttpStatus.CONFLICT)

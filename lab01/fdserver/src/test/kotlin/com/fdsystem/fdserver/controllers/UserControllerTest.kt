@@ -39,6 +39,25 @@ internal class UserControllerTest
 
     private val mockExpectations = MockExpectations()
 
+    private data class MockParameters(
+        val successUser: UserCredentialsDTO = UserCredentialsDTO(
+            "successUser",
+            "pass"
+        ),
+
+        val internalErrorUser: UserCredentialsDTO = UserCredentialsDTO(
+            "internalServerErrorUser",
+            "pass"
+        ),
+
+        val alreadyExistsUser: UserCredentialsDTO = UserCredentialsDTO(
+            "alreadyExistsUser",
+            "pass"
+        )
+    )
+
+    private val mockParameters = MockParameters()
+
     init
     {
         // Success test
@@ -55,6 +74,10 @@ internal class UserControllerTest
             userServiceMock.getUserByUsername("successUser")
         ).thenReturn(DSUserCredentials("successUser", "pass", "successToken"))
 
+        Mockito.`when`(
+            userServiceMock.register(mockParameters.successUser)
+        ).thenReturn("Success!")
+
         // Not found test
         Mockito.`when`(
             userDetailsServiceMock.loadUserByUsername("notFoundUser")
@@ -62,9 +85,18 @@ internal class UserControllerTest
             UsernameNotFoundException("There is no user like this one...")
         )
 
+        // Already exists
+        Mockito.`when`(
+            userServiceMock.register(mockParameters.alreadyExistsUser)
+        ).thenReturn("User already exists")
+
         // Internal server error test
         Mockito.`when`(
             userDetailsServiceMock.loadUserByUsername("internalServerErrorUser")
+        ).thenThrow(RuntimeException())
+
+        Mockito.`when`(
+            userServiceMock.register(mockParameters.internalErrorUser)
         ).thenThrow(RuntimeException())
     }
 
@@ -138,5 +170,54 @@ internal class UserControllerTest
         )
     }
 
+    @Test
+    fun registerTestSuccess()
+    {
+        // Arrange
+        val user = UserCredentialsDTO(
+            "successUser",
+            "pass"
+        )
 
+        // Act
+        val response = controllerToTest.register(user)
+
+        // Assert
+        assert((response.body as ResponseMessage).message == "Success!")
+    }
+
+    @Test
+    fun registerTestFailureOnInternalServerError()
+    {
+        // Arrange
+        val user = UserCredentialsDTO(
+            "internalServerErrorUser",
+            "pass"
+        )
+
+        // Act
+        val response = controllerToTest.register(user)
+
+        // Assert
+        assert(
+            (response.body as ResponseMessage).message == "Auth server is " +
+                    "dead :("
+        )
+    }
+
+    @Test
+    fun registerTestFailureOnAlreadyExistingUser()
+    {
+        // Arrange
+        val user = UserCredentialsDTO(
+            "alreadyExistsUser",
+            "pass"
+        )
+
+        // Act
+        val response = controllerToTest.register(user)
+
+        // Assert
+        assert((response.body as ResponseMessage).message == "User already exists")
+    }
 }
