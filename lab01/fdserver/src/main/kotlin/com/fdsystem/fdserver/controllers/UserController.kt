@@ -30,29 +30,10 @@ import javax.servlet.http.HttpUtils
 @RequestMapping("api/v1/user")
 class UserController(
     val userService: UserAuthService,
-//    val authenticationManager: AuthenticationManager,
     val jwtTokenUtil: JwtTokenUtil,
     val userDetailsService: JwtUserDetailsService
 )
 {
-//    private fun authenticate(username: String, password: String)
-//    {
-//        try
-//        {
-//            authenticationManager.authenticate(
-//                UsernamePasswordAuthenticationToken(username, password)
-//            )
-//        }
-//        catch (e: DisabledException)
-//        {
-//            throw java.lang.Exception("USER_DISABLED", e)
-//        }
-//        catch (e: BadCredentialsException)
-//        {
-//            throw java.lang.Exception("INVALID_CREDENTIALS", e)
-//        }
-//    }
-
     @Operation(
         summary = "Logs in user",
         description = "Logs the user into the system",
@@ -167,23 +148,6 @@ class UserController(
 
         return ResponseEntity.ok(JwtResponse(token))
     }
-
-//    @Operation(
-//        summary = "Logs out user",
-//        description = "Logs out current user",
-//        tags = ["Authorization"],
-//        responses = [
-//            io.swagger.v3.oas.annotations.responses.ApiResponse(
-//                responseCode = "200",
-//                description = "Successful operation"
-//            )
-//        ]
-//    )
-//    @PostMapping("/logout")
-//    fun logout(response: HttpServletResponse): ResponseEntity<*>
-//    {
-//        return ResponseEntity(null, HttpStatus.OK)
-//    }
 
     @Operation(
         summary = "Register user",
@@ -376,15 +340,4 @@ class UserController(
             return ResponseEntity(responseMessage, HttpStatus.CONFLICT)
         }
     }
-
-//    @GetMapping("/lol")
-//    fun testGet(request: HttpServletRequest): ResponseEntity<*>
-//    {
-//        return ResponseEntity(
-//            jwtTokenUtil.getAllClaimsFromToken(
-//                request.getHeader(
-//                    "Authorization"
-//                ).split(" ")[1].trim())["DBToken"], HttpStatus.OK
-//        )
-//    }
 }
