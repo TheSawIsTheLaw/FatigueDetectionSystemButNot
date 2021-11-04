@@ -7,12 +7,15 @@ import com.fdsystem.fdserver.domain.dtos.MeasurementData
 import com.fdsystem.fdserver.domain.dtos.ResponseMeasurementsDTO
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
+import com.fdsystem.fdserver.domain.response.ResponseMessage
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
+import org.springframework.http.HttpStatus
+import java.lang.RuntimeException
 import java.time.Instant
 
 internal class DataControllerTest
@@ -45,6 +48,10 @@ internal class DataControllerTest
     private data class MockParameters(
         val claimsWithNormalToken: Claims = Jwts.claims(
             mapOf<String, Any>("DBToken" to "normTok")
+        ),
+
+        val claimsForServerCheck: Claims = Jwts.claims(
+            mapOf<String, Any>("DBToken" to "serverExcCheck")
         )
     )
 
@@ -52,6 +59,7 @@ internal class DataControllerTest
 
     init
     {
+        // For normal token
         Mockito.`when`(
             jwtTokenUtilMock.getUsernameFromToken("normTok")
         ).thenReturn("normTok")
@@ -65,6 +73,21 @@ internal class DataControllerTest
                 "normTok", "normTok", listOf("pulse", "arterialpressure")
             )
         ).thenReturn(mockExpectations.pulseAndArterialList)
+
+        // For dead server
+        Mockito.`when`(
+            jwtTokenUtilMock.getUsernameFromToken("serverExcCheck")
+        ).thenReturn("serverExcCheck")
+
+        Mockito.`when`(
+            jwtTokenUtilMock.getAllClaimsFromToken("serverExcCheck")
+        ).thenReturn(mockParameters.claimsForServerCheck)
+
+        Mockito.`when`(
+            dataServiceMock.getMeasurements(
+                "serverExcCheck", "serverExcCheck", listOf()
+            )
+        ).thenThrow(RuntimeException())
     }
 
     @Test
@@ -94,16 +117,41 @@ internal class DataControllerTest
 
     }
 
+    // This test is created for fun only. There is no way to reproduce it
+    // in production
     @Test
     fun getDataTestFailureOnNoTokenProvidedOrInvalidForm()
     {
+        // Arrange
+        val measurementsNames = listOf<String>()
+        val jwtToken = "lol"
 
+        // Act
+        val output = try
+        {
+            controllerToTest.getData(measurementsNames, jwtToken)
+        }
+        catch (exc: Exception)
+        {
+            null
+        }
+
+        // Assert
+        assert(output == null)
     }
 
     @Test
     fun getDataTestFailureOnDeadServer()
     {
+        // Arrange
+        val measurementsList = listOf<String>()
+        val jwtToken = "Bearer serverExcCheck"
 
+        // Act
+        val response = controllerToTest.getData(measurementsList, jwtToken)
+
+        // Assert
+        assert((response.body as ResponseMessage).message == "Data server is dead :(")
     }
 
     @Test
