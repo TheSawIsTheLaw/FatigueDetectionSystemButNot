@@ -2,9 +2,7 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
-import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
-import com.fdsystem.fdserver.domain.dtos.MeasurementData
-import com.fdsystem.fdserver.domain.dtos.ResponseMeasurementsDTO
+import com.fdsystem.fdserver.domain.dtos.*
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.domain.response.ResponseMessage
@@ -74,6 +72,26 @@ internal class DataControllerTest
             )
         ).thenReturn(mockExpectations.pulseAndArterialList)
 
+        Mockito.doNothing().`when`(
+            dataServiceMock
+        ).sendMeasurements(
+            "normTok", "normTok",
+            AcceptMeasurementsListDTO(
+                listOf(
+                    AcceptMeasurementsDTO(
+                        "pulse", listOf(
+                            MeasurementDataWithoutTime("30")
+                        )
+                    ),
+                    AcceptMeasurementsDTO(
+                        "arterialpressure", listOf(
+                            MeasurementDataWithoutTime("90")
+                        )
+                    )
+                )
+            )
+        )
+
         // For dead server
         Mockito.`when`(
             jwtTokenUtilMock.getUsernameFromToken("serverExcCheck")
@@ -86,6 +104,15 @@ internal class DataControllerTest
         Mockito.`when`(
             dataServiceMock.getMeasurements(
                 "serverExcCheck", "serverExcCheck", listOf()
+            )
+        ).thenThrow(RuntimeException())
+
+        Mockito.`when`(
+            dataServiceMock.sendMeasurements(
+                "serverExcCheck", "serverExcCheck",
+                AcceptMeasurementsListDTO(
+                    listOf()
+                )
             )
         ).thenThrow(RuntimeException())
     }
@@ -155,7 +182,72 @@ internal class DataControllerTest
     }
 
     @Test
-    fun addData()
+    fun addDataTestSuccess()
     {
+        // Arrange
+        val measurementsList = AcceptMeasurementsListDTO(
+            listOf(
+                AcceptMeasurementsDTO(
+                    "pulse", listOf(
+                        MeasurementDataWithoutTime("30")
+                    )
+                ),
+                AcceptMeasurementsDTO(
+                    "arterialpressure", listOf(
+                        MeasurementDataWithoutTime("90")
+                    )
+                )
+            )
+        )
+        val jwtToken = "Bearer normTok"
+
+        // Act
+        val response = controllerToTest.addData(measurementsList, jwtToken)
+
+        // Assert
+        assert(
+            (response.body as ResponseMessage).message == "Measurements " +
+                    "were carefully sent"
+        )
+    }
+
+    // This test is created for fun only. There is no way to reproduce it
+    // in production
+    @Test
+    fun addDataTestFailureOnNoTokenProvidedOrInvalidForm()
+    {
+        // Arrange
+        val measurementsList = AcceptMeasurementsListDTO(listOf())
+        val jwtToken = "ololo"
+
+        // Act
+        val response = try
+        {
+            controllerToTest.addData(measurementsList, jwtToken)
+        }
+        catch (exc: Exception)
+        {
+            null
+        }
+
+        // Assert
+        assert(response == null)
+    }
+
+    @Test
+    fun addDataTestFailureOnDeadServer()
+    {
+        // Arrange
+        val measurementsList = AcceptMeasurementsListDTO(listOf())
+        val jwtToken = "Bearer serverExcCheck"
+
+        // Act
+        val response = controllerToTest.addData(measurementsList, jwtToken)
+
+        // Assert
+        assert(
+            (response.body as ResponseMessage).message == "Data server is " +
+                    "dead :("
+        )
     }
 }
