@@ -83,7 +83,7 @@ internal class ResponseCreatorTest
     }
 
     @Test
-    fun userNotFoundRepsonseTestSuccess()
+    fun userNotFoundResponseTestSuccess()
     {
         // Arrange
         val message = "notFoundMessage"
