@@ -2,6 +2,8 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
+import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
+import com.fdsystem.fdserver.domain.dtos.MeasurementData
 import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
@@ -36,17 +38,21 @@ class DataService(private val charRepository: CharRepositoryImpl)
         token: String,
         bucketName: String,
         requiredNames: List<String>
-    ): List<DSMeasurementList>
+    ): List<MeasurementDTO>
     {
-        val outMeasurements: MutableList<DSMeasurementList> =
+        val outMeasurements: MutableList<MeasurementDTO> =
             mutableListOf()
 
         for (charName in requiredNames)
         {
             LogFactory.getLog(javaClass).error("Current charName: $charName")
             outMeasurements.add(
-                DSMeasurementList(
-                    charName, getMeasurement(token, bucketName, charName)
+                MeasurementDTO(
+                    charName, getMeasurement(token, bucketName, charName).map {
+                        MeasurementData(
+                            it.value, it.time
+                        )
+                    }
                 )
             )
         }

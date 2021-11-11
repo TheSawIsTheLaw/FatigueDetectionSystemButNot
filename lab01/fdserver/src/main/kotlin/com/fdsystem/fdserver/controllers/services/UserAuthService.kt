@@ -66,13 +66,13 @@ class UserAuthService(
 
     fun getUserByUsername(
         username: String
-    ): DSUserCredentials
+    ): UserCredentialsDTO
     {
         val userModel = userRepository.getUserByUsername(
             USUserCredentials
                 (username, "", "")
         )
-        return DSUserCredentials(
+        return UserCredentialsDTO(
             userModel.username, userModel.password,
             userModel.dbToken
         )

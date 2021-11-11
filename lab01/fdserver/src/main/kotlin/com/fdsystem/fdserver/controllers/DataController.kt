@@ -88,7 +88,7 @@ class DataController(
         val token =
             jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
 
-        val outList: List<DSMeasurementList>
+        val outList: List<MeasurementDTO>
         try
         {
             outList =
@@ -105,15 +105,8 @@ class DataController(
             )
         }
 
-        // With these words, a real nightmare began on the Ukrainian train...
         return ResponseEntity(
-            ResponseMeasurementsDTO(outList.map {
-                MeasurementDTO(it.name, it.measurements.map { innerIt ->
-                    MeasurementData(
-                        innerIt.value, innerIt.time
-                    )
-                })
-            }),
+            ResponseMeasurementsDTO(outList),
             HttpStatus.OK
         )
     }

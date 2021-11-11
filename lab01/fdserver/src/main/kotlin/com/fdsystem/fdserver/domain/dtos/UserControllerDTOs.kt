@@ -2,7 +2,8 @@ package com.fdsystem.fdserver.domain.dtos
 
 data class UserCredentialsDTO(
     val username: String,
-    val password: String
+    val password: String,
+    val dbToken: String
 )
 
 data class NewPasswordDTOWithUsername(
