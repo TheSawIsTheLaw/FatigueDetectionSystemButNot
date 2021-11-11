@@ -31,9 +31,9 @@ services:
     ports:
       - "9090:9090"
     depends_on:
-      - service1
-      - service2
-      - service3
+      - main_service
+      - slave_service1
+      - slave_service2
   main_service:
     build:
       context: .
