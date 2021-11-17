@@ -1,13 +1,12 @@
 package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsDTO
-import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
-import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
+import com.fdsystem.fdserver.domain.dtos.*
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
+import org.apache.commons.logging.LogFactory
 import org.junit.jupiter.api.Test
 
 import org.mockito.Mockito
@@ -22,12 +21,24 @@ internal class DataServiceTest
 
     private data class MockExpectations(
         val pulseListExample:
+        List<MeasurementData> = listOf(
+            MeasurementData("60", Instant.MIN),
+            MeasurementData("63", Instant.MIN)
+        ),
+
+        val dspulseListExample:
         List<DSMeasurement> = listOf(
             DSMeasurement("pulse", "60", Instant.MIN),
             DSMeasurement("pulse", "63", Instant.MIN)
         ),
 
         val arterialPressureListExample:
+        List<MeasurementData> = listOf(
+            MeasurementData("60", Instant.MIN),
+            MeasurementData("63", Instant.MIN)
+        ),
+
+        val dsarterialPressureListExample:
         List<DSMeasurement> = listOf(
             DSMeasurement("arterialpressure", "60", Instant.MIN),
             DSMeasurement("arterialpressure", "63", Instant.MIN)
@@ -95,13 +106,13 @@ internal class DataServiceTest
             charRepositoryMock.get(
                 mockParameters.dsDataAccessInfoWithFullInitPulse
             )
-        ).thenReturn(mockExpectations.pulseListExample)
+        ).thenReturn(mockExpectations.dspulseListExample)
 
         Mockito.`when`(
             charRepositoryMock.get(
                 mockParameters.dsDataAccessInfoWithFullInitArterial
             )
-        ).thenReturn(mockExpectations.arterialPressureListExample)
+        ).thenReturn(mockExpectations.dsarterialPressureListExample)
 
         Mockito.`when`(
             charRepositoryMock.get(
@@ -149,7 +160,7 @@ internal class DataServiceTest
             )
 
         // Assert
-        assert(returnedMeasurements == mockExpectations.pulseListExample)
+        assert(returnedMeasurements == mockExpectations.dspulseListExample)
     }
 
     @Test
@@ -202,11 +213,11 @@ internal class DataServiceTest
         // Assert
         assert(
             returnedMeasurements == listOf(
-                DSMeasurementList(
+                MeasurementDTO(
                     "pulse",
                     mockExpectations.pulseListExample
                 ),
-                DSMeasurementList(
+                MeasurementDTO(
                     "arterialpressure",
                     mockExpectations.arterialPressureListExample
                 )
@@ -230,7 +241,7 @@ internal class DataServiceTest
         // Assert
         assert(
             returnedMeasurements == listOf(
-                DSMeasurementList("pulse", mockExpectations.pulseListExample)
+                MeasurementDTO("pulse", mockExpectations.pulseListExample)
             )
         )
     }

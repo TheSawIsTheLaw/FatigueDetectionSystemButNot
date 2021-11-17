@@ -6,7 +6,7 @@ services:
     env_file:
       - .env
     ports:
-      - "${INFLUXDB_PORT}:8086"
+      - ${INFLUXDB_PORT}:8086
 
   postgres:
     image: postgres:latest
@@ -22,7 +22,7 @@ services:
     ports:
       - ${POSTGRES_PORT}:5432
 
-  shit:
+  nginx:
     build:
       context: ./nginx
       dockerfile: Dockerfile
@@ -31,9 +31,13 @@ services:
     ports:
       - "9090:9090"
     depends_on:
+      - influxdb
+      - postgres
       - main_service
       - slave_service1
       - slave_service2
+      - swagger_service
+
   main_service:
     build:
       context: .
@@ -42,6 +46,10 @@ services:
       - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8181:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
   slave_service1:
     build:
       context: .
@@ -50,6 +58,10 @@ services:
       - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8282:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
   slave_service2:
     build:
       context: .
@@ -58,6 +70,10 @@ services:
       - ./nginx/:/usr/share/nginx/html/
     ports:
       - "8383:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
   swagger_service:
     build:
       context: .

@@ -27,15 +27,15 @@ internal class DataControllerTest
     )
 
     private data class MockExpectations(
-        val pulseAndArterialList: List<DSMeasurementList> =
+        val pulseAndArterialList: List<MeasurementDTO> =
             listOf(
-                DSMeasurementList(
+                MeasurementDTO(
                     "pulse", listOf(
-                        DSMeasurement("pulse", "30", Instant.MIN)
+                        MeasurementData("30", Instant.MIN)
                     )
-                ), DSMeasurementList(
+                ), MeasurementDTO(
                     "arterialpressure", listOf(
-                        DSMeasurement("arterialpressure", "90", Instant.MIN)
+                        MeasurementData("90", Instant.MIN)
                     )
                 )
             )

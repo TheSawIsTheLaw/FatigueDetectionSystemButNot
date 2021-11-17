@@ -45,17 +45,20 @@ internal class UserControllerTest
     private data class MockParameters(
         val successUser: UserCredentialsDTO = UserCredentialsDTO(
             "successUser",
-            "pass"
+            "pass",
+            ""
         ),
 
         val internalErrorUser: UserCredentialsDTO = UserCredentialsDTO(
             "internalServerErrorUser",
-            "pass"
+            "pass",
+            ""
         ),
 
         val alreadyExistsUser: UserCredentialsDTO = UserCredentialsDTO(
             "alreadyExistsUser",
-            "pass"
+            "pass",
+            ""
         ),
 
         val internalErrorPasswords: NewPasswordDTOWithUsername =
@@ -89,7 +92,7 @@ internal class UserControllerTest
 
         Mockito.`when`(
             userServiceMock.getUserByUsername("successUser")
-        ).thenReturn(DSUserCredentials("successUser", "pass", "successToken"))
+        ).thenReturn(UserCredentialsDTO("successUser", "pass", "successToken"))
 
         Mockito.`when`(
             userServiceMock.register(mockParameters.successUser)
@@ -155,7 +158,8 @@ internal class UserControllerTest
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "successUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act
@@ -171,7 +175,8 @@ internal class UserControllerTest
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "notFoundUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act
@@ -187,7 +192,8 @@ internal class UserControllerTest
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "internalServerErrorUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act
@@ -206,7 +212,8 @@ internal class UserControllerTest
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "successUser",
-            "InvalidPass"
+            "InvalidPass",
+            ""
         )
 
         // Act
@@ -225,7 +232,8 @@ internal class UserControllerTest
         // Arrange
         val user = UserCredentialsDTO(
             "successUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act
@@ -241,7 +249,8 @@ internal class UserControllerTest
         // Arrange
         val user = UserCredentialsDTO(
             "internalServerErrorUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act
@@ -260,7 +269,8 @@ internal class UserControllerTest
         // Arrange
         val user = UserCredentialsDTO(
             "alreadyExistsUser",
-            "pass"
+            "pass",
+            ""
         )
 
         // Act

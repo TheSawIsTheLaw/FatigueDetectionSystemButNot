@@ -26,7 +26,7 @@ internal class JwtTokenUtilTest
     }
 
     @Test
-    fun tokenGeneratorTestWithSuccess()
+    fun tokenGeneratorWithSuccessTest()
     {
         // Arrange
         val username = "user"
@@ -44,7 +44,7 @@ internal class JwtTokenUtilTest
     }
 
     @Test
-    fun doGenerateTokenTestWithSuccess()
+    fun doGenerateTokenWithSuccessTest()
     {
         // Arrange
         val username = "user"

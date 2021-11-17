@@ -205,7 +205,7 @@ internal class UserAuthServiceTest
     {
         // Arrange
         val user = UserCredentialsDTO(
-            "Username", "Password"
+            "Username", "Password", ""
         )
 
         // Act
@@ -221,7 +221,7 @@ internal class UserAuthServiceTest
     {
         // Arrange
         val user = UserCredentialsDTO(
-            "Username", "AnotherPasswordToCheckRetryOfRegistration"
+            "Username", "AnotherPasswordToCheckRetryOfRegistration", ""
         )
 
         // Act
@@ -238,7 +238,7 @@ internal class UserAuthServiceTest
     {
         // Arrange
         val user = UserCredentialsDTO(
-            "", ""
+            "", "", ""
         )
 
         // Act
@@ -317,7 +317,7 @@ internal class UserAuthServiceTest
         val returnedUser = serviceToTest.getUserByUsername(username)
 
         // Assert
-        assert(returnedUser == DSUserCredentials("a", "ololo", "123"))
+        assert(returnedUser == UserCredentialsDTO("a", "ololo", "123"))
     }
 
     @Test
@@ -330,7 +330,7 @@ internal class UserAuthServiceTest
         val returnedUser = serviceToTest.getUserByUsername(username)
 
         // Assert
-        assert(returnedUser == DSUserCredentials("", "", ""))
+        assert(returnedUser == UserCredentialsDTO("", "", ""))
     }
 
     @Test

@@ -3,45 +3,35 @@ package com.fdsystem.fdserver.data
 import com.fdsystem.fdserver.config.InfluxdbConfiguration
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
-import com.influxdb.client.kotlin.InfluxDBClientKotlin
-import com.influxdb.client.kotlin.QueryKotlinApi
-import org.apache.commons.logging.LogFactory
 import org.junit.jupiter.api.Test
-import org.mockito.Mockito
-import java.lang.RuntimeException
-import java.net.ConnectException
 
 internal class CharRepositoryImplTest
 {
     val confPath =
         "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
+    // Грубо говоря, вот и классические юниты. Моков вообще нет...
     val configuration = InfluxdbConfiguration(confPath)
-
-    val dbClientMock = Mockito.mock(InfluxDBClientKotlin::class.java)
 
     val repositoryToTest = CharRepositoryImpl(configuration)
 
-    private data class MockParameters(
-        val successQuery: String = "from(bucket: \"bucket\"\n" +
-                "|> range(start: 0)\n" +
-                "|> filter(fn: (r) => (r[\"_measurement\"] == \"measName\"))"
-    )
-
-    private val mockParameters = MockParameters()
-
-    private data class MockExpectations(
-        val i: Int = 1
-    )
-
-    private val mockExpectations = MockExpectations()
+//    private data class MockParameters(
+//        val successQuery: String = "from(bucket: \"bucket\"\n" +
+//                "|> range(start: 0)\n" +
+//                "|> filter(fn: (r) => (r[\"_measurement\"] == \"measName\"))"
+//    )
+//
+//    private val mockParameters = MockParameters()
+//
+//    private data class MockExpectations(
+//        val i: Int = 1
+//    )
+//
+//    private val mockExpectations = MockExpectations()
 
     init
     {
-
         // dbClientMock
         // I can't create Table by myself and creating Channel<FluxRecord>, sry
-        Mockito.`when`(dbClientMock.getQueryKotlinApi())
-            .thenThrow(RuntimeException("There is no way to go to next lines"))
     }
 
     @Test
