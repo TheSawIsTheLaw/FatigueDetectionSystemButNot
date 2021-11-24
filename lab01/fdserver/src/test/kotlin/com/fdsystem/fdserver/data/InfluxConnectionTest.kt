@@ -1,14 +1,14 @@
 package com.fdsystem.fdserver.data
 
 import com.influxdb.exceptions.InfluxException
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
-internal class InfluxConnectionTest
-{
+internal class InfluxConnectionTest {
     @Test
-    fun getConnectionToDBTestSuccess()
-    {
+    fun getConnectionToDBTestSuccess() {
         // Arrange
         val connectionToTest = InfluxConnection(
             "http://localhost:8086",
@@ -16,44 +16,27 @@ internal class InfluxConnectionTest
         )
 
         // Action
-        val influxConnection = try
-        {
-            connectionToTest.getConnectionToDB()
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(influxConnection != null)
+        assertThatNoException().isThrownBy { connectionToTest.getConnectionToDB() }
     }
 
     @Test
-    fun getConnectionToDBTestFailureOnNonParseableURL()
-    {
+    fun getConnectionToDBTestFailureOnNonParseableURL() {
         // Arrange
         val connectionToTest = InfluxConnection(
             "lol", "tok", "org"
         )
 
         // Action
-        val influxConnection = try
-        {
-            connectionToTest.getConnectionToDB()
-        }
-        catch (exc: InfluxException)
-        {
-            null
-        }
 
         // Assert
-        assert(influxConnection == null)
+        assertThatExceptionOfType(InfluxException::class.java)
+            .isThrownBy { connectionToTest.getConnectionToDB() }
     }
 
     @Test
-    fun getConnectionWriteTestSuccess()
-    {
+    fun getConnectionWriteTestSuccess() {
         // Arrange
         val connectionToTest = InfluxConnection(
             "http://localhost:8086",
@@ -62,22 +45,13 @@ internal class InfluxConnectionTest
         val bucketName = "someone"
 
         // Action
-        val influxConnection = try
-        {
-            connectionToTest.getConnectionWrite(bucketName)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(influxConnection != null)
+        assertThatNoException().isThrownBy { connectionToTest.getConnectionWrite(bucketName) }
     }
 
     @Test
-    fun getConnectionWriteTestFailureOnNonParseableURL()
-    {
+    fun getConnectionWriteTestFailureOnNonParseableURL() {
         // Arrange
         val connectionToTest = InfluxConnection(
             "lol", "tok", "org"
@@ -85,16 +59,12 @@ internal class InfluxConnectionTest
         val bucketName = "someone"
 
         // Action
-        val influxConnection = try
-        {
-            connectionToTest.getConnectionWrite(bucketName)
-        }
-        catch (exc: InfluxException)
-        {
-            null
-        }
 
         // Assert
-        assert(influxConnection == null)
+        assertThatExceptionOfType(InfluxException::class.java).isThrownBy {
+            connectionToTest.getConnectionWrite(
+                bucketName
+            )
+        }
     }
 }

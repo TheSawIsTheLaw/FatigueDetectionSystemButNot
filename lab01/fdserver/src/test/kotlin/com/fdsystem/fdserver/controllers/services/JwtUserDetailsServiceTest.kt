@@ -2,14 +2,18 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
+import org.apache.commons.logging.LogFactory
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.platform.commons.logging.LoggerFactory
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UsernameNotFoundException
 import java.lang.RuntimeException
 
-internal class JwtUserDetailsServiceTest
-{
+internal class JwtUserDetailsServiceTest {
     private val userRepositoryImpl = Mockito.mock(
         UserRepositoryImpl::class.java
     )
@@ -38,8 +42,7 @@ internal class JwtUserDetailsServiceTest
     private val mockExpectations = MockExpectations()
     private val mockParameters = MockParameters()
 
-    init
-    {
+    init {
         Mockito.`when`(
             userRepositoryImpl.userExists(mockParameters.existingUser)
         ).thenReturn(true)
@@ -58,8 +61,7 @@ internal class JwtUserDetailsServiceTest
     }
 
     @Test
-    fun successLoadForUser()
-    {
+    fun successLoadForUser() {
         // Arrange
         val username = "existingUser"
 
@@ -67,46 +69,33 @@ internal class JwtUserDetailsServiceTest
         val returnedUser = serviceToTest.loadUserByUsername(username)
 
         // Assert
-        assert(returnedUser == User("existingUser", "pass", arrayListOf()))
+        assertEquals(User("existingUser", "pass", arrayListOf()), returnedUser)
     }
 
     @Test
-    fun failureUserNotFound()
-    {
+    fun failureUserNotFound() {
         // Arrange
         val username = "notExistingUser"
 
         // Action
-        val returnedUser = try
-        {
-            serviceToTest.loadUserByUsername(username)
-        }
-        catch (exc: UsernameNotFoundException)
-        {
-            null
-        }
+        // Throw is checked in assert
+        // Is this a good way?..
 
         // Assert
-        assert(returnedUser == null)
+        assertThatExceptionOfType(UsernameNotFoundException::class.java)
+            .isThrownBy { serviceToTest.loadUserByUsername(username) }
     }
 
     @Test
-    fun failureInternalError()
-    {
+    fun failureInternalError() {
         // Arrange
         val username = "ecxUser"
 
         // Action
-        val returnedUser = try
-        {
-            serviceToTest.loadUserByUsername(username)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
+        // Throw is checked in assert
 
         // Assert
-        assert(returnedUser == null)
+        assertThatExceptionOfType(UsernameNotFoundException::class.java)
+            .isThrownBy { serviceToTest.loadUserByUsername(username) }
     }
 }

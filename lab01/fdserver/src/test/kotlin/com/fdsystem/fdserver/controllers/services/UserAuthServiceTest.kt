@@ -10,15 +10,16 @@ import com.fdsystem.fdserver.domain.logicentities.TokenInformation
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.apache.commons.logging.LogFactory
+import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.platform.commons.logging.LoggerFactory
 import org.mockito.Mock
 import org.mockito.Mockito
-import java.lang.RuntimeException
+import org.springframework.security.core.userdetails.UsernameNotFoundException
+import kotlin.RuntimeException
 
-internal class UserAuthServiceTest
-{
+internal class UserAuthServiceTest {
     private val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
@@ -121,8 +122,7 @@ internal class UserAuthServiceTest
             USUserCredentials("c", "", "")
     )
 
-    private fun prepareCharRepositoryMock()
-    {
+    private fun prepareCharRepositoryMock() {
         Mockito.`when`(
             charRepositoryMock.getNewTokenForUser(mockParameters.usUserCredentialsExample)
         ).thenReturn(mockExpectations.successTokenInformation)
@@ -136,8 +136,7 @@ internal class UserAuthServiceTest
         ).thenReturn(mockExpectations.failTokenInformation)
     }
 
-    private fun prepareUserRepositoryMock()
-    {
+    private fun prepareUserRepositoryMock() {
         Mockito.`when`(
             userRepositoryMock.registerUser(
                 mockParameters.usUserCredentialsExampleWithToken
@@ -194,15 +193,13 @@ internal class UserAuthServiceTest
     private val mockExpectations: MockExpectations = MockExpectations()
     private val mockParameters: MockParameters = MockParameters()
 
-    init
-    {
+    init {
         prepareCharRepositoryMock()
         prepareUserRepositoryMock()
     }
 
     @Test
-    fun registerWithSuccessRegistration()
-    {
+    fun registerWithSuccessRegistration() {
         // Arrange
         val user = UserCredentialsDTO(
             "Username", "Password", ""
@@ -213,12 +210,11 @@ internal class UserAuthServiceTest
             serviceToTest.register(user)
 
         // Assert
-        assert(returnedRegistrationStatus == "Success")
+        assertEquals("Success", returnedRegistrationStatus)
     }
 
     @Test
-    fun registerWithAlreadyExistsFailure()
-    {
+    fun registerWithAlreadyExistsFailure() {
         // Arrange
         val user = UserCredentialsDTO(
             "Username", "AnotherPasswordToCheckRetryOfRegistration", ""
@@ -229,35 +225,25 @@ internal class UserAuthServiceTest
             serviceToTest.register(user)
 
         // Assert
-        LogFactory.getLog(javaClass).debug(returnedRegistrationStatus)
-        assert(returnedRegistrationStatus == "User already exists")
+        assertEquals("User already exists", returnedRegistrationStatus)
     }
 
     @Test
-    fun registerWithInternalErrorException()
-    {
+    fun registerWithInternalErrorException() {
         // Arrange
         val user = UserCredentialsDTO(
             "", "", ""
         )
 
         // Act
-        val returnedRegistrationStatus = try
-        {
-            serviceToTest.register(user)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(returnedRegistrationStatus == null)
+        Assertions.assertThatExceptionOfType(RuntimeException::class.java)
+            .isThrownBy { serviceToTest.register(user) }
     }
 
     @Test
-    fun changeUserInfoWithSuccess()
-    {
+    fun changeUserInfoWithSuccess() {
         // Arrange
         val userInfo = NewPasswordDTOWithUsername(
             "Username", "oldPas", "newPas"
@@ -267,12 +253,11 @@ internal class UserAuthServiceTest
         val returnedStatus = serviceToTest.changeUserInfo(userInfo)
 
         // Assert
-        assert(returnedStatus)
+        assertTrue(returnedStatus)
     }
 
     @Test
-    fun changeUserInfoWithFailurePassword()
-    {
+    fun changeUserInfoWithFailurePassword() {
         // Arrange
         val userInfo = NewPasswordDTOWithUsername(
             "FailUsername", "FailOldPas", "FailNewPas"
@@ -282,34 +267,25 @@ internal class UserAuthServiceTest
         val returnedStatus = serviceToTest.changeUserInfo(userInfo)
 
         // Assert
-        assert(!returnedStatus)
+        assertFalse(returnedStatus)
     }
 
     @Test
-    fun changeUserInfoWithException()
-    {
+    fun changeUserInfoWithException() {
         // Arrange
         val userInfo = NewPasswordDTOWithUsername(
             "excUsername", "", ""
         )
 
         // Act
-        val returnedStatus = try
-        {
-            serviceToTest.changeUserInfo(userInfo)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(returnedStatus == null)
+        Assertions.assertThatExceptionOfType(RuntimeException::class.java)
+            .isThrownBy { serviceToTest.changeUserInfo(userInfo) }
     }
 
     @Test
-    fun getUserByUsernameSuccess()
-    {
+    fun getUserByUsernameSuccess() {
         // Arrange
         val username = "a"
 
@@ -317,12 +293,11 @@ internal class UserAuthServiceTest
         val returnedUser = serviceToTest.getUserByUsername(username)
 
         // Assert
-        assert(returnedUser == UserCredentialsDTO("a", "ololo", "123"))
+        assertEquals(UserCredentialsDTO("a", "ololo", "123"), returnedUser)
     }
 
     @Test
-    fun getUserByUsernameFailure()
-    {
+    fun getUserByUsernameFailure() {
         // Arrange
         val username = "b"
 
@@ -330,26 +305,18 @@ internal class UserAuthServiceTest
         val returnedUser = serviceToTest.getUserByUsername(username)
 
         // Assert
-        assert(returnedUser == UserCredentialsDTO("", "", ""))
+        assertEquals(UserCredentialsDTO("", "", ""), returnedUser)
     }
 
     @Test
-    fun getUserByUsernameException()
-    {
+    fun getUserByUsernameException() {
         // Arrange
         val username = "c"
 
         // Act
-        val returnedUser = try
-        {
-            serviceToTest.getUserByUsername(username)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(returnedUser == null)
+        Assertions.assertThatExceptionOfType(RuntimeException::class.java)
+            .isThrownBy { serviceToTest.getUserByUsername(username) }
     }
 }

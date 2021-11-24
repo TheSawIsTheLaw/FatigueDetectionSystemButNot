@@ -7,13 +7,15 @@ import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import org.apache.commons.logging.LogFactory
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatNoException
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 import org.mockito.Mockito
 import java.time.Instant
 
-internal class DataServiceTest
-{
+internal class DataServiceTest {
     private val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
@@ -100,8 +102,7 @@ internal class DataServiceTest
     private val mockExpectations = MockExpectations()
     private val mockParameters = MockParameters()
 
-    init
-    {
+    init {
         Mockito.`when`(
             charRepositoryMock.get(
                 mockParameters.dsDataAccessInfoWithFullInitPulse
@@ -130,76 +131,7 @@ internal class DataServiceTest
     }
 
     @Test
-    fun getMeasurementWithFullListReturned()
-    {
-        // Arrange
-        // Prepare parameters
-        val token = "123"
-        val bucketName = "someone"
-        val charName = "pulse"
-
-        // Set private method public
-        val requiredPrivateMethod =
-            serviceToTest.javaClass.getDeclaredMethod(
-                "getMeasurement",
-                String::class.java, String::class.java, String::class.java
-            )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val privateMethodParameters = arrayOfNulls<Any>(3)
-        privateMethodParameters[0] = token
-        privateMethodParameters[1] = bucketName
-        privateMethodParameters[2] = charName
-
-        // Act
-        val returnedMeasurements =
-            requiredPrivateMethod.invoke(
-                serviceToTest,
-                *privateMethodParameters
-            )
-
-        // Assert
-        assert(returnedMeasurements == mockExpectations.dspulseListExample)
-    }
-
-    @Test
-    fun getMeasurementWithEmptyListReturned()
-    {
-        // Arrange
-        // Prepare parameters
-        val token = ""
-        val bucketName = ""
-        val charName = ""
-
-        // Set private method public
-        val requiredPrivateMethod =
-            serviceToTest.javaClass.getDeclaredMethod(
-                "getMeasurement",
-                String::class.java, String::class.java, String::class.java
-            )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val privateMethodParameters = arrayOfNulls<Any>(3)
-        privateMethodParameters[0] = token
-        privateMethodParameters[1] = bucketName
-        privateMethodParameters[2] = charName
-
-        // Act
-        val returnedMeasurements =
-            requiredPrivateMethod.invoke(
-                serviceToTest,
-                *privateMethodParameters
-            )
-
-        // Assert
-        assert(returnedMeasurements == listOf<DSMeasurement>())
-    }
-
-    @Test
-    fun getMeasurementsWithSeveralElementsReturned()
-    {
+    fun getMeasurementsWithSeveralElementsReturned() {
         // Arrange
         // Prepare parameters
         val token = "123"
@@ -211,8 +143,8 @@ internal class DataServiceTest
             serviceToTest.getMeasurements(token, bucketName, requiredNames)
 
         // Assert
-        assert(
-            returnedMeasurements == listOf(
+        assertEquals(
+            listOf(
                 MeasurementDTO(
                     "pulse",
                     mockExpectations.pulseListExample
@@ -221,13 +153,13 @@ internal class DataServiceTest
                     "arterialpressure",
                     mockExpectations.arterialPressureListExample
                 )
-            )
+            ),
+            returnedMeasurements
         )
     }
 
     @Test
-    fun getMeasurementsWithOneElementReturned()
-    {
+    fun getMeasurementsWithOneElementReturned() {
         // Arrange
         // Prepare parameters
         val token = "123"
@@ -239,16 +171,11 @@ internal class DataServiceTest
             serviceToTest.getMeasurements(token, bucketName, requiredNames)
 
         // Assert
-        assert(
-            returnedMeasurements == listOf(
-                MeasurementDTO("pulse", mockExpectations.pulseListExample)
-            )
-        )
+        assertEquals(listOf(MeasurementDTO("pulse", mockExpectations.pulseListExample)), returnedMeasurements)
     }
 
     @Test
-    fun getMeasurementsWithNoElementsReturned()
-    {
+    fun getMeasurementsWithNoElementsReturned() {
         // Arrange
         // Prepare parameters
         val token = ""
@@ -260,48 +187,11 @@ internal class DataServiceTest
             serviceToTest.getMeasurements(token, bucketName, requiredNames)
 
         // Assert
-        assert(returnedMeasurements == listOf<DSMeasurementList>())
+        assertEquals(listOf<DSMeasurementList>(), returnedMeasurements)
     }
 
     @Test
-    fun sendMeasurementTestToCheckNoException()
-    {
-        // Arrange
-        val token = "123"
-        val bucketName = "someone"
-        val charName = "pulse"
-        val chars = listOf(
-            MeasurementDataWithoutTime("34"),
-            MeasurementDataWithoutTime("36")
-        )
-
-        // Set private method public
-        val requiredPrivateMethod = serviceToTest.javaClass.getDeclaredMethod(
-            "sendMeasurement",
-            String::class.java, String::class.java, String::class.java,
-            java.util.List::class.java
-        )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val privateMethodParameters = arrayOfNulls<Any>(4)
-        privateMethodParameters[0] = token
-        privateMethodParameters[1] = bucketName
-        privateMethodParameters[2] = charName
-        privateMethodParameters[3] = chars
-
-        // Act
-        requiredPrivateMethod.invoke(
-            serviceToTest,
-            *privateMethodParameters
-        )
-
-        // If there is no exception then it's ok
-    }
-
-    @Test
-    fun sendMeasurementsTestToCheckNoException()
-    {
+    fun sendMeasurementsTestToCheckNoException() {
         // Arrange
         val token = "123"
         val bucketName = "someone"
@@ -325,6 +215,7 @@ internal class DataServiceTest
         // Act
         serviceToTest.sendMeasurements(token, bucketName, measurementList)
 
-        // If there is no exception then it's ok
+        // Assert
+        assertThatNoException()
     }
 }

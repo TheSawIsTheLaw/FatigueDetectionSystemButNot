@@ -6,18 +6,18 @@ import io.jsonwebtoken.SignatureAlgorithm
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.logging.LogFactory
+import org.junit.jupiter.api.Assertions
+import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.platform.commons.util.ReflectionUtils
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
 import java.util.*
 
-internal class JwtTokenUtilTest
-{
+internal class JwtTokenUtilTest {
     private val jwtTokenUtilToTest: JwtTokenUtil = JwtTokenUtil()
 
-    init
-    {
+    init {
         org.springframework.test.util.ReflectionTestUtils.setField(
             jwtTokenUtilToTest,
             "secret",
@@ -26,8 +26,7 @@ internal class JwtTokenUtilTest
     }
 
     @Test
-    fun tokenGeneratorWithSuccessTest()
-    {
+    fun tokenGeneratorWithSuccessTest() {
         // Arrange
         val username = "user"
         val password = "password"
@@ -40,48 +39,12 @@ internal class JwtTokenUtilTest
         // Assert
         val claims = jwtTokenUtilToTest.getAllClaimsFromToken(token)
 
-        assert(claims.subject == username && claims["DBToken"] == dbToken)
+        assertEquals(username, claims.subject)
+        assertEquals(dbToken, claims["DBToken"])
     }
 
     @Test
-    fun doGenerateTokenWithSuccessTest()
-    {
-        // Arrange
-        val username = "user"
-        val userDBToken = "tttkkkeeen"
-        val claims = hashMapOf("DBToken" to userDBToken)
-
-        // Set private method public
-        val requiredPrivateMethod =
-            jwtTokenUtilToTest.javaClass.getDeclaredMethod(
-                "doGenerateToken", java.util.Map::class.java,
-                String::class.java
-            )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val privateMethodParameters = arrayOfNulls<Any>(2)
-        privateMethodParameters[0] = claims
-        privateMethodParameters[1] = username
-
-        // Act
-        val jwtToken = requiredPrivateMethod.invoke(
-            jwtTokenUtilToTest,
-            *privateMethodParameters
-        ).toString()
-
-        // Assert
-        val returnedClaims = jwtTokenUtilToTest.getAllClaimsFromToken(jwtToken)
-
-        assert(
-            returnedClaims.subject == username &&
-                    returnedClaims["DBToken"] == userDBToken
-        )
-    }
-
-    @Test
-    fun getAllClaimsFromTokenSuccessTest()
-    {
+    fun getAllClaimsFromTokenSuccessTest() {
         // Arrange
         val username = "user"
         val password = "password"
@@ -94,35 +57,28 @@ internal class JwtTokenUtilTest
         val claimsFromToken = jwtTokenUtilToTest.getAllClaimsFromToken(token)
 
         // Assert
-        assert(
-            claimsFromToken.subject == username &&
-                    claimsFromToken["DBToken"] == dbToken
-        )
+        assertEquals(username, claimsFromToken.subject)
+        assertEquals(dbToken, claimsFromToken["DBToken"])
     }
 
     @Test
-    fun getAllClaimsFromTokenFailureOnStrangeTokenTest()
-    {
+    fun getAllClaimsFromTokenFailureOnStrangeTokenTest() {
         // Arrange
         val token = "lol, i'm a token uwu"
 
         // Action
-        val claimsFromToken = try
-        {
+        val claimsFromToken = try {
             jwtTokenUtilToTest.getAllClaimsFromToken(token)
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             null
         }
 
         // Assert
-        assert(claimsFromToken == null)
+        assertNull(claimsFromToken)
     }
 
     @Test
-    fun getUsernameFromTokenSuccessTest()
-    {
+    fun getUsernameFromTokenSuccessTest() {
         // Arrange
         val username = "user"
         val password = "password"
@@ -136,106 +92,27 @@ internal class JwtTokenUtilTest
         val subject = jwtTokenUtilToTest.getUsernameFromToken(jwtToken)
 
         // Assert
-        assert(subject == username)
+        assertEquals(subject, username)
     }
 
     @Test
-    fun getUsernameFromTokenFailureOnStrangeTokenTest()
-    {
+    fun getUsernameFromTokenFailureOnStrangeTokenTest() {
         // Arrange
         val jwtToken = "what am i doing?"
 
         // Action
-        val subject = try
-        {
+        val subject = try {
             jwtTokenUtilToTest.getUsernameFromToken(jwtToken)
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             null
         }
 
         // Assert
-        assert(subject == null)
+        assertNull(subject)
     }
 
     @Test
-    fun isTokenExpiredWithNotExpiredTokenTest()
-    {
-        // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "123456"
-
-        val jwtToken = jwtTokenUtilToTest.generateToken(
-            User(username, password, arrayListOf()), dbToken
-        )
-
-        // Set private method public
-        val requiredPrivateMethod =
-            jwtTokenUtilToTest.javaClass.getDeclaredMethod(
-                "isTokenExpired", String::class.java
-            )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val requiredMethodParameters = arrayOfNulls<Any>(1)
-        requiredMethodParameters[0] = jwtToken
-
-        // Action
-        val isExpired = requiredPrivateMethod.invoke(
-            jwtTokenUtilToTest,
-            *requiredMethodParameters
-        ) as Boolean
-
-        // Assert
-        assert(!isExpired)
-    }
-
-    @Test
-    fun isTokenExpiredWithExpiredTokenTest()
-    {
-        // Arrange
-        val claims = hashMapOf("dbToken" to "1222")
-        val subject = "what"
-        val secret = "LZKPDJMW7MSY273666MZNAAAUCJEBASUKOXK666777A"
-
-        val jwtToken = Jwts.builder().setClaims(claims).setSubject(subject)
-            .setIssuedAt(Date(System.currentTimeMillis()))
-            .setExpiration(Date(System.currentTimeMillis()))
-            .signWith(SignatureAlgorithm.HS256, secret).compact()
-
-        // Set private method public
-        val requiredPrivateMethod =
-            jwtTokenUtilToTest.javaClass.getDeclaredMethod(
-                "isTokenExpired", String::class.java
-            )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare method parameters
-        val requiredMethodParameters = arrayOfNulls<Any>(1)
-        requiredMethodParameters[0] = jwtToken
-
-        // Action
-        // Thank you very much, mate, for this 'magic' function.
-        val expiration = try
-        {
-            requiredPrivateMethod.invoke(
-                jwtTokenUtilToTest, *requiredMethodParameters
-            ) as Boolean
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
-
-        // Assert
-        assert(expiration == null)
-    }
-
-    @Test
-    fun validateTokenSuccessTest()
-    {
+    fun validateTokenSuccessTest() {
         // Arrange
         val username = "user"
         val password = "password"
@@ -249,12 +126,11 @@ internal class JwtTokenUtilTest
             jwtTokenUtilToTest.validateToken(jwtToken, userDetails)
 
         // Assert
-        assert(isTokenValid)
+        assertTrue(isTokenValid)
     }
 
     @Test
-    fun validateTokenFailureOnUsernameTest()
-    {
+    fun validateTokenFailureOnUsernameTest() {
         // Arrange
         val username = "user"
         val password = "password"
@@ -271,12 +147,11 @@ internal class JwtTokenUtilTest
             jwtTokenUtilToTest.validateToken(jwtToken, wrongUserDetails)
 
         // Assert
-        assert(!isTokenValid)
+        assertFalse(isTokenValid)
     }
 
     @Test
-    fun validateTokenFailureOnExpiredTokenTest()
-    {
+    fun validateTokenFailureOnExpiredTokenTest() {
         // Arrange
         val claims = hashMapOf("dbToken" to "1222")
         val subject = "what"
@@ -291,16 +166,13 @@ internal class JwtTokenUtilTest
         val userDetails = User(subject, password, arrayListOf())
 
         // Act
-        val validity = try
-        {
+        val validity = try {
             jwtTokenUtilToTest.validateToken(jwtToken, userDetails)
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             null
         }
 
         // Assert
-        assert(validity == null)
+        assertNull(validity)
     }
 }

@@ -3,21 +3,18 @@ package com.fdsystem.fdserver.controllers
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
 import com.fdsystem.fdserver.domain.dtos.*
-import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
-import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.domain.response.ResponseMessage
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
-import org.springframework.http.HttpStatus
-import java.lang.RuntimeException
 import java.time.Instant
+import kotlin.RuntimeException
 
-internal class DataControllerTest
-{
+internal class DataControllerTest {
     private val dataServiceMock = Mockito.mock(DataService::class.java)
     private val jwtTokenUtilMock = Mockito.mock(JwtTokenUtil::class.java)
 
@@ -55,8 +52,7 @@ internal class DataControllerTest
 
     private val mockParameters = MockParameters()
 
-    init
-    {
+    init {
         // For normal token
         Mockito.`when`(
             jwtTokenUtilMock.getUsernameFromToken("normTok")
@@ -118,58 +114,46 @@ internal class DataControllerTest
     }
 
     @Test
-    fun getDataTestSuccessWithPassedAuthToken()
-    {
+    fun getDataTestSuccessWithPassedAuthToken() {
         // Arrange
         val measurementsNames = listOf("pulse", "arterialpressure")
         val jwtToken = "Bearer normTok"
 
         // Act
-        val response = controllerToTest.getData(measurementsNames, jwtToken)
+        val responseBody = controllerToTest.getData(measurementsNames, jwtToken).body as ResponseMeasurementsDTO
 
         // Assert
-        assert(
-            (response.body as ResponseMeasurementsDTO) == ResponseMeasurementsDTO(
-                listOf(
-                    MeasurementDTO(
-                        "pulse",
-                        listOf(MeasurementData("30", Instant.MIN))
-                    ), MeasurementDTO(
-                        "arterialpressure",
-                        listOf(MeasurementData("90", Instant.MIN))
-                    )
-                )
-            )
+        assertEquals(
+            MeasurementDTO("pulse", listOf(MeasurementData("30", Instant.MIN))),
+            responseBody.measurementsList[0]
         )
-
+        assertEquals(
+            MeasurementDTO("arterialpressure", listOf(MeasurementData("90", Instant.MIN))),
+            responseBody.measurementsList[1]
+        )
     }
 
     // This test is created for fun only. There is no way to reproduce it
     // in production
     @Test
-    fun getDataTestFailureOnNoTokenProvidedOrInvalidForm()
-    {
+    fun getDataTestFailureOnNoTokenProvidedOrInvalidForm() {
         // Arrange
         val measurementsNames = listOf<String>()
         val jwtToken = "lol"
 
         // Act
-        val output = try
-        {
-            controllerToTest.getData(measurementsNames, jwtToken)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(output == null)
+        assertThatExceptionOfType(RuntimeException::class.java).isThrownBy {
+            controllerToTest.getData(
+                measurementsNames,
+                jwtToken
+            )
+        }
     }
 
     @Test
-    fun getDataTestFailureOnDeadServer()
-    {
+    fun getDataTestFailureOnDeadServer() {
         // Arrange
         val measurementsList = listOf<String>()
         val jwtToken = "Bearer serverExcCheck"
@@ -178,12 +162,11 @@ internal class DataControllerTest
         val response = controllerToTest.getData(measurementsList, jwtToken)
 
         // Assert
-        assert((response.body as ResponseMessage).message == "Data server is dead :(")
+        assertEquals("Data server is dead :(", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun addDataTestSuccess()
-    {
+    fun addDataTestSuccess() {
         // Arrange
         val measurementsList = AcceptMeasurementsListDTO(
             listOf(
@@ -205,38 +188,30 @@ internal class DataControllerTest
         val response = controllerToTest.addData(measurementsList, jwtToken)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Measurements " +
-                    "were carefully sent"
-        )
+        assertEquals("Measurements were carefully sent", (response.body as ResponseMessage).message)
     }
 
     // This test is created for fun only. There is no way to reproduce it
     // in production
     @Test
-    fun addDataTestFailureOnNoTokenProvidedOrInvalidForm()
-    {
+    fun addDataTestFailureOnNoTokenProvidedOrInvalidForm() {
         // Arrange
         val measurementsList = AcceptMeasurementsListDTO(listOf())
         val jwtToken = "ololo"
 
         // Act
-        val response = try
-        {
-            controllerToTest.addData(measurementsList, jwtToken)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(response == null)
+        assertThatExceptionOfType(RuntimeException::class.java).isThrownBy {
+            controllerToTest.addData(
+                measurementsList,
+                jwtToken
+            )
+        }
     }
 
     @Test
-    fun addDataTestFailureOnDeadServer()
-    {
+    fun addDataTestFailureOnDeadServer() {
         // Arrange
         val measurementsList = AcceptMeasurementsListDTO(listOf())
         val jwtToken = "Bearer serverExcCheck"
@@ -245,9 +220,6 @@ internal class DataControllerTest
         val response = controllerToTest.addData(measurementsList, jwtToken)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Data server is " +
-                    "dead :("
-        )
+        assertEquals("Data server is dead :(", (response.body as ResponseMessage).message)
     }
 }

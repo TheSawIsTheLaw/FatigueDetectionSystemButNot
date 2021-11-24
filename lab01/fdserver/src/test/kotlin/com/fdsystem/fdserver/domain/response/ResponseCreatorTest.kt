@@ -1,52 +1,15 @@
 package com.fdsystem.fdserver.domain.response
 
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import org.springframework.http.ResponseEntity
 
-internal class ResponseCreatorTest
-{
+internal class ResponseCreatorTest {
     // As ResponseCreator is an object - there is no need to initialize it
 
     @Test
-    fun prepareMessageTestSuccess()
-    {
-        // Arrange
-        val message = "testMessage"
-        val description = "testDescr"
-        val code = 201
-
-        // Set private method public
-        val requiredPrivateMethod = ResponseCreator.javaClass.getDeclaredMethod(
-            "prepareMessage",
-            Int::class.java,
-            String::class.java,
-            String::class.java
-        )
-        requiredPrivateMethod.isAccessible = true
-
-        // Prepare parameters
-        val requiredParameters = arrayOfNulls<Any>(3)
-        requiredParameters[0] = code
-        requiredParameters[1] = message
-        requiredParameters[2] = description
-
-        // Act
-        val preparedResponseMessage = requiredPrivateMethod.invoke(
-            ResponseCreator,
-            *requiredParameters
-        ) as ResponseMessage
-
-        // Assert
-        assert(
-            preparedResponseMessage.message == message &&
-                    preparedResponseMessage.description == description &&
-                    preparedResponseMessage.code == code
-        )
-    }
-
-    @Test
-    fun internalServerErrorResponseTestSuccess()
-    {
+    fun internalServerErrorResponseTestSuccess() {
         // Arrange
         val message = "internalErrorMessage"
         val description = "internalErrorDescription"
@@ -65,8 +28,7 @@ internal class ResponseCreatorTest
     }
 
     @Test
-    fun okResponseTestSuccess()
-    {
+    fun okResponseTestSuccess() {
         // Arrange
         val message = "testMessage"
         val description = "testDescr"
@@ -83,8 +45,7 @@ internal class ResponseCreatorTest
     }
 
     @Test
-    fun userNotFoundResponseTestSuccess()
-    {
+    fun userNotFoundResponseTestSuccess() {
         // Arrange
         val message = "notFoundMessage"
         val description = "notFoundDescription"
@@ -96,10 +57,8 @@ internal class ResponseCreatorTest
         )
 
         // Assert
-        assert(
-            preparedResponse.body!!.message == message &&
-                    preparedResponse.body!!.description == description &&
-                    preparedResponse.statusCode.is4xxClientError
-        )
+        assertEquals(message, preparedResponse.body!!.message)
+        assertEquals(description, preparedResponse.body!!.description)
+        assertTrue(preparedResponse.statusCode.is4xxClientError)
     }
 }

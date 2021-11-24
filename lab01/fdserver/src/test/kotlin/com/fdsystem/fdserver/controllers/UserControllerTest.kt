@@ -9,16 +9,18 @@ import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.response.ResponseMessage
+import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.jetbrains.exposed.sql.Except
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import java.lang.RuntimeException
+import kotlin.RuntimeException
 
-internal class UserControllerTest
-{
+internal class UserControllerTest {
     private val userServiceMock = Mockito.mock(UserAuthService::class.java)
 
     private val jwtTokenUtilMock = Mockito.mock(JwtTokenUtil::class.java)
@@ -78,8 +80,7 @@ internal class UserControllerTest
 
     private val mockParameters = MockParameters()
 
-    init
-    {
+    init {
         // Success test
         Mockito.`when`(userDetailsServiceMock.loadUserByUsername("successUser"))
             .thenReturn(mockExpectations.successUser)
@@ -153,8 +154,7 @@ internal class UserControllerTest
     }
 
     @Test
-    fun loginTestSuccess()
-    {
+    fun loginTestSuccess() {
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "successUser",
@@ -166,12 +166,11 @@ internal class UserControllerTest
         val response = controllerToTest.login(authenticationRequest)
 
         // Assert
-        assert((response.body as JwtResponse).token == "successToken")
+        assertEquals("successToken", (response.body as JwtResponse).token)
     }
 
     @Test
-    fun loginTestFailureOnUsernameNotFound()
-    {
+    fun loginTestFailureOnUsernameNotFound() {
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "notFoundUser",
@@ -183,12 +182,11 @@ internal class UserControllerTest
         val response = controllerToTest.login(authenticationRequest)
 
         // Assert
-        assert((response.body as ResponseMessage).message == "User not found")
+        assertEquals("User not found", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun loginTestFailureOnInternalServerError()
-    {
+    fun loginTestFailureOnInternalServerError() {
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "internalServerErrorUser",
@@ -200,15 +198,11 @@ internal class UserControllerTest
         val response = controllerToTest.login(authenticationRequest)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Something " +
-                    "terrible with Postgres..."
-        )
+        assertEquals("Something terrible with Postgres...", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun loginTestFailureOnInvalidPassword()
-    {
+    fun loginTestFailureOnInvalidPassword() {
         // Arrange
         val authenticationRequest = UserCredentialsDTO(
             "successUser",
@@ -220,15 +214,11 @@ internal class UserControllerTest
         val response = controllerToTest.login(authenticationRequest)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message ==
-                    "User not found or invalid password"
-        )
+        assertEquals("User not found or invalid password", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun registerTestSuccess()
-    {
+    fun registerTestSuccess() {
         // Arrange
         val user = UserCredentialsDTO(
             "successUser",
@@ -240,12 +230,11 @@ internal class UserControllerTest
         val response = controllerToTest.register(user)
 
         // Assert
-        assert((response.body as ResponseMessage).message == "Success!")
+        assertEquals("Success!", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun registerTestFailureOnInternalServerError()
-    {
+    fun registerTestFailureOnInternalServerError() {
         // Arrange
         val user = UserCredentialsDTO(
             "internalServerErrorUser",
@@ -257,15 +246,11 @@ internal class UserControllerTest
         val response = controllerToTest.register(user)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Auth server is " +
-                    "dead :("
-        )
+        assertEquals("Auth server is dead :(", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun registerTestFailureOnAlreadyExistingUser()
-    {
+    fun registerTestFailureOnAlreadyExistingUser() {
         // Arrange
         val user = UserCredentialsDTO(
             "alreadyExistsUser",
@@ -277,12 +262,11 @@ internal class UserControllerTest
         val response = controllerToTest.register(user)
 
         // Assert
-        assert((response.body as ResponseMessage).message == "User already exists")
+        assertEquals("User already exists", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun changePasswordTestSuccess()
-    {
+    fun changePasswordTestSuccess() {
         // Arrange
         val passwords = NewPasswordDTO(
             "oldPas", "newPas"
@@ -293,38 +277,30 @@ internal class UserControllerTest
         val response = controllerToTest.changePassword(passwords, jwtToken)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Password " +
-                    "changed successfully"
-        )
+        assertEquals("Password changed successfully", (response.body as ResponseMessage).message)
     }
 
     // This test is created for fun only. There is no way to reproduce it
     // in production
     @Test
-    fun changePasswordTestFailureOnInvalidJwtToken()
-    {
+    fun changePasswordTestFailureOnInvalidJwtToken() {
         // Arrange
         val passwords = NewPasswordDTO("oldPas", "newPas")
         val jwtToken = "totototo"
 
         // Act
-        val response = try
-        {
-            controllerToTest.changePassword(passwords, jwtToken)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
 
         // Assert
-        assert(response == null)
+        assertThatExceptionOfType(RuntimeException::class.java).isThrownBy {
+            controllerToTest.changePassword(
+                passwords,
+                jwtToken
+            )
+        }
     }
 
     @Test
-    fun changePasswordTestFailureOnInternalServerError()
-    {
+    fun changePasswordTestFailureOnInternalServerError() {
         // Arrange
         val passwords = NewPasswordDTO("oldPas", "newPas")
         val jwtToken = "Bearer serverFail"
@@ -333,15 +309,11 @@ internal class UserControllerTest
         val response = controllerToTest.changePassword(passwords, jwtToken)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message == "Auth server is " +
-                    "dead :("
-        )
+        assertEquals("Auth server is dead :(", (response.body as ResponseMessage).message)
     }
 
     @Test
-    fun changePasswordTestFailureOnNonMatchingPasswords()
-    {
+    fun changePasswordTestFailureOnNonMatchingPasswords() {
         // Arrange
         val passwords = NewPasswordDTO("IncorrectOldPas", "newPas")
         val jwtToken = "Bearer incorrectPasUser"
@@ -350,9 +322,6 @@ internal class UserControllerTest
         val response = controllerToTest.changePassword(passwords, jwtToken)
 
         // Assert
-        assert(
-            (response.body as ResponseMessage).message ==
-                    "Password wasn't changed"
-        )
+        assertEquals("Password wasn't changed", (response.body as ResponseMessage).message)
     }
 }

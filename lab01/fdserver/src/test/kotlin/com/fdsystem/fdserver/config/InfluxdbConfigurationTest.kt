@@ -1,6 +1,7 @@
 package com.fdsystem.fdserver.config
 
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -16,9 +17,9 @@ internal class InfluxdbConfigurationTest {
         val testConfiguration = InfluxdbConfiguration(configurationFile)
 
         // Assert
-        assert(testConfiguration.configData.influxdbAdminToken.isNotEmpty())
-        assert(testConfiguration.configData.influxdbURL.isNotEmpty())
-        assert(testConfiguration.configData.influxdbOrganization.isNotEmpty())
+        assertTrue(testConfiguration.configData.influxdbAdminToken.isNotEmpty())
+        assertTrue(testConfiguration.configData.influxdbURL.isNotEmpty())
+        assertTrue(testConfiguration.configData.influxdbOrganization.isNotEmpty())
     }
 
     @Test
@@ -32,7 +33,7 @@ internal class InfluxdbConfigurationTest {
         val testConfiguration = InfluxdbConfiguration(fileWithConfiguration)
 
         // Assert
-        assert(testConfiguration.configData.influxdbURL.isEmpty())
+        assertTrue(testConfiguration.configData.influxdbURL.isEmpty())
         assertEquals("subjects", testConfiguration.configData.influxdbOrganization)
         assertEquals("HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==",
                 testConfiguration.configData.influxdbAdminToken)

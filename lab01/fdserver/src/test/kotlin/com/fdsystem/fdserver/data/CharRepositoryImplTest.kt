@@ -3,11 +3,12 @@ package com.fdsystem.fdserver.data
 import com.fdsystem.fdserver.config.InfluxdbConfiguration
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
+import org.junit.jupiter.api.Assertions.assertNull
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 
-internal class CharRepositoryImplTest
-{
+internal class CharRepositoryImplTest {
     val confPath =
         "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
     val configuration = InfluxdbConfiguration(File(confPath))
@@ -28,15 +29,13 @@ internal class CharRepositoryImplTest
 //
 //    private val mockExpectations = MockExpectations()
 
-    init
-    {
+    init {
         // dbClientMock
         // I can't create Table by myself and creating Channel<FluxRecord>, sry
     }
 
     @Test
-    fun getTestSuccess()
-    {
+    fun getTestSuccess() {
         // Arrange
         val token = "token"
         val bucketName = "bucket"
@@ -66,24 +65,17 @@ internal class CharRepositoryImplTest
 
         // Act
         var gotData: List<DSMeasurement>? = null
-        try
-        {
+        try {
             gotData = requiredPrivateMethod.invoke(
                 repositoryToTest,
                 *requiredParameters
             ) as List<DSMeasurement>
-        }
-        catch (exc: Exception)
-        {
+        } catch (exc: Exception) {
             causeOfException = exc.cause.toString()
         }
 
         // Assert
-        assert(
-            gotData == null && causeOfException.indexOf(
-                "Failed to " +
-                        "connect"
-            ) >= 1
-        )
+        assertNull(gotData)
+        assertTrue(causeOfException.indexOf("Failed to connect") >= 1)
     }
 }

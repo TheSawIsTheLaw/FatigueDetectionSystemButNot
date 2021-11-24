@@ -1,7 +1,9 @@
 package com.fdsystem.fdserver.config
 
 import org.apache.commons.logging.LogFactory
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 import java.io.File
 
@@ -17,9 +19,9 @@ internal class PostgresConfigurationTest {
         val testConfiguration = PostgresConfiguration(configurationFile)
 
         // Assert
-        assert(testConfiguration.configData.postgresURL.isNotEmpty())
-        assert(testConfiguration.configData.postgresUsername.isNotEmpty())
-        assert(testConfiguration.configData.postgresPassword.isNotEmpty())
+        assertTrue(testConfiguration.configData.postgresURL.isNotEmpty())
+        assertTrue(testConfiguration.configData.postgresUsername.isNotEmpty())
+        assertTrue(testConfiguration.configData.postgresPassword.isNotEmpty())
     }
 
     @Test
@@ -33,7 +35,7 @@ internal class PostgresConfigurationTest {
         val testConfiguration = PostgresConfiguration(configurationFile)
 
         // Assert
-        assert(testConfiguration.configData.postgresUsername.isEmpty())
+        assertTrue(testConfiguration.configData.postgresUsername.isEmpty())
         assertEquals("satanIsHere", testConfiguration.configData.postgresPassword)
         assertEquals("postgres:5432/users", testConfiguration.configData.postgresURL)
     }
