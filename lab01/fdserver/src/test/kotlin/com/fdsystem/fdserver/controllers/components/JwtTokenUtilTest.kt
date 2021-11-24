@@ -121,51 +121,6 @@ internal class JwtTokenUtilTest
     }
 
     @Test
-    fun getClaimFromTokenSuccessTest()
-    {
-        // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "123456"
-
-        val jwtToken = jwtTokenUtilToTest.generateToken(
-            User(username, password, arrayListOf()), dbToken
-        )
-
-        // Action
-        val subject = jwtTokenUtilToTest.getClaimFromToken(
-            jwtToken,
-            Claims::getSubject
-        )
-
-        // Assert
-        assert(subject == username)
-    }
-
-    @Test
-    fun getClaimFromTokenFailureOnStrangeTokenTest()
-    {
-        // Arrange
-        val jwtToken = "what am i doing?"
-
-        // Action
-        val expirationTime = try
-        {
-            jwtTokenUtilToTest.getClaimFromToken(
-                jwtToken,
-                Claims::getExpiration
-            )
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
-
-        // Assert
-        assert(expirationTime == null)
-    }
-
-    @Test
     fun getUsernameFromTokenSuccessTest()
     {
         // Arrange
@@ -202,45 +157,6 @@ internal class JwtTokenUtilTest
 
         // Assert
         assert(subject == null)
-    }
-
-    @Test
-    fun getExpirationTimeFromTokenSuccessTest()
-    {
-        // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "123456"
-
-        val jwtToken = jwtTokenUtilToTest.generateToken(
-            User(username, password, arrayListOf()), dbToken
-        )
-
-        // Action
-        jwtTokenUtilToTest.getExpirationDateFromToken(jwtToken)
-
-        // Assert
-        // If there is no exception then it's ok
-    }
-
-    @Test
-    fun getExpirationTimeFailureOnStrangeToken()
-    {
-        // Arrange
-        val jwtToken = "WE ARE THE SALT OF THE EARTH"
-
-        // Action
-        val expirationTime = try
-        {
-            jwtTokenUtilToTest.getExpirationDateFromToken(jwtToken)
-        }
-        catch (exc: Exception)
-        {
-            null
-        }
-
-        // Assert
-        assert(expirationTime == null)
     }
 
     @Test

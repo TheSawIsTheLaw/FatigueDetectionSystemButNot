@@ -1,67 +1,40 @@
 package com.fdsystem.fdserver.config
 
 import org.apache.commons.logging.LogFactory
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.io.File
 
-internal class PostgresConfigurationTest
-{
+internal class PostgresConfigurationTest {
     @Test
-    fun checkAtCorrectConfigurationFile()
-    {
+    fun checkAtCorrectConfigurationFile() {
         // Arrange
         val path =
-            "./src/main/kotlin/com/fdsystem/fdserver/config/FDPostgresConf.json"
+                "./src/main/kotlin/com/fdsystem/fdserver/config/FDPostgresConf.json"
+        val configurationFile = File(path)
 
         // Action
-        val testConfiguration = PostgresConfiguration(path)
+        val testConfiguration = PostgresConfiguration(configurationFile)
 
         // Assert
-        assert(
-            testConfiguration.configData.postgresURL.isNotEmpty() &&
-                    testConfiguration.configData.postgresUsername.isNotEmpty() &&
-                    testConfiguration.configData.postgresPassword.isNotEmpty()
-        )
+        assert(testConfiguration.configData.postgresURL.isNotEmpty())
+        assert(testConfiguration.configData.postgresUsername.isNotEmpty())
+        assert(testConfiguration.configData.postgresPassword.isNotEmpty())
     }
 
     @Test
-    fun checkAtNotExistingConfigurationFile()
-    {
-        // Arrange
-        var outExceptionMessage = ""
-
-        // Action
-        try
-        {
-            PostgresConfiguration()
-        }
-        catch (exc: Exception)
-        {
-            outExceptionMessage = exc.message.toString()
-        }
-
-        assert(outExceptionMessage == "No postgres configuration file")
-    }
-
-    @Test
-    fun checkAtIncorrectConfigurationFile()
-    {
+    fun checkAtIncorrectConfigurationFile() {
         // Arrange
         val path =
-            "./src/test/kotlin/com/fdsystem/fdserver/config" +
-                    "/IncorrectPostgresConf.json"
-        var excMessage = ""
+                "./src/test/kotlin/com/fdsystem/fdserver/config/IncorrectPostgresConf.json"
+        val configurationFile = File(path)
 
         // Action
-        try
-        {
-            PostgresConfiguration(path)
-        }
-        catch (exc: Exception)
-        {
-            excMessage = exc.message.toString()
-        }
+        val testConfiguration = PostgresConfiguration(configurationFile)
 
-        LogFactory.getLog(javaClass).debug(excMessage)
-        assert(excMessage == "Not enough information in configuration JSON")
+        // Assert
+        assert(testConfiguration.configData.postgresUsername.isEmpty())
+        assertEquals("satanIsHere", testConfiguration.configData.postgresPassword)
+        assertEquals("postgres:5432/users", testConfiguration.configData.postgresURL)
     }
 }

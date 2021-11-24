@@ -1,67 +1,40 @@
 package com.fdsystem.fdserver.config
 
-import org.apache.commons.logging.LogFactory
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import java.io.File
 
-// Example of english style tests, I guess.
-internal class InfluxdbConfigurationTest
-{
+internal class InfluxdbConfigurationTest {
     @Test
-    fun checkAtCorrectConfigurationFile()
-    {
+    fun checkAtCorrectConfigurationFile() {
         // Arrange
         val path =
-            "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
+                "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
+        val configurationFile = File(path)
 
         // Action
-        val testConfiguration = InfluxdbConfiguration(path)
+        val testConfiguration = InfluxdbConfiguration(configurationFile)
 
         // Assert
-        assert(
-            testConfiguration.configData.influxdbAdminToken.isNotEmpty() &&
-                    testConfiguration.configData.influxdbURL.isNotEmpty() &&
-                    testConfiguration.configData.influxdbOrganization.isNotEmpty()
-        )
+        assert(testConfiguration.configData.influxdbAdminToken.isNotEmpty())
+        assert(testConfiguration.configData.influxdbURL.isNotEmpty())
+        assert(testConfiguration.configData.influxdbOrganization.isNotEmpty())
     }
 
     @Test
-    fun checkAtNotExistingConfigurationFile()
-    {
-        // Arrange
-        var outExceptionMessage = ""
-
-        // Action
-        try
-        {
-            InfluxdbConfiguration()
-        }
-        catch (exc: Exception)
-        {
-            outExceptionMessage = exc.message.toString()
-        }
-
-        assert(outExceptionMessage == "No influx configuration file")
-    }
-
-    @Test
-    fun checkAtIncorrectConfigurationFile()
-    {
+    fun checkAtIncorrectConfigurationFile() {
         // Arrange
         val path =
-            "./src/test/kotlin/com/fdsystem/fdserver/config/IncorrectInfluxConf.json"
-        var excMessage = ""
+                "./src/test/kotlin/com/fdsystem/fdserver/config/IncorrectInfluxConf.json"
+        val fileWithConfiguration = File(path)
 
         // Action
-        try
-        {
-            InfluxdbConfiguration(path)
-        }
-        catch (exc: Exception)
-        {
-            excMessage = exc.message.toString()
-        }
+        val testConfiguration = InfluxdbConfiguration(fileWithConfiguration)
 
-        LogFactory.getLog(javaClass).debug(excMessage)
-        assert(excMessage == "Not enough information in configuration JSON")
+        // Assert
+        assert(testConfiguration.configData.influxdbURL.isEmpty())
+        assertEquals("subjects", testConfiguration.configData.influxdbOrganization)
+        assertEquals("HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==",
+                testConfiguration.configData.influxdbAdminToken)
     }
 }

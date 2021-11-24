@@ -4,13 +4,13 @@ import com.fdsystem.fdserver.config.InfluxdbConfiguration
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import org.junit.jupiter.api.Test
+import java.io.File
 
 internal class CharRepositoryImplTest
 {
     val confPath =
         "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
-    // Грубо говоря, вот и классические юниты. Моков вообще нет...
-    val configuration = InfluxdbConfiguration(confPath)
+    val configuration = InfluxdbConfiguration(File(confPath))
 
     val repositoryToTest = CharRepositoryImpl(configuration)
 
