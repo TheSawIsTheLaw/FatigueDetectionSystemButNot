@@ -47,7 +47,8 @@ class JwtTokenUtil : Serializable
             .parseClaimsJws(token).body
     }
 
-    fun <T> getClaimFromToken(
+    // Убрать в private
+    private fun <T> getClaimFromToken(
         token: String,
         claimsResolver: Function<Claims, T>
     ): T
@@ -61,7 +62,7 @@ class JwtTokenUtil : Serializable
         return getClaimFromToken(token, Claims::getSubject)
     }
 
-    fun getExpirationDateFromToken(token: String): Date
+    private fun getExpirationDateFromToken(token: String): Date
     {
         return getClaimFromToken(
             token,

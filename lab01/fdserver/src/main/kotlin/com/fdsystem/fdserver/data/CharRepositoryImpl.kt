@@ -13,7 +13,8 @@ import okhttp3.Request
 import org.springframework.stereotype.Repository
 import java.time.Instant
 
-open class InfluxConnection(
+// Вынести private val в конструктор
+class InfluxConnection(
     connectionString_: String, token_: String, org_: String
 )
 {
@@ -41,6 +42,7 @@ open class InfluxConnection(
     }
 }
 
+// Выносим query в отдельный слой
 @Repository
 class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
     CharRepositoryInterface
