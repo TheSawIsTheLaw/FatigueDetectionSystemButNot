@@ -1,0 +1,4 @@
+{
+  "postgresURL": "postgres:5432/users",
+  "postgresPassword": "satanIsHere"
+}

@@ -1,0 +1,285 @@
+openapi: "3.0.2"
+info:
+  title: "FDSystem API"
+  description: "Some apoo and apees"
+  version: "1.0"
+  termsOfService: "https://whattheheck.su"
+  contact:
+    name: "Dmitry Yakuba"
+    url: "https://t.me/xGULZAx"
+    email: "dimakrok@bk.ru"
+
+servers:
+- url: https://api.fdsystem.ru/
+
+paths:
+  /user/login/{token}:
+    get:
+      tags:
+      - Authorization
+      summary: "Allows user to get access to API functions"
+      description: "Provides token for InfluxDB to get private info."
+      operationId: logIn
+      parameters:
+      - in: query
+        name: Token
+        description: "**Token**. *Example: EA13371477OO*. Token for InfluxDB access"
+        required: true
+        schema:
+          type: string
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+
+        404:
+          $ref: '#/components/responses/illegalToken'
+  
+  /user/logout:
+    get:
+      tags:
+      - Authorization
+      summary: "Just logs out current token"
+      description: "Woooo, i'll log out you o.o"
+      operationId: logOut
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+
+  /subject:
+    post:
+      tags:
+      - Buckets management
+      summary: Creates new bucket for the user
+      description: Creates new bucket for the user to full it.
+      operationId: createBucket
+      parameters:
+      - $ref: '#/components/parameters/bucketName'
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+        
+        300:
+          description: Such name of bucket is already busy
+          content:
+            text/plain:
+              schema:
+                title: Name of the bucket is already busy
+                type: string
+                example: Already exists
+
+    delete:
+      tags:
+      - Buckets management
+      summary: Deletes bucket of the user
+      description: Deletes bucket of the user with given name
+      operationId: deleteBucket
+      parameters:
+      - $ref: '#/components/parameters/bucketName'
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+        
+  # Я тут и через енамы пытался, и через {dataType}, всё бестолку.
+  # Ну и чёрт с ним, смотрите, как могу))
+  /user/data:
+    post:
+      tags:
+      - Data transfer
+      summary: Send user's data to the DB
+      description: Sends data. If one of the fields would be passed with initial values - they won't be sent.
+      operationId: sendData
+      parameters:
+      - $ref: '#/components/parameters/bucketName'
+      - in: query
+        name: Data
+        description: Data to send to the DB
+        schema:
+          $ref: '#/components/schemas/Characteristics'
+
+      responses:
+        200:
+          $ref: '#/components/responses/200'
+
+        300:
+          $ref: '#/components/responses/corruptedObj'
+
+    get:
+        tags:
+        - Data transfer
+        summary: Get user's data from the DB
+        description: Gets all data from the bucket of chosen user
+        operationId: getData
+        parameters:
+        - $ref: '#/components/parameters/bucketName'
+        responses:
+          200:
+            description: Success
+            content:
+              application/json:
+                schema:
+                  title: Characteristics
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/Characteristics'
+
+          404:
+            description: No bucket with this name
+            content:
+              text/plain:
+                schema:
+                  title: Name of the bucket not found in DB
+                  type: string
+                  example: Not found
+
+security:
+  - secId: []
+
+components:
+  parameters:
+    bucketName:
+      in: query
+      name: Bucket name
+      description: "**Bucket name**. *Example: Chistyakov_Vladimir_Igorevich_IU7-77B*. Full name of subject to explore. Identification of a group is not neccesary, but be aware of duplicates (more info in responses)"
+      required: true
+      schema:
+        type: string
+
+    # dataType:
+    #   in: query
+    #   name: Data type
+    #   description: "**Data type**. *Example: Pulse*. Name of needed characteristic of the subject"
+    #   required: true
+    #   schema:
+    #     type: string
+    #     enum: [pulse, timbre, adrenaline, breath, arterial, speech, mimic, gesture, wink, typing, corrections, dhs, mouse, keyboard, cortisol]
+    #     default: "pulse"
+
+  schemas:
+    Characteristics:
+      type: object
+      properties:
+        Pulse:
+          type: integer
+          description: Pulse
+          example: 75
+
+        Timbre:
+          type: number
+          description: Voice timbre
+          example: 3.3
+    
+        AdrenalineLevel:
+          type: number
+          description: Adrenaline level in blood
+          example: 30.0
+
+        Breath:
+          type: object
+          properties:
+            type:
+              type: string
+              description: Type of breath
+              example: "Calm"
+            frequency:
+              type: number
+              description: Breath frequency - sigh/min
+              example: 6.2
+
+        ArterialPressure:
+          type: object
+          properties:
+            topPressure:
+              type: integer
+              description: Top arterial pressure
+              example: 80
+            botBressure:
+              type: integer
+              description: Bot arterial pressure
+              example: 60
+    
+        Speech:
+          type: number
+          description: Speech rate in words/min
+          example: 3.3
+    
+        Mimic:
+          type: string
+          description: Facial expression
+          example: "Chaotic evil"
+
+        Gesture:
+          type: string
+          description: Gesture
+          example: "Middle finger"
+
+        Blink:
+          type: number
+          description: Blink rate in blinks/min
+          example: 13.37
+
+        TypeRate:
+          type: number
+          description: Typing rate in types/min
+          example: 150.2
+
+        Remarks:
+          type: number
+          description: Typos' correction rate in typoCor/min
+          example: 3.9
+
+        DHSLevel:
+          type: number
+          description: Dehydroepiandrosterone level
+          example: 6766.666
+
+        MouseSpeed:
+          type: number
+          description: Mouse speed in m/sec
+          example: 3.6
+
+        ButtonsFreq:
+          type: number
+          description: Frequency in buttonTypes/min
+          example: 500.66
+
+        Cortisol:
+          type: number
+          description: Cortisol level
+          example: 5.5
+
+  responses:
+    200:
+      description: Successful operation
+      content:
+        text/plain:
+          schema:
+            title: Success
+            type: string
+            example: Success
+
+    corruptedObj:
+      description: Object is corrupted
+      content:
+        text/plain:
+          schema:
+            title: Sent object is not in allowed form
+            type: string
+            example: Not allowed form
+
+    illegalToken:
+      description: Illegal token
+      content:
+        text/plain:
+          schema:
+            title: Illegal token
+            type: string
+            example: Illegal token
+  
+  securitySchemes:
+    secId:
+      type: apiKey
+      description: API key to authorize requests. If you don't have one - run this cursed place...
+      name: securityId
+      in: query
+
+

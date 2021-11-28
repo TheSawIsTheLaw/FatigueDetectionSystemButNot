@@ -1,0 +1,84 @@
+version: '3'
+services:
+  influxdb:
+    image: influxdb:2.0
+    container_name: fdserver-influxdb
+    env_file:
+      - .env
+    ports:
+      - ${INFLUXDB_PORT}:8086
+
+  postgres:
+    image: postgres:latest
+    container_name: fdserver-postgres
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:5432
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "9090:9090"
+    depends_on:
+      - influxdb
+      - postgres
+      - main_service
+      - slave_service1
+      - slave_service2
+      - swagger_service
+
+  main_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "8181:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
+  slave_service1:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "8282:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
+  slave_service2:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "8383:8080"
+    depends_on:
+      - influxdb
+      - postgres
+
+  swagger_service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./nginx/:/usr/share/nginx/html/
+    ports:
+      - "8666:8080"
