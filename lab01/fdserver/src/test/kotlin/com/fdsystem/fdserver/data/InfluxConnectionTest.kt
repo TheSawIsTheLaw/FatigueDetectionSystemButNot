@@ -1,19 +1,19 @@
 package com.fdsystem.fdserver.data
 
+import com.fdsystem.fdserver.mothers.InfluxConnectionOMother
 import com.influxdb.exceptions.InfluxException
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.assertj.core.api.Assertions.assertThatNoException
-import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
 internal class InfluxConnectionTest {
+    private val oMother = InfluxConnectionOMother()
+
     @Test
     fun getConnectionToDBTestSuccess() {
         // Arrange
-        val connectionToTest = InfluxConnection(
-            "http://localhost:8086",
-            "tok", "org"
-        )
+        val connectionToTest =
+            InfluxConnection(oMother.defaultConnectionString, oMother.defaultToken, oMother.defaultOrg)
 
         // Action
 
@@ -24,9 +24,8 @@ internal class InfluxConnectionTest {
     @Test
     fun getConnectionToDBTestFailureOnNonParseableURL() {
         // Arrange
-        val connectionToTest = InfluxConnection(
-            "lol", "tok", "org"
-        )
+        val connectionToTest =
+            InfluxConnection(oMother.nonParseableConnectionString, oMother.defaultToken, oMother.defaultOrg)
 
         // Action
 
@@ -38,11 +37,10 @@ internal class InfluxConnectionTest {
     @Test
     fun getConnectionWriteTestSuccess() {
         // Arrange
-        val connectionToTest = InfluxConnection(
-            "http://localhost:8086",
-            "tok", "org"
-        )
-        val bucketName = "someone"
+        val connectionToTest =
+            InfluxConnection(oMother.defaultConnectionString, oMother.defaultToken, oMother.defaultOrg)
+
+        val bucketName = oMother.defaultBucketName
 
         // Action
 
@@ -53,10 +51,10 @@ internal class InfluxConnectionTest {
     @Test
     fun getConnectionWriteTestFailureOnNonParseableURL() {
         // Arrange
-        val connectionToTest = InfluxConnection(
-            "lol", "tok", "org"
-        )
-        val bucketName = "someone"
+        val connectionToTest =
+            InfluxConnection(oMother.nonParseableConnectionString, oMother.defaultToken, oMother.defaultOrg)
+
+        val bucketName = oMother.defaultBucketName
 
         // Action
 
