@@ -10,7 +10,7 @@ import java.io.File
 
 internal class CharRepositoryImplTest {
     val confPath =
-        "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
+        "./src/test/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
     val configuration = InfluxdbConfiguration(File(confPath))
 
     val repositoryToTest = CharRepositoryImpl(configuration)
@@ -61,7 +61,7 @@ internal class CharRepositoryImplTest {
         requiredParameters[1] =
             InfluxConnection("http://localhost:8086", "1", "1")
 
-        var causeOfException: String = ""
+        var causeOfException = ""
 
         // Act
         var gotData: List<DSMeasurement>? = null

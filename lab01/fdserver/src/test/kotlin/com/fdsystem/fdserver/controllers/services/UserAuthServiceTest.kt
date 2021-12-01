@@ -2,24 +2,15 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import com.fdsystem.fdserver.data.UserRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
-import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
-import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
-import com.fdsystem.fdserver.domain.logicentities.TokenInformation
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import com.fdsystem.fdserver.expects.mocks.UserAuthServiceMocksExpectations
 import com.fdsystem.fdserver.mothers.UserAuthServiceOMother
-import org.apache.commons.logging.LogFactory
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
-import org.junit.platform.commons.logging.LoggerFactory
-import org.mockito.Mock
 import org.mockito.Mockito
-import org.springframework.security.core.userdetails.UsernameNotFoundException
-import kotlin.RuntimeException
 
 internal class UserAuthServiceTest {
     private val oMother = UserAuthServiceOMother()

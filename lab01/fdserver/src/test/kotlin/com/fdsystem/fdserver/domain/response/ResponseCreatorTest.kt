@@ -3,7 +3,6 @@ package com.fdsystem.fdserver.domain.response
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import org.springframework.http.ResponseEntity
 
 internal class ResponseCreatorTest {
     // As ResponseCreator is an object - there is no need to initialize it

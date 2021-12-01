@@ -2,12 +2,9 @@ package com.fdsystem.fdserver.config
 
 import com.fdsystem.fdserver.expects.PostgresConfigurationExcpectations
 import com.fdsystem.fdserver.mothers.PostgresConfigFileMother
-import org.apache.commons.logging.LogFactory
-import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.io.File
 
 internal class PostgresConfigurationTest {
     private val configMother = PostgresConfigFileMother()

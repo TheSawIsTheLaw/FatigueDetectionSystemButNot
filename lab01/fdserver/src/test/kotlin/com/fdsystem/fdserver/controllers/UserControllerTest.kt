@@ -4,23 +4,17 @@ import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.controllers.services.JwtUserDetailsService
 import com.fdsystem.fdserver.controllers.services.UserAuthService
-import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
 import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
-import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.response.ResponseMessage
 import com.fdsystem.fdserver.expects.UserControllerExpectations
 import com.fdsystem.fdserver.mothers.UserControllerOMother
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
-import org.jetbrains.exposed.sql.Except
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
-import org.springframework.security.core.userdetails.UserDetails
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import kotlin.RuntimeException
 
 internal class UserControllerTest {
     private val oMother = UserControllerOMother()

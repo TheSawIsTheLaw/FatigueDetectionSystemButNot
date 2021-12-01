@@ -1,22 +1,16 @@
 package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.CharRepositoryImpl
-import com.fdsystem.fdserver.domain.dtos.*
+import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
 import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
-import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
-import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.fdsystem.fdserver.expects.DataServiceExpectations
 import com.fdsystem.fdserver.expects.mocks.DataServiceMocksExpectations
 import com.fdsystem.fdserver.mothers.DataServiceOMother
-import org.apache.commons.logging.LogFactory
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatNoException
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
 import org.mockito.Mockito
-import java.time.Instant
 
 internal class DataServiceTest {
     private val oMother = DataServiceOMother()

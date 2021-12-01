@@ -2,7 +2,6 @@ package com.fdsystem.fdserver.expects
 
 import com.fdsystem.fdserver.domain.dtos.MeasurementDTO
 import com.fdsystem.fdserver.domain.dtos.MeasurementData
-import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import java.time.Instant
 

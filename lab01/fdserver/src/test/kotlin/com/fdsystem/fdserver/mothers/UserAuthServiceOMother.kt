@@ -1,6 +1,5 @@
 package com.fdsystem.fdserver.mothers
 
-import com.fdsystem.fdserver.domain.dtos.NewPasswordDTO
 import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 

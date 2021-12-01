@@ -2,16 +2,12 @@ package com.fdsystem.fdserver.controllers.services
 
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
-import org.apache.commons.logging.LogFactory
-import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.platform.commons.logging.LoggerFactory
 import org.mockito.Mockito
 import org.springframework.security.core.userdetails.User
 import org.springframework.security.core.userdetails.UsernameNotFoundException
-import java.lang.RuntimeException
 
 internal class JwtUserDetailsServiceTest {
     private val userRepositoryImpl = Mockito.mock(
