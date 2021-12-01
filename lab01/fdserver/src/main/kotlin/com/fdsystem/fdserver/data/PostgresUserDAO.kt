@@ -1,8 +1,6 @@
 package com.fdsystem.fdserver.data
 
-import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class PostgresUserDAO(private val connection: PostgresConnection) : UserDAOInterface {

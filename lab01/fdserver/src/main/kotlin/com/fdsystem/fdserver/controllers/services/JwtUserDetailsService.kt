@@ -11,18 +11,13 @@ import org.springframework.stereotype.Service
 
 @Service
 class JwtUserDetailsService(private val userRepository: UserRepositoryImpl) :
-    UserDetailsService
-{
+    UserDetailsService {
     @Throws(UsernameNotFoundException::class)
-    override fun loadUserByUsername(username: String): (UserDetails)
-    {
+    override fun loadUserByUsername(username: String): (UserDetails) {
         val user: USUserCredentials
-        if (userRepository.userExists(username))
-        {
+        if (userRepository.userExists(username)) {
             user = userRepository.getUserByUsername(USUserCredentials(username, "", ""))
-        }
-        else
-        {
+        } else {
             throw UsernameNotFoundException("User not found with username $username")
         }
 

@@ -1,14 +1,18 @@
 package com.fdsystem.fdserver.data
 
 import com.fdsystem.fdserver.config.InfluxdbConfiguration
+import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
 import com.influxdb.client.domain.WritePrecision
 import com.influxdb.query.FluxRecord
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.channels.map
 import kotlinx.coroutines.runBlocking
 import okhttp3.HttpUrl
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import org.apache.commons.logging.LogFactory
+import java.time.Instant
 
 class InfluxDAO(private val config: InfluxdbConfiguration) : CharDAOInterface {
     override fun get(
@@ -16,7 +20,7 @@ class InfluxDAO(private val config: InfluxdbConfiguration) : CharDAOInterface {
         timeRange: Pair<Int, Int>,
         bucket: String,
         measurement: String
-    ): Channel<FluxRecord> {
+    ): List<DSMeasurement> {
         var rng = "start: ${timeRange.first}"
         if (timeRange.second != 0) {
             rng += ", stop: ${timeRange.second}}"
@@ -29,12 +33,26 @@ class InfluxDAO(private val config: InfluxdbConfiguration) : CharDAOInterface {
                     "\"$measurement\"))"
         }
 
+        val outList: MutableList<DSMeasurement> = mutableListOf()
+
         val result: Channel<FluxRecord>
         connection.getConnectionToDB().use {
             result = it.getQueryKotlinApi().query(query)
+            runBlocking {
+                for (i in result) {
+                    val curVal = i.values
+                    outList.add(
+                        DSMeasurement(
+                            curVal["_measurement"].toString(),
+                            curVal["_value"].toString(),
+                            curVal["_time"] as Instant
+                        )
+                    )
+                }
+            }
         }
 
-        return result
+        return outList
     }
 
     private fun getOrgIDByName(apiString: String, orgName: String): String {

@@ -88,6 +88,7 @@ class DataController(
         val token =
             jwtTokenUtil.getAllClaimsFromToken(userJwtToken)["DBToken"].toString()
 
+        LogFactory.getLog(javaClass).debug("Current user: $bucket $token")
         val outList: List<MeasurementDTO>
         try
         {

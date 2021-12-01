@@ -4,8 +4,7 @@ import com.fdsystem.fdserver.config.PostgresConfiguration
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
 import com.fdsystem.fdserver.domain.userrepository.UserRepositoryInterface
-import org.jetbrains.exposed.sql.*
-import org.jetbrains.exposed.sql.transactions.transaction
+import org.jetbrains.exposed.sql.Database
 import org.springframework.stereotype.Repository
 
 class PostgresConnection(
@@ -26,7 +25,7 @@ class PostgresConnection(
 
 @Repository
 class UserRepositoryImpl(
-    private val config: PostgresConfiguration,
+    config: PostgresConfiguration,
 ) : UserRepositoryInterface {
     private val userDAO = PostgresUserDAO(
         PostgresConnection(
