@@ -16,7 +16,7 @@ internal class PostgresConfigurationTest {
     @Test
     fun checkAtCorrectConfigurationFile() {
         // Arrange
-        val configurationFile = configMother.getCorrectConfigurationFile()
+        val configurationFile = configMother.correctConfigurationFile
 
         // Action
         val testConfiguration = PostgresConfiguration(configurationFile)
@@ -30,7 +30,7 @@ internal class PostgresConfigurationTest {
     @Test
     fun checkAtIncorrectConfigurationFile() {
         // Arrange
-        val configurationFile = configMother.getIncorrectConfigurationFile()
+        val configurationFile = configMother.incorrectConfigurationFile
 
         // Action
         val testConfiguration = PostgresConfiguration(configurationFile)

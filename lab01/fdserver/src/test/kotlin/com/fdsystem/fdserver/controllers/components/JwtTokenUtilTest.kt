@@ -1,11 +1,14 @@
 package com.fdsystem.fdserver.controllers.components
 
+import com.fdsystem.fdserver.mothers.JwtTokenUtilOMother
 import io.jsonwebtoken.Claims
 import io.jsonwebtoken.Jwts
 import io.jsonwebtoken.SignatureAlgorithm
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.runBlocking
 import org.apache.commons.logging.LogFactory
+import org.assertj.core.api.Assertions.assertThat
+import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -15,23 +18,25 @@ import org.springframework.security.core.userdetails.User
 import java.util.*
 
 internal class JwtTokenUtilTest {
+    private val oMother = JwtTokenUtilOMother()
+
     private val jwtTokenUtilToTest: JwtTokenUtil = JwtTokenUtil()
 
     init {
         org.springframework.test.util.ReflectionTestUtils.setField(
             jwtTokenUtilToTest,
             "secret",
-            "LZKPDJMW7MSY273666MZNAAAUCJEBASUKOXK666777A"
+            oMother.defaultSecretKey
         )
     }
 
     @Test
     fun tokenGeneratorWithSuccessTest() {
         // Arrange
-        val username = "user"
-        val password = "password"
+        val username = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val dbToken = oMother.defaultDBToken
         val userDetails = User(username, password, arrayListOf())
-        val dbToken = "123"
 
         // Action
         val token = jwtTokenUtilToTest.generateToken(userDetails, dbToken)
@@ -46,9 +51,9 @@ internal class JwtTokenUtilTest {
     @Test
     fun getAllClaimsFromTokenSuccessTest() {
         // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "123456"
+        val username = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val dbToken = oMother.defaultDBToken
         val token = jwtTokenUtilToTest.generateToken(
             User(username, password, arrayListOf()), dbToken
         )
@@ -64,25 +69,21 @@ internal class JwtTokenUtilTest {
     @Test
     fun getAllClaimsFromTokenFailureOnStrangeTokenTest() {
         // Arrange
-        val token = "lol, i'm a token uwu"
+        val token = oMother.invalidToken
 
         // Action
-        val claimsFromToken = try {
-            jwtTokenUtilToTest.getAllClaimsFromToken(token)
-        } catch (exc: Exception) {
-            null
-        }
 
         // Assert
-        assertNull(claimsFromToken)
+        assertThatExceptionOfType(Exception::class.java)
+            .isThrownBy { jwtTokenUtilToTest.getAllClaimsFromToken(token) }
     }
 
     @Test
     fun getUsernameFromTokenSuccessTest() {
         // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "123456"
+        val username = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val dbToken = oMother.defaultDBToken
 
         val jwtToken = jwtTokenUtilToTest.generateToken(
             User(username, password, arrayListOf()), dbToken
@@ -98,25 +99,21 @@ internal class JwtTokenUtilTest {
     @Test
     fun getUsernameFromTokenFailureOnStrangeTokenTest() {
         // Arrange
-        val jwtToken = "what am i doing?"
+        val jwtToken = oMother.invalidToken
 
         // Action
-        val subject = try {
-            jwtTokenUtilToTest.getUsernameFromToken(jwtToken)
-        } catch (exc: Exception) {
-            null
-        }
 
         // Assert
-        assertNull(subject)
+        assertThatExceptionOfType(Exception::class.java)
+            .isThrownBy { jwtTokenUtilToTest.getUsernameFromToken(jwtToken) }
     }
 
     @Test
     fun validateTokenSuccessTest() {
         // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "122112"
+        val username = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val dbToken = oMother.defaultDBToken
 
         val userDetails = User(username, password, arrayListOf())
         val jwtToken = jwtTokenUtilToTest.generateToken(userDetails, dbToken)
@@ -132,15 +129,15 @@ internal class JwtTokenUtilTest {
     @Test
     fun validateTokenFailureOnUsernameTest() {
         // Arrange
-        val username = "user"
-        val password = "password"
-        val dbToken = "122112"
+        val username = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val dbToken = oMother.defaultDBToken
 
         val userDetails = User(username, password, arrayListOf())
         val jwtToken = jwtTokenUtilToTest.generateToken(userDetails, dbToken)
 
-        val wrongUsername = "lox"
-        val wrongUserDetails = User(wrongUsername, password, arrayListOf())
+        val invalidUsername = oMother.invalidUsername
+        val wrongUserDetails = User(invalidUsername, password, arrayListOf())
 
         // Act
         val isTokenValid =
@@ -153,10 +150,10 @@ internal class JwtTokenUtilTest {
     @Test
     fun validateTokenFailureOnExpiredTokenTest() {
         // Arrange
-        val claims = hashMapOf("dbToken" to "1222")
-        val subject = "what"
-        val password = "..."
-        val secret = "LZKPDJMW7MSY273666MZNAAAUCJEBASUKOXK666777A"
+        val claims = oMother.defaultClaims
+        val subject = oMother.defaultUser
+        val password = oMother.defaultPassword
+        val secret = oMother.defaultSecretKey
 
         val jwtToken = Jwts.builder().setClaims(claims).setSubject(subject)
             .setIssuedAt(Date(System.currentTimeMillis()))
@@ -166,13 +163,9 @@ internal class JwtTokenUtilTest {
         val userDetails = User(subject, password, arrayListOf())
 
         // Act
-        val validity = try {
-            jwtTokenUtilToTest.validateToken(jwtToken, userDetails)
-        } catch (exc: Exception) {
-            null
-        }
 
         // Assert
-        assertNull(validity)
+        assertThatExceptionOfType(Exception::class.java)
+            .isThrownBy { jwtTokenUtilToTest.validateToken(jwtToken, userDetails) }
     }
 }

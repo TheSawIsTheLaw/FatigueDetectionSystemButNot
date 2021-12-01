@@ -13,7 +13,7 @@ internal class InfluxdbConfigurationTest {
     @Test
     fun checkAtCorrectConfigurationFile() {
         // Arrange
-        val configurationFile = motherConfig.getCorrectConfigurationFile()
+        val configurationFile = motherConfig.correctConfigurationFile
 
         // Action
         val testConfiguration = InfluxdbConfiguration(configurationFile)
@@ -27,7 +27,7 @@ internal class InfluxdbConfigurationTest {
     @Test
     fun checkAtIncorrectConfigurationFile() {
         // Arrange
-        val configurationFile = motherConfig.getIncorrectConfigurationFile()
+        val configurationFile = motherConfig.incorrectConfigurationFile
 
         // Action
         val testConfiguration = InfluxdbConfiguration(configurationFile)
