@@ -9,6 +9,8 @@ import com.fdsystem.fdserver.domain.dtos.NewPasswordDTOWithUsername
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
 import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.response.ResponseMessage
+import com.fdsystem.fdserver.expects.UserControllerExpectations
+import com.fdsystem.fdserver.mothers.UserControllerOMother
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
 import org.jetbrains.exposed.sql.Except
@@ -21,6 +23,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import kotlin.RuntimeException
 
 internal class UserControllerTest {
+    private val oMother = UserControllerOMother()
+    private val expectations = UserControllerExpectations()
+
     private val userServiceMock = Mockito.mock(UserAuthService::class.java)
 
     private val jwtTokenUtilMock = Mockito.mock(JwtTokenUtil::class.java)
@@ -34,133 +39,31 @@ internal class UserControllerTest {
         userDetailsServiceMock
     )
 
-    private data class MockExpectations(
-        val successUser: UserDetails = User(
-            "successUser",
-            "pass",
+    private fun successUserValidationFixture() {
+        val successUser = User(
+            oMother.successUserCredentials.username,
+            oMother.successUserCredentials.password,
             arrayListOf()
         )
-    )
 
-    private val mockExpectations = MockExpectations()
-
-    private data class MockParameters(
-        val successUser: UserCredentialsDTO = UserCredentialsDTO(
-            "successUser",
-            "pass",
-            ""
-        ),
-
-        val internalErrorUser: UserCredentialsDTO = UserCredentialsDTO(
-            "internalServerErrorUser",
-            "pass",
-            ""
-        ),
-
-        val alreadyExistsUser: UserCredentialsDTO = UserCredentialsDTO(
-            "alreadyExistsUser",
-            "pass",
-            ""
-        ),
-
-        val internalErrorPasswords: NewPasswordDTOWithUsername =
-            NewPasswordDTOWithUsername(
-                "internalServerErrorUser",
-                "oldPas",
-                "newPas"
-            ),
-
-        val incorrectPasswords: NewPasswordDTOWithUsername =
-            NewPasswordDTOWithUsername(
-                "incorrectPasUser",
-                "incorrectOldPas",
-                "newPas"
-            )
-    )
-
-    private val mockParameters = MockParameters()
-
-    init {
-        // Success test
         Mockito.`when`(userDetailsServiceMock.loadUserByUsername("successUser"))
-            .thenReturn(mockExpectations.successUser)
-
-        Mockito.`when`(
-            jwtTokenUtilMock.generateToken(
-                mockExpectations.successUser, "successToken"
-            )
-        ).thenReturn("successToken")
+            .thenReturn(successUser)
 
         Mockito.`when`(
             userServiceMock.getUserByUsername("successUser")
         ).thenReturn(UserCredentialsDTO("successUser", "pass", "successToken"))
 
         Mockito.`when`(
-            userServiceMock.register(mockParameters.successUser)
-        ).thenReturn("Success!")
-
-        Mockito.`when`(jwtTokenUtilMock.getUsernameFromToken("totototo"))
-            .thenReturn("successChangePasUser")
-
-        Mockito.`when`(
-            userServiceMock.changeUserInfo
-                (
-                NewPasswordDTOWithUsername(
-                    "successChangePasUser",
-                    "oldPas", "newPas"
-                )
-            )
-        ).thenReturn(true)
-
-        // Not found test
-        Mockito.`when`(
-            userDetailsServiceMock.loadUserByUsername("notFoundUser")
-        ).thenThrow(
-            UsernameNotFoundException("There is no user like this one...")
-        )
-
-        // Already exists
-        Mockito.`when`(
-            userServiceMock.register(mockParameters.alreadyExistsUser)
-        ).thenReturn("User already exists")
-
-        // Invalid password test
-        Mockito.`when`(
-            jwtTokenUtilMock.getUsernameFromToken("incorrectPasUser")
-        ).thenReturn("incorrectPasUser")
-
-        Mockito.`when`(
-            userServiceMock.changeUserInfo(mockParameters.incorrectPasswords)
-        ).thenReturn(false)
-
-        // Internal server error test
-        Mockito.`when`(
-            userDetailsServiceMock.loadUserByUsername("internalServerErrorUser")
-        ).thenThrow(RuntimeException())
-
-        Mockito.`when`(
-            userServiceMock.register(mockParameters.internalErrorUser)
-        ).thenThrow(RuntimeException())
-
-        Mockito.`when`(
-            jwtTokenUtilMock.getUsernameFromToken("serverFail")
-        ).thenReturn("internalServerErrorUser")
-
-        Mockito.`when`(
-            userServiceMock.changeUserInfo(
-                mockParameters.internalErrorPasswords
-            )
-        ).thenThrow(RuntimeException())
+            jwtTokenUtilMock.generateToken(successUser, "successToken")
+        ).thenReturn("successToken")
     }
 
     @Test
     fun loginTestSuccess() {
         // Arrange
-        val authenticationRequest = UserCredentialsDTO(
-            "successUser",
-            "pass",
-            ""
-        )
+        val authenticationRequest = oMother.successUserCredentials
+
+        successUserValidationFixture()
 
         // Act
         val response = controllerToTest.login(authenticationRequest)
@@ -172,10 +75,12 @@ internal class UserControllerTest {
     @Test
     fun loginTestFailureOnUsernameNotFound() {
         // Arrange
-        val authenticationRequest = UserCredentialsDTO(
-            "notFoundUser",
-            "pass",
-            ""
+        val authenticationRequest = oMother.notFoundUserCredentials
+
+        Mockito.`when`(
+            userDetailsServiceMock.loadUserByUsername("notFoundUser")
+        ).thenThrow(
+            UsernameNotFoundException("There is no user like this one...")
         )
 
         // Act
@@ -188,11 +93,11 @@ internal class UserControllerTest {
     @Test
     fun loginTestFailureOnInternalServerError() {
         // Arrange
-        val authenticationRequest = UserCredentialsDTO(
-            "internalServerErrorUser",
-            "pass",
-            ""
-        )
+        val authenticationRequest = oMother.internalServerErrorUserCredentials
+
+        Mockito.`when`(
+            userDetailsServiceMock.loadUserByUsername("internalServerErrorUser")
+        ).thenThrow(RuntimeException())
 
         // Act
         val response = controllerToTest.login(authenticationRequest)
@@ -204,11 +109,9 @@ internal class UserControllerTest {
     @Test
     fun loginTestFailureOnInvalidPassword() {
         // Arrange
-        val authenticationRequest = UserCredentialsDTO(
-            "successUser",
-            "InvalidPass",
-            ""
-        )
+        val authenticationRequest = oMother.invalidPasswordUserCredentials
+
+        successUserValidationFixture()
 
         // Act
         val response = controllerToTest.login(authenticationRequest)
@@ -220,11 +123,11 @@ internal class UserControllerTest {
     @Test
     fun registerTestSuccess() {
         // Arrange
-        val user = UserCredentialsDTO(
-            "successUser",
-            "pass",
-            ""
-        )
+        val user = oMother.successUserCredentials
+
+        Mockito.`when`(
+            userServiceMock.register(user)
+        ).thenReturn("Success!")
 
         // Act
         val response = controllerToTest.register(user)
@@ -236,27 +139,27 @@ internal class UserControllerTest {
     @Test
     fun registerTestFailureOnInternalServerError() {
         // Arrange
-        val user = UserCredentialsDTO(
-            "internalServerErrorUser",
-            "pass",
-            ""
-        )
+        val user = oMother.internalServerErrorUserCredentials
+
+        Mockito.`when`(
+            userServiceMock.register(oMother.internalServerErrorUserCredentials)
+        ).thenThrow(RuntimeException())
 
         // Act
         val response = controllerToTest.register(user)
 
         // Assert
-        assertEquals("Auth server is dead :(", (response.body as ResponseMessage).message)
+        assertEquals(expectations.serverDeathMessage, (response.body as ResponseMessage).message)
     }
 
     @Test
     fun registerTestFailureOnAlreadyExistingUser() {
         // Arrange
-        val user = UserCredentialsDTO(
-            "alreadyExistsUser",
-            "pass",
-            ""
-        )
+        val user = oMother.alreadyExistUserCredentials
+
+        Mockito.`when`(
+            userServiceMock.register(user)
+        ).thenReturn("User already exists")
 
         // Act
         val response = controllerToTest.register(user)
@@ -268,10 +171,23 @@ internal class UserControllerTest {
     @Test
     fun changePasswordTestSuccess() {
         // Arrange
-        val passwords = NewPasswordDTO(
-            "oldPas", "newPas"
-        )
-        val jwtToken = "Bearer totototo"
+        val passwords = oMother.correctNewPasswordDTO
+        val jwtToken = oMother.correctJWT
+
+        val username = "successChangePasUser"
+
+        Mockito.`when`(jwtTokenUtilMock.getUsernameFromToken(oMother.correctJWT.split(" ")[1].trim()))
+            .thenReturn(username)
+
+        Mockito.`when`(
+            userServiceMock.changeUserInfo(
+                NewPasswordDTOWithUsername(
+                    username,
+                    passwords.oldPassword,
+                    passwords.newPassword
+                )
+            )
+        ).thenReturn(true)
 
         // Act
         val response = controllerToTest.changePassword(passwords, jwtToken)
@@ -285,8 +201,8 @@ internal class UserControllerTest {
     @Test
     fun changePasswordTestFailureOnInvalidJwtToken() {
         // Arrange
-        val passwords = NewPasswordDTO("oldPas", "newPas")
-        val jwtToken = "totototo"
+        val passwords = oMother.correctNewPasswordDTO
+        val jwtToken = oMother.incorrectJWT
 
         // Act
 
@@ -302,21 +218,49 @@ internal class UserControllerTest {
     @Test
     fun changePasswordTestFailureOnInternalServerError() {
         // Arrange
-        val passwords = NewPasswordDTO("oldPas", "newPas")
-        val jwtToken = "Bearer serverFail"
+        val passwords = oMother.correctNewPasswordDTO
+        val jwtToken = oMother.serverFailJWT
+
+        val username = oMother.internalServerErrorUserCredentials.username
+
+        Mockito.`when`(
+            jwtTokenUtilMock.getUsernameFromToken(jwtToken)
+        ).thenReturn(username)
+
+        Mockito.`when`(
+            userServiceMock.changeUserInfo(
+                NewPasswordDTOWithUsername(username, passwords.oldPassword, passwords.newPassword)
+            )
+        ).thenThrow(RuntimeException())
 
         // Act
         val response = controllerToTest.changePassword(passwords, jwtToken)
 
         // Assert
-        assertEquals("Auth server is dead :(", (response.body as ResponseMessage).message)
+        assertEquals(expectations.serverDeathMessage, (response.body as ResponseMessage).message)
     }
 
     @Test
     fun changePasswordTestFailureOnNonMatchingPasswords() {
         // Arrange
-        val passwords = NewPasswordDTO("IncorrectOldPas", "newPas")
-        val jwtToken = "Bearer incorrectPasUser"
+        val passwords = oMother.incorrectNewPasswordDTO
+        val jwtToken = oMother.incorrectPasswordJWT
+
+        val username = "incorrectPasUser"
+
+        Mockito.`when`(
+            jwtTokenUtilMock.getUsernameFromToken(username)
+        ).thenReturn(username)
+
+        Mockito.`when`(
+            userServiceMock.changeUserInfo(
+                NewPasswordDTOWithUsername(
+                    username,
+                    passwords.oldPassword,
+                    passwords.newPassword
+                )
+            )
+        ).thenReturn(false)
 
         // Act
         val response = controllerToTest.changePassword(passwords, jwtToken)

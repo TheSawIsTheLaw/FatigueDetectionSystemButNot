@@ -45,7 +45,6 @@ class DataService(private val charRepository: CharRepositoryImpl)
 
         for (charName in requiredNames)
         {
-            LogFactory.getLog(javaClass).error("Current charName: $charName; Token: $token")
             outMeasurements.add(
                 MeasurementDTO(
                     charName, getMeasurement(token, bucketName, charName).map {

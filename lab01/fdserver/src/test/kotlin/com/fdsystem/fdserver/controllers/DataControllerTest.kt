@@ -2,19 +2,21 @@ package com.fdsystem.fdserver.controllers
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 import com.fdsystem.fdserver.controllers.services.DataService
-import com.fdsystem.fdserver.domain.dtos.*
+import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
+import com.fdsystem.fdserver.domain.dtos.ResponseMeasurementsDTO
 import com.fdsystem.fdserver.domain.response.ResponseMessage
-import io.jsonwebtoken.Claims
+import com.fdsystem.fdserver.expects.DataControllerExpectations
+import com.fdsystem.fdserver.mothers.DataControllerOMother
 import io.jsonwebtoken.Jwts
 import org.assertj.core.api.Assertions.assertThatExceptionOfType
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.mockito.Mockito
-import java.time.Instant
-import kotlin.RuntimeException
 
 internal class DataControllerTest {
+    private val oMother = DataControllerOMother()
+    private val expectations = DataControllerExpectations()
+
     private val dataServiceMock = Mockito.mock(DataService::class.java)
     private val jwtTokenUtilMock = Mockito.mock(JwtTokenUtil::class.java)
 
@@ -23,112 +25,50 @@ internal class DataControllerTest {
         jwtTokenUtilMock
     )
 
-    private data class MockExpectations(
-        val pulseAndArterialList: List<MeasurementDTO> =
-            listOf(
-                MeasurementDTO(
-                    "pulse", listOf(
-                        MeasurementData("30", Instant.MIN)
-                    )
-                ), MeasurementDTO(
-                    "arterialpressure", listOf(
-                        MeasurementData("90", Instant.MIN)
-                    )
-                )
-            )
-    )
-
-    private val mockExpectations = MockExpectations()
-
-    private data class MockParameters(
-        val claimsWithNormalToken: Claims = Jwts.claims(
-            mapOf<String, Any>("DBToken" to "normTok")
-        ),
-
-        val claimsForServerCheck: Claims = Jwts.claims(
-            mapOf<String, Any>("DBToken" to "serverExcCheck")
-        )
-    )
-
-    private val mockParameters = MockParameters()
-
-    init {
-        // For normal token
+    private fun prepareSuccessTokenValidationFixture() {
         Mockito.`when`(
-            jwtTokenUtilMock.getUsernameFromToken("normTok")
-        ).thenReturn("normTok")
+            jwtTokenUtilMock.getUsernameFromToken(oMother.successToken)
+        ).thenReturn(oMother.successToken)
 
         Mockito.`when`(
-            jwtTokenUtilMock.getAllClaimsFromToken("normTok")
-        ).thenReturn(mockParameters.claimsWithNormalToken)
+            jwtTokenUtilMock.getAllClaimsFromToken(oMother.successToken)
+        ).thenReturn(Jwts.claims(mapOf<String, Any>("DBToken" to oMother.successToken)))
+    }
 
-        Mockito.`when`(
-            dataServiceMock.getMeasurements(
-                "normTok", "normTok", listOf("pulse", "arterialpressure")
-            )
-        ).thenReturn(mockExpectations.pulseAndArterialList)
-
-        Mockito.doNothing().`when`(
-            dataServiceMock
-        ).sendMeasurements(
-            "normTok", "normTok",
-            AcceptMeasurementsListDTO(
-                listOf(
-                    AcceptMeasurementsDTO(
-                        "pulse", listOf(
-                            MeasurementDataWithoutTime("30")
-                        )
-                    ),
-                    AcceptMeasurementsDTO(
-                        "arterialpressure", listOf(
-                            MeasurementDataWithoutTime("90")
-                        )
-                    )
-                )
-            )
-        )
-
-        // For dead server
+    private fun prepareFailureInvalidTokenValidationFixture() {
         Mockito.`when`(
             jwtTokenUtilMock.getUsernameFromToken("serverExcCheck")
         ).thenReturn("serverExcCheck")
 
         Mockito.`when`(
             jwtTokenUtilMock.getAllClaimsFromToken("serverExcCheck")
-        ).thenReturn(mockParameters.claimsForServerCheck)
-
-        Mockito.`when`(
-            dataServiceMock.getMeasurements(
-                "serverExcCheck", "serverExcCheck", listOf()
-            )
-        ).thenThrow(RuntimeException())
-
-        Mockito.`when`(
-            dataServiceMock.sendMeasurements(
-                "serverExcCheck", "serverExcCheck",
-                AcceptMeasurementsListDTO(
-                    listOf()
-                )
-            )
-        ).thenThrow(RuntimeException())
+        ).thenReturn(Jwts.claims(mapOf<String, Any>("DBToken" to oMother.exceptionToken)))
     }
 
     @Test
     fun getDataTestSuccessWithPassedAuthToken() {
         // Arrange
-        val measurementsNames = listOf("pulse", "arterialpressure")
-        val jwtToken = "Bearer normTok"
+        val measurementsNames = oMother.pulseAndArterialMeasurementsList
+        val jwtToken = "Bearer " + oMother.successToken
+
+        prepareSuccessTokenValidationFixture()
+
+        Mockito.`when`(
+            dataServiceMock.getMeasurements(
+                oMother.successToken, oMother.successToken, oMother.pulseAndArterialMeasurementsList
+            )
+        ).thenReturn(listOf(expectations.successGotPulseMeasurement, expectations.successGotArterialMeasurement))
 
         // Act
         val responseBody = controllerToTest.getData(measurementsNames, jwtToken).body as ResponseMeasurementsDTO
 
         // Assert
         assertEquals(
-            MeasurementDTO("pulse", listOf(MeasurementData("30", Instant.MIN))),
+            expectations.successGotPulseMeasurement,
             responseBody.measurementsList[0]
         )
         assertEquals(
-            MeasurementDTO("arterialpressure", listOf(MeasurementData("90", Instant.MIN))),
+            expectations.successGotArterialMeasurement,
             responseBody.measurementsList[1]
         )
     }
@@ -139,7 +79,15 @@ internal class DataControllerTest {
     fun getDataTestFailureOnNoTokenProvidedOrInvalidForm() {
         // Arrange
         val measurementsNames = listOf<String>()
-        val jwtToken = "lol"
+        val jwtToken = oMother.invalidToken
+
+        prepareFailureInvalidTokenValidationFixture()
+
+        Mockito.`when`(
+            dataServiceMock.getMeasurements(
+                oMother.invalidToken, oMother.invalidToken, listOf()
+            )
+        ).thenThrow(RuntimeException())
 
         // Act
 
@@ -156,39 +104,37 @@ internal class DataControllerTest {
     fun getDataTestFailureOnDeadServer() {
         // Arrange
         val measurementsList = listOf<String>()
-        val jwtToken = "Bearer serverExcCheck"
+        val jwtToken = "Bearer " + oMother.exceptionToken
+
+        prepareFailureInvalidTokenValidationFixture()
+
+        Mockito.`when`(
+            dataServiceMock.getMeasurements(oMother.exceptionToken, oMother.exceptionToken, measurementsList)
+        ).thenThrow(RuntimeException())
 
         // Act
         val response = controllerToTest.getData(measurementsList, jwtToken)
 
         // Assert
-        assertEquals("Data server is dead :(", (response.body as ResponseMessage).message)
+        assertEquals(expectations.dataServerIsDeadMessage, (response.body as ResponseMessage).message)
     }
 
     @Test
     fun addDataTestSuccess() {
         // Arrange
-        val measurementsList = AcceptMeasurementsListDTO(
-            listOf(
-                AcceptMeasurementsDTO(
-                    "pulse", listOf(
-                        MeasurementDataWithoutTime("30")
-                    )
-                ),
-                AcceptMeasurementsDTO(
-                    "arterialpressure", listOf(
-                        MeasurementDataWithoutTime("90")
-                    )
-                )
-            )
-        )
-        val jwtToken = "Bearer normTok"
+        val measurementsList = oMother.addDataSuccessList
+        val jwtToken = "Bearer " + oMother.successToken
+
+        prepareSuccessTokenValidationFixture()
+
+        Mockito.doNothing().`when`(dataServiceMock)
+            .sendMeasurements(oMother.successToken, oMother.successToken, oMother.addDataSuccessList)
 
         // Act
         val response = controllerToTest.addData(measurementsList, jwtToken)
 
         // Assert
-        assertEquals("Measurements were carefully sent", (response.body as ResponseMessage).message)
+        assertEquals(expectations.measurementsWereCarefullySentMessage, (response.body as ResponseMessage).message)
     }
 
     // This test is created for fun only. There is no way to reproduce it
@@ -197,16 +143,13 @@ internal class DataControllerTest {
     fun addDataTestFailureOnNoTokenProvidedOrInvalidForm() {
         // Arrange
         val measurementsList = AcceptMeasurementsListDTO(listOf())
-        val jwtToken = "ololo"
+        val jwtToken = oMother.invalidToken
 
         // Act
 
         // Assert
         assertThatExceptionOfType(RuntimeException::class.java).isThrownBy {
-            controllerToTest.addData(
-                measurementsList,
-                jwtToken
-            )
+            controllerToTest.addData(measurementsList, jwtToken)
         }
     }
 
@@ -214,12 +157,21 @@ internal class DataControllerTest {
     fun addDataTestFailureOnDeadServer() {
         // Arrange
         val measurementsList = AcceptMeasurementsListDTO(listOf())
-        val jwtToken = "Bearer serverExcCheck"
+        val jwtToken = "Bearer " + oMother.exceptionToken
+
+        prepareFailureInvalidTokenValidationFixture()
+
+        Mockito.`when`(
+            dataServiceMock.sendMeasurements(
+                oMother.exceptionToken, oMother.exceptionToken,
+                measurementsList
+            )
+        ).thenThrow(RuntimeException())
 
         // Act
         val response = controllerToTest.addData(measurementsList, jwtToken)
 
         // Assert
-        assertEquals("Data server is dead :(", (response.body as ResponseMessage).message)
+        assertEquals(expectations.dataServerIsDeadMessage, (response.body as ResponseMessage).message)
     }
 }
