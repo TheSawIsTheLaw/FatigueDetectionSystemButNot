@@ -20,62 +20,35 @@ internal class JwtUserDetailsServiceTest {
 
     private val serviceToTest = JwtUserDetailsService(userRepositoryImpl)
 
-    private data class MockExpectations(
-        val existingUSUserCredentials: USUserCredentials =
-            USUserCredentials("existingUser", "pass", "123")
-    )
-
-    private data class MockParameters(
-        val existingUser: String = "existingUser",
-
-        val notExistingUser: String = "notExistingUser",
-
-        val exceptionUsername: String = "ecxUser",
-
-        val usUserCredentialsForExistingUser: USUserCredentials =
-            USUserCredentials(existingUser, "", ""),
-
-        val usUserCredentialsForExceptionCheck: USUserCredentials =
-            USUserCredentials(exceptionUsername, "", "")
-    )
-
-    private val mockExpectations = MockExpectations()
-    private val mockParameters = MockParameters()
-
-    init {
-        Mockito.`when`(
-            userRepositoryImpl.userExists(mockParameters.existingUser)
-        ).thenReturn(true)
-
-        Mockito.`when`(
-            userRepositoryImpl.userExists(mockParameters.notExistingUser)
-        ).thenReturn(false)
-
-        Mockito.`when`(
-            userRepositoryImpl.getUserByUsername(mockParameters.usUserCredentialsForExistingUser)
-        ).thenReturn(mockExpectations.existingUSUserCredentials)
-
-        Mockito.`when`(
-            userRepositoryImpl.getUserByUsername(mockParameters.usUserCredentialsForExceptionCheck)
-        ).thenThrow(RuntimeException("Internal server error"))
-    }
-
     @Test
     fun successLoadForUser() {
         // Arrange
         val username = "existingUser"
+        val password = "pass"
+
+        Mockito.`when`(
+            userRepositoryImpl.userExists(username)
+        ).thenReturn(true)
+
+        Mockito.`when`(
+            userRepositoryImpl.getUserByUsername(USUserCredentials(username, "", ""))
+        ).thenReturn(USUserCredentials(username, password, "123"))
 
         // Action
         val returnedUser = serviceToTest.loadUserByUsername(username)
 
         // Assert
-        assertEquals(User("existingUser", "pass", arrayListOf()), returnedUser)
+        assertEquals(User(username, password, arrayListOf()), returnedUser)
     }
 
     @Test
     fun failureUserNotFound() {
         // Arrange
         val username = "notExistingUser"
+
+        Mockito.`when`(
+            userRepositoryImpl.userExists(username)
+        ).thenReturn(false)
 
         // Action
         // Throw is checked in assert
@@ -90,6 +63,10 @@ internal class JwtUserDetailsServiceTest {
     fun failureInternalError() {
         // Arrange
         val username = "ecxUser"
+
+        Mockito.`when`(
+            userRepositoryImpl.getUserByUsername(USUserCredentials(username, "", ""))
+        ).thenThrow(RuntimeException("Internal server error"))
 
         // Action
         // Throw is checked in assert
