@@ -1,41 +1,40 @@
 package com.fdsystem.fdserver.config
 
+import com.fdsystem.fdserver.expects.InfluxdbConfigurationExpectations
+import com.fdsystem.fdserver.mothers.InfluxConfigFileMother
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import java.io.File
 
 internal class InfluxdbConfigurationTest {
+    private val motherConfig = InfluxConfigFileMother()
+    private val expectations = InfluxdbConfigurationExpectations()
+
     @Test
     fun checkAtCorrectConfigurationFile() {
         // Arrange
-        val path =
-                "./src/main/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
-        val configurationFile = File(path)
+        val configurationFile = motherConfig.getCorrectConfigurationFile()
 
         // Action
         val testConfiguration = InfluxdbConfiguration(configurationFile)
 
         // Assert
-        assertTrue(testConfiguration.configData.influxdbAdminToken.isNotEmpty())
-        assertTrue(testConfiguration.configData.influxdbURL.isNotEmpty())
-        assertTrue(testConfiguration.configData.influxdbOrganization.isNotEmpty())
+        assertEquals(expectations.influxdbURL, testConfiguration.configData.influxdbURL)
+        assertEquals(expectations.influxdbOrganization, testConfiguration.configData.influxdbOrganization)
+        assertEquals(expectations.influxdbAdminToken, testConfiguration.configData.influxdbAdminToken)
     }
 
     @Test
     fun checkAtIncorrectConfigurationFile() {
         // Arrange
-        val path =
-                "./src/test/kotlin/com/fdsystem/fdserver/config/IncorrectInfluxConf.json"
-        val fileWithConfiguration = File(path)
+        val configurationFile = motherConfig.getIncorrectConfigurationFile()
 
         // Action
-        val testConfiguration = InfluxdbConfiguration(fileWithConfiguration)
+        val testConfiguration = InfluxdbConfiguration(configurationFile)
 
         // Assert
         assertTrue(testConfiguration.configData.influxdbURL.isEmpty())
-        assertEquals("subjects", testConfiguration.configData.influxdbOrganization)
-        assertEquals("HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==",
-                testConfiguration.configData.influxdbAdminToken)
+        assertEquals(expectations.influxdbOrganization, testConfiguration.configData.influxdbOrganization)
+        assertEquals(expectations.influxdbAdminToken, testConfiguration.configData.influxdbAdminToken)
     }
 }
