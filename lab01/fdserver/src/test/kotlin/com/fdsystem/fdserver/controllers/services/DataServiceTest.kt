@@ -6,6 +6,9 @@ import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.domain.logicentities.DSDataAddInfo
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurement
 import com.fdsystem.fdserver.domain.logicentities.DSMeasurementList
+import com.fdsystem.fdserver.expects.DataServiceExpectations
+import com.fdsystem.fdserver.expects.mocks.DataServiceMocksExpectations
+import com.fdsystem.fdserver.mothers.DataServiceOMother
 import org.apache.commons.logging.LogFactory
 import org.assertj.core.api.Assertions
 import org.assertj.core.api.Assertions.assertThatNoException
@@ -16,127 +19,34 @@ import org.mockito.Mockito
 import java.time.Instant
 
 internal class DataServiceTest {
+    private val oMother = DataServiceOMother()
+    private val expectations = DataServiceExpectations()
+    private val mockExpectations = DataServiceMocksExpectations()
+
     private val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
     private val serviceToTest = DataService(charRepositoryMock)
 
-    private data class MockExpectations(
-        val pulseListExample:
-        List<MeasurementData> = listOf(
-            MeasurementData("60", Instant.MIN),
-            MeasurementData("63", Instant.MIN)
-        ),
-
-        val dspulseListExample:
-        List<DSMeasurement> = listOf(
-            DSMeasurement("pulse", "60", Instant.MIN),
-            DSMeasurement("pulse", "63", Instant.MIN)
-        ),
-
-        val arterialPressureListExample:
-        List<MeasurementData> = listOf(
-            MeasurementData("60", Instant.MIN),
-            MeasurementData("63", Instant.MIN)
-        ),
-
-        val dsarterialPressureListExample:
-        List<DSMeasurement> = listOf(
-            DSMeasurement("arterialpressure", "60", Instant.MIN),
-            DSMeasurement("arterialpressure", "63", Instant.MIN)
-        )
-    )
-
-    private data class MockParameters(
-        val dsDataAccessInfoWithFullInitPulse: DSDataAccessInfo =
-            DSDataAccessInfo(
-                "123",
-                "someone",
-                Pair(0, 0),
-                "pulse"
-            ),
-
-        val dsDataAccessInfoWithFullInitArterial: DSDataAccessInfo =
-            DSDataAccessInfo(
-                "123",
-                "someone",
-                Pair(0, 0),
-                "arterialpressure"
-            ),
-
-        val dsDataInfoEmpty: DSDataAccessInfo =
-            DSDataAccessInfo(
-                "",
-                "",
-                Pair(0, 0),
-                ""
-            ),
-
-        val dsDataAddInfoWithPulse: DSDataAddInfo =
-            DSDataAddInfo(
-                "123", "someone", DSMeasurementList(
-                    "pulse", listOf(
-                        DSMeasurement("pulse", "34", Instant.MIN),
-                        DSMeasurement("pulse", "36", Instant.MIN)
-                    )
-                )
-            ),
-
-        val dsDataAddInfoWithArterial: DSDataAddInfo =
-            DSDataAddInfo(
-                "123", "someone", DSMeasurementList(
-                    "arterialpressure", listOf(
-                        DSMeasurement(
-                            "arterialpressure", "100",
-                            Instant.MIN
-                        ),
-                        DSMeasurement(
-                            "arterialpressure", "200",
-                            Instant.MIN
-                        )
-                    )
-                )
-            )
-    )
-
-    private val mockExpectations = MockExpectations()
-    private val mockParameters = MockParameters()
-
-    init {
+    private fun pulseGetMeasurementPreparationFixture() {
         Mockito.`when`(
-            charRepositoryMock.get(
-                mockParameters.dsDataAccessInfoWithFullInitPulse
-            )
-        ).thenReturn(mockExpectations.dspulseListExample)
-
-        Mockito.`when`(
-            charRepositoryMock.get(
-                mockParameters.dsDataAccessInfoWithFullInitArterial
-            )
-        ).thenReturn(mockExpectations.dsarterialPressureListExample)
-
-        Mockito.`when`(
-            charRepositoryMock.get(
-                mockParameters.dsDataInfoEmpty
-            )
-        ).thenReturn(listOf())
-
-        Mockito.doNothing().`when`(charRepositoryMock).add(
-            mockParameters.dsDataAddInfoWithPulse
-        )
-
-        Mockito.doNothing().`when`(charRepositoryMock).add(
-            mockParameters.dsDataAddInfoWithArterial
-        )
+            charRepositoryMock.get(oMother.pulseAccessInfo)
+        ).thenReturn(mockExpectations.charGetPulseExample)
     }
 
     @Test
     fun getMeasurementsWithSeveralElementsReturned() {
         // Arrange
         // Prepare parameters
-        val token = "123"
-        val bucketName = "someone"
-        val requiredNames = listOf("pulse", "arterialpressure")
+        val token = oMother.defaultToken
+        val bucketName = oMother.defaultBucket
+        val requiredNames = oMother.defaultRequiredNames
+
+        pulseGetMeasurementPreparationFixture()
+
+        Mockito.`when`(
+            charRepositoryMock.get(oMother.arterialAccessInfo)
+        ).thenReturn(mockExpectations.charGetArterialExample)
 
         // Act
         val returnedMeasurements =
@@ -144,16 +54,7 @@ internal class DataServiceTest {
 
         // Assert
         assertEquals(
-            listOf(
-                MeasurementDTO(
-                    "pulse",
-                    mockExpectations.pulseListExample
-                ),
-                MeasurementDTO(
-                    "arterialpressure",
-                    mockExpectations.arterialPressureListExample
-                )
-            ),
+            listOf(expectations.pulseMeasurementDTO, expectations.arterialMeasurementDTO),
             returnedMeasurements
         )
     }
@@ -162,16 +63,18 @@ internal class DataServiceTest {
     fun getMeasurementsWithOneElementReturned() {
         // Arrange
         // Prepare parameters
-        val token = "123"
-        val bucketName = "someone"
-        val requiredNames = listOf("pulse")
+        val token = oMother.defaultToken
+        val bucketName = oMother.defaultBucket
+        val requiredNames = listOf(oMother.defaultRequiredNames[0])
+
+        pulseGetMeasurementPreparationFixture()
 
         // Act
         val returnedMeasurements =
             serviceToTest.getMeasurements(token, bucketName, requiredNames)
 
         // Assert
-        assertEquals(listOf(MeasurementDTO("pulse", mockExpectations.pulseListExample)), returnedMeasurements)
+        assertEquals(listOf(expectations.pulseMeasurementDTO), returnedMeasurements)
     }
 
     @Test
@@ -181,6 +84,17 @@ internal class DataServiceTest {
         val token = ""
         val bucketName = ""
         val requiredNames = listOf<String>()
+
+        Mockito.`when`(
+            charRepositoryMock.get(
+                DSDataAccessInfo(
+                    "",
+                    "",
+                    Pair(0, 0),
+                    ""
+                )
+            )
+        ).thenReturn(listOf())
 
         // Act
         val returnedMeasurements =
@@ -193,24 +107,15 @@ internal class DataServiceTest {
     @Test
     fun sendMeasurementsTestToCheckNoException() {
         // Arrange
-        val token = "123"
-        val bucketName = "someone"
+        val token = oMother.defaultToken
+        val bucketName = oMother.defaultBucket
         val measurementList = AcceptMeasurementsListDTO(
-            listOf(
-                AcceptMeasurementsDTO(
-                    "pulse", listOf(
-                        MeasurementDataWithoutTime("34"),
-                        MeasurementDataWithoutTime("36")
-                    )
-                ),
-                AcceptMeasurementsDTO(
-                    "arterialpressure", listOf(
-                        MeasurementDataWithoutTime("100"),
-                        MeasurementDataWithoutTime("200")
-                    )
-                )
-            )
+            listOf(oMother.acceptPulseMeasurements, oMother.acceptArterialMeasurements)
         )
+
+        Mockito.doNothing().`when`(charRepositoryMock).add(oMother.arterialDataAddExample)
+
+        Mockito.doNothing().`when`(charRepositoryMock).add(oMother.pulseDataAddExample)
 
         // Act
         serviceToTest.sendMeasurements(token, bucketName, measurementList)
