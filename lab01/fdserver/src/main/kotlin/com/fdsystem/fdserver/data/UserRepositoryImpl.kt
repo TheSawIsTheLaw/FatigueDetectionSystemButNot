@@ -12,10 +12,8 @@ class PostgresConnection(
     private val username: String,
     private val password: String,
     private val url: String
-)
-{
-    fun getConnectionToDB(): Database
-    {
+) {
+    fun getConnectionToDB(): Database {
         val urlForDB = "jdbc:postgresql://$url"
         return Database.connect(
             urlForDB,
@@ -28,172 +26,84 @@ class PostgresConnection(
 
 @Repository
 class UserRepositoryImpl(
-    private val config: PostgresConfiguration
-) : UserRepositoryInterface
-{
-    private val connection = PostgresConnection(
-        config.configData.postgresUsername,
-        config.configData.postgresPassword,
-        config.configData.postgresURL
+    private val config: PostgresConfiguration,
+) : UserRepositoryInterface {
+    private val userDAO = PostgresUserDAO(
+        PostgresConnection(
+            config.configData.postgresUsername,
+            config.configData.postgresPassword,
+            config.configData.postgresURL
+        )
     )
 
-    private fun mapToUserDTO(it: ResultRow) =
-        UsersTable.UserDTO(
-            it[UsersTable.id],
-            it[UsersTable.username],
-            it[UsersTable.password],
-            it[UsersTable.dbToken]
-        )
-
-    override fun userExists(username: String): Boolean
-    {
-        var select: List<UsersTable.UserDTO> = listOf()
-        transaction(connection.getConnectionToDB())
-        {
-            select = UsersTable.select { UsersTable.username.eq(username) }
-                .map { mapToUserDTO(it) }
-        }
-
-        return select.isNotEmpty()
+    override fun userExists(username: String): Boolean {
+        return userDAO.getUserByUsername(username).second.isNotBlank()
     }
 
 
     override fun registerUser(
         user: USUserCredentials
-    ): Boolean
-    {
-        if (userExists(user.username))
-        {
+    ): Boolean {
+        val username = user.username
+
+        if (userExists(username)) {
             return false
         }
 
-        transaction(connection.getConnectionToDB())
-        {
-            UsersTable.insert {
-                it[username] = user.username
-                it[password] = user.password
-                it[dbToken] = user.dbToken
-            }
-        }
+        val password = user.password
+        val token = user.dbToken
+
+        userDAO.registerUser(username, password, token)
 
         return true
     }
 
-    override fun checkPassword(user: USUserCredentials): Boolean
-    {
-        if (!userExists(user.username))
-        {
-            return false
-        }
+    override fun getUserByUsername(user: USUserCredentials): USUserCredentials {
+        val username = user.username
+        val gotUser = userDAO.getUserByUsername(username)
 
-        var select: List<UsersTable.UserDTO> = listOf()
-        transaction(connection.getConnectionToDB())
-        {
-            select = UsersTable
-                .select {
-                    UsersTable.username.eq(user.username) and UsersTable.password.eq(
-                        user.password
-                    )
-                }
-                .map { mapToUserDTO(it) }
-        }
-
-        return select.isNotEmpty()
-    }
-
-    override fun getUserByUsername(user: USUserCredentials): USUserCredentials
-    {
-        if (!userExists(user.username))
-        {
+        if (gotUser.second == "") {
             return USUserCredentials("", "", "")
         }
 
-        var select: List<UsersTable.UserDTO> = listOf()
-        transaction(connection.getConnectionToDB())
-        {
-            select = UsersTable.select { UsersTable.username.eq(user.username) }
-                .map { mapToUserDTO(it) }
-        }
+        return USUserCredentials(username, gotUser.second, gotUser.third)
+    }
 
-        return USUserCredentials(
-            select[0].username, select[0].password,
-            select[0].dbToken
-        )
+    override fun checkPassword(user: USUserCredentials): Boolean {
+        val gotUser = getUserByUsername(user)
+
+        return gotUser.password == user.password
     }
 
     override fun changePasswordAndUsername(
         credentialChangeInfo: USCredentialsChangeInfo
-    ): Boolean
-    {
-        if (!userExists(credentialChangeInfo.oldUsername))
-        {
+    ): Boolean {
+        val username = credentialChangeInfo.oldUsername
+        val currentPassword = credentialChangeInfo.oldPassword
+
+        if (currentPassword.isBlank() || userDAO.getUserByUsername(username).second != currentPassword) {
             return false
         }
 
-        transaction(connection.getConnectionToDB())
-        {
-            UsersTable.update({
-                UsersTable.username.eq(credentialChangeInfo.oldUsername) and
-                        UsersTable.password.eq(credentialChangeInfo.oldPassword)
-            })
-            {
-                it[username] = credentialChangeInfo.newUsername
-                it[password] = credentialChangeInfo.newPassword
-            }
-        }
+        userDAO.changeCredentials(
+            username,
+            credentialChangeInfo.newUsername,
+            currentPassword,
+            credentialChangeInfo.newPassword
+        )
 
         return true
     }
 
     override fun getUserToken(
         user: USUserCredentials
-    ): USUserCredentials
-    {
-        if (!userExists(user.username))
-        {
-            return USUserCredentials(user.username, user.password, "")
-        }
+    ): USUserCredentials {
+        val gotUser = getUserByUsername(user)
 
-        val username = user.username
-        val password = user.password
-
-        var select: List<UsersTable.UserDTO> = listOf()
-        transaction(connection.getConnectionToDB())
-        {
-            select = UsersTable.select {
-                UsersTable.username.eq(username) and UsersTable.password.eq(
-                    password
-                )
-            }
-                .map { mapToUserDTO(it) }
-        }
-
-        if (select.isEmpty())
-        {
-            return USUserCredentials(username, password, "")
-        }
-
-        return USUserCredentials(username, password, select[0].dbToken)
+        val gotPassword = gotUser.password
+        return if (user.password == gotPassword)
+            USUserCredentials(user.username, gotPassword, gotUser.dbToken)
+        else
+            USUserCredentials("", "", "")
     }
 }
-
-//fun main()
-//{
-//    val connection = PostgresConnection(NetworkConfig.postgresUsername, NetworkConfig.postgresPassword, "localhost:5432/users")
-//
-//    val newToken = CharRepositoryImpl(
-//        NetworkConfig.influxdbURL,
-//        NetworkConfig.influxAdminToken,
-//        NetworkConfig.influxOrganization
-//    ).getNewTokenForUser("Yakuba Dmitry")
-//
-//    transaction(connection.getConnectionToDB())
-//    {
-//        UsersTable.insert {
-//            it[username] = "username"
-//            it[password] = "password"
-//            it[dbToken] = newToken
-//        }
-//    }
-//}
-
