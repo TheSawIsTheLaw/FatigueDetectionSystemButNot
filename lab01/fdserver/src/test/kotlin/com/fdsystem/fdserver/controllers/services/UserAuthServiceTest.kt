@@ -9,6 +9,8 @@ import com.fdsystem.fdserver.domain.logicentities.DSUserCredentials
 import com.fdsystem.fdserver.domain.logicentities.TokenInformation
 import com.fdsystem.fdserver.domain.logicentities.USCredentialsChangeInfo
 import com.fdsystem.fdserver.domain.logicentities.USUserCredentials
+import com.fdsystem.fdserver.expects.mocks.UserAuthServiceMocksExpectations
+import com.fdsystem.fdserver.mothers.UserAuthServiceOMother
 import org.apache.commons.logging.LogFactory
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -20,6 +22,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException
 import kotlin.RuntimeException
 
 internal class UserAuthServiceTest {
+    private val oMother = UserAuthServiceOMother()
+    private val mocksExpectations = UserAuthServiceMocksExpectations()
+
     private val charRepositoryMock: CharRepositoryImpl =
         Mockito.mock(CharRepositoryImpl::class.java)
 
@@ -31,183 +36,23 @@ internal class UserAuthServiceTest {
         charRepositoryMock
     )
 
-    private data class MockExpectations(
-        val successTokenInformation: TokenInformation = TokenInformation(
-            "ololo", "30"
-        ),
-
-        val failTokenInformation: TokenInformation = TokenInformation(
-            "", ""
-        ),
-
-        val successUSUserCredentials: USUserCredentials = USUserCredentials(
-            "a", "ololo", "123"
-        ),
-
-        val failUSUserCredentials: USUserCredentials = USUserCredentials(
-            "", "", ""
-        )
-    )
-
-    private data class MockParameters(
-        val usUserCredentialsExample: USUserCredentials = USUserCredentials(
-            "Username",
-            "Password",
-            ""
-        ),
-
-        val usUserCredentialsExampleWithToken: USUserCredentials = USUserCredentials(
-            usUserCredentialsExample.username,
-            usUserCredentialsExample.password,
-            "ololo"
-        ),
-
-        val usUserCredentialsExampleToCheckException: USUserCredentials =
-            USUserCredentials(
-                "",
-                "",
-                ""
-            ),
-
-        val usUserCredentialsExampleRepeat: USUserCredentials = USUserCredentials(
-            "Username",
-            "AnotherPasswordToCheckRetryOfRegistration",
-            ""
-        ),
-
-        val successNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
-            NewPasswordDTOWithUsername("Username", "oldPas", "newPas"),
-
-        val successPasswordChangeUserInfo: USCredentialsChangeInfo =
-            USCredentialsChangeInfo(
-                successNewPasswordDTOWithUsername.username,
-                successNewPasswordDTOWithUsername.username,
-                successNewPasswordDTOWithUsername.oldPassword,
-                successNewPasswordDTOWithUsername.newPassword
-            ),
-
-        val failNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
-            NewPasswordDTOWithUsername(
-                "FailUsername", "FailPas", "FailNewPas"
-            ),
-
-        val failPasswordChangeUserInfo: USCredentialsChangeInfo =
-            USCredentialsChangeInfo(
-                failNewPasswordDTOWithUsername.username,
-                failNewPasswordDTOWithUsername.username,
-                failNewPasswordDTOWithUsername.oldPassword,
-                failNewPasswordDTOWithUsername.newPassword
-            ),
-
-        val exceptionNewPasswordDTOWithUsername: NewPasswordDTOWithUsername =
-            NewPasswordDTOWithUsername(
-                "excUsername", "", ""
-            ),
-
-        val exceptionPasswordChangeUserInfo: USCredentialsChangeInfo =
-            USCredentialsChangeInfo(
-                exceptionNewPasswordDTOWithUsername.username,
-                exceptionNewPasswordDTOWithUsername.username,
-                exceptionNewPasswordDTOWithUsername.oldPassword,
-                exceptionNewPasswordDTOWithUsername.newPassword
-            ),
-
-        val successGetUserByUsernameUsername: USUserCredentials =
-            USUserCredentials("a", "", ""),
-
-        val failGetUserByUsernameUsername: USUserCredentials =
-            USUserCredentials("b", "", ""),
-
-        val exceptionGetUserByUsernameUsername: USUserCredentials =
-            USUserCredentials("c", "", "")
-    )
-
-    private fun prepareCharRepositoryMock() {
-        Mockito.`when`(
-            charRepositoryMock.getNewTokenForUser(mockParameters.usUserCredentialsExample)
-        ).thenReturn(mockExpectations.successTokenInformation)
-
-        Mockito.`when`(
-            charRepositoryMock.getNewTokenForUser(mockParameters.usUserCredentialsExampleRepeat)
-        ).thenReturn(mockExpectations.failTokenInformation)
-
-        Mockito.`when`(
-            charRepositoryMock.getNewTokenForUser(mockParameters.usUserCredentialsExampleToCheckException)
-        ).thenReturn(mockExpectations.failTokenInformation)
-    }
-
-    private fun prepareUserRepositoryMock() {
-        Mockito.`when`(
-            userRepositoryMock.registerUser(
-                mockParameters.usUserCredentialsExampleWithToken
-            )
-        ).thenReturn(true)
-
-        Mockito.`when`(
-            userRepositoryMock.registerUser(mockParameters.usUserCredentialsExampleRepeat)
-        ).thenReturn(false)
-
-        Mockito.`when`(
-            userRepositoryMock.registerUser(
-                mockParameters.usUserCredentialsExampleToCheckException
-            )
-        ).thenThrow(RuntimeException("Internal server error"))
-
-        Mockito.`when`(
-            userRepositoryMock.changePasswordAndUsername(
-                mockParameters.successPasswordChangeUserInfo
-            )
-        ).thenReturn(true)
-
-        Mockito.`when`(
-            userRepositoryMock.changePasswordAndUsername(
-                mockParameters.failPasswordChangeUserInfo
-            )
-        ).thenReturn(false)
-
-        Mockito.`when`(
-            userRepositoryMock.changePasswordAndUsername(
-                mockParameters.exceptionPasswordChangeUserInfo
-            )
-        ).thenThrow(RuntimeException("Internal server error"))
-
-        Mockito.`when`(
-            userRepositoryMock.getUserByUsername(
-                mockParameters.successGetUserByUsernameUsername
-            )
-        ).thenReturn(mockExpectations.successUSUserCredentials)
-
-        Mockito.`when`(
-            userRepositoryMock.getUserByUsername(
-                mockParameters.failGetUserByUsernameUsername
-            )
-        ).thenReturn(mockExpectations.failUSUserCredentials)
-
-        Mockito.`when`(
-            userRepositoryMock.getUserByUsername(
-                mockParameters.exceptionGetUserByUsernameUsername
-            )
-        ).thenThrow(RuntimeException("Internal server error"))
-    }
-
-    private val mockExpectations: MockExpectations = MockExpectations()
-    private val mockParameters: MockParameters = MockParameters()
-
-    init {
-        prepareCharRepositoryMock()
-        prepareUserRepositoryMock()
-    }
-
     @Test
     fun registerWithSuccessRegistration() {
         // Arrange
-        val user = UserCredentialsDTO(
-            "Username", "Password", ""
-        )
+        val user = oMother.successRegistrationUser
+
+        Mockito.`when`(
+            charRepositoryMock.getNewTokenForUser(USUserCredentials(user.username, user.password, user.dbToken))
+        ).thenReturn(mocksExpectations.successTokenInformation)
+
+        Mockito.`when`(
+            userRepositoryMock.registerUser(
+                USUserCredentials(user.username, user.password, mocksExpectations.successTokenInformation.token)
+            )
+        ).thenReturn(true)
 
         // Act
-        val returnedRegistrationStatus =
-            serviceToTest.register(user)
+        val returnedRegistrationStatus = serviceToTest.register(user)
 
         // Assert
         assertEquals("Success", returnedRegistrationStatus)
@@ -216,13 +61,24 @@ internal class UserAuthServiceTest {
     @Test
     fun registerWithAlreadyExistsFailure() {
         // Arrange
-        val user = UserCredentialsDTO(
-            "Username", "AnotherPasswordToCheckRetryOfRegistration", ""
-        )
+        val user = oMother.alreadyExistUser
+
+        Mockito.`when`(
+            charRepositoryMock.getNewTokenForUser(USUserCredentials(user.username, user.password, user.dbToken))
+        ).thenReturn(mocksExpectations.failTokenInformation)
+
+        Mockito.`when`(
+            userRepositoryMock.registerUser(
+                USUserCredentials(
+                    user.username,
+                    user.password,
+                    mocksExpectations.failTokenInformation.token
+                )
+            )
+        ).thenReturn(false)
 
         // Act
-        val returnedRegistrationStatus =
-            serviceToTest.register(user)
+        val returnedRegistrationStatus = serviceToTest.register(user)
 
         // Assert
         assertEquals("User already exists", returnedRegistrationStatus)
@@ -235,6 +91,16 @@ internal class UserAuthServiceTest {
             "", "", ""
         )
 
+        Mockito.`when`(
+            charRepositoryMock.getNewTokenForUser(USUserCredentials("", "", ""))
+        ).thenReturn(mocksExpectations.failTokenInformation)
+
+        Mockito.`when`(
+            userRepositoryMock.registerUser(
+                USUserCredentials("", "", mocksExpectations.failTokenInformation.token)
+            )
+        ).thenThrow(RuntimeException("Internal server error"))
+
         // Act
 
         // Assert
@@ -245,9 +111,18 @@ internal class UserAuthServiceTest {
     @Test
     fun changeUserInfoWithSuccess() {
         // Arrange
-        val userInfo = NewPasswordDTOWithUsername(
-            "Username", "oldPas", "newPas"
-        )
+        val userInfo = oMother.successChangeUserInfo
+
+        Mockito.`when`(
+            userRepositoryMock.changePasswordAndUsername(
+                USCredentialsChangeInfo(
+                    userInfo.username,
+                    userInfo.username,
+                    userInfo.oldPassword,
+                    userInfo.newPassword
+                )
+            )
+        ).thenReturn(true)
 
         // Act
         val returnedStatus = serviceToTest.changeUserInfo(userInfo)
@@ -259,9 +134,18 @@ internal class UserAuthServiceTest {
     @Test
     fun changeUserInfoWithFailurePassword() {
         // Arrange
-        val userInfo = NewPasswordDTOWithUsername(
-            "FailUsername", "FailOldPas", "FailNewPas"
-        )
+        val userInfo = oMother.failChangeUserInfo
+
+        Mockito.`when`(
+            userRepositoryMock.changePasswordAndUsername(
+                USCredentialsChangeInfo(
+                    userInfo.username,
+                    userInfo.username,
+                    userInfo.oldPassword,
+                    userInfo.newPassword
+                )
+            )
+        ).thenReturn(false)
 
         // Act
         val returnedStatus = serviceToTest.changeUserInfo(userInfo)
@@ -273,9 +157,18 @@ internal class UserAuthServiceTest {
     @Test
     fun changeUserInfoWithException() {
         // Arrange
-        val userInfo = NewPasswordDTOWithUsername(
-            "excUsername", "", ""
-        )
+        val userInfo = oMother.exceptionChangeUserInfo
+
+        Mockito.`when`(
+            userRepositoryMock.changePasswordAndUsername(
+                USCredentialsChangeInfo(
+                    userInfo.username,
+                    userInfo.username,
+                    userInfo.oldPassword,
+                    userInfo.newPassword
+                )
+            )
+        ).thenThrow(RuntimeException("Internal server error"))
 
         // Act
 
@@ -287,19 +180,29 @@ internal class UserAuthServiceTest {
     @Test
     fun getUserByUsernameSuccess() {
         // Arrange
-        val username = "a"
+        val username = oMother.successRegistrationUser.username
+
+        Mockito.`when`(
+            userRepositoryMock.getUserByUsername(USUserCredentials(username, "", ""))
+        ).thenReturn(USUserCredentials(username, "1", "123"))
 
         // Act
         val returnedUser = serviceToTest.getUserByUsername(username)
 
         // Assert
-        assertEquals(UserCredentialsDTO("a", "ololo", "123"), returnedUser)
+        assertEquals(UserCredentialsDTO(username, "1", "123"), returnedUser)
     }
 
     @Test
     fun getUserByUsernameFailure() {
         // Arrange
-        val username = "b"
+        val username = oMother.successRegistrationUser.username
+
+        Mockito.`when`(
+            userRepositoryMock.getUserByUsername(
+                USUserCredentials(username, "", "")
+            )
+        ).thenReturn(USUserCredentials("", "", ""))
 
         // Act
         val returnedUser = serviceToTest.getUserByUsername(username)
@@ -311,7 +214,13 @@ internal class UserAuthServiceTest {
     @Test
     fun getUserByUsernameException() {
         // Arrange
-        val username = "c"
+        val username = oMother.exceptionChangeUserInfo.username
+
+        Mockito.`when`(
+            userRepositoryMock.getUserByUsername(
+                USUserCredentials(username, "", "")
+            )
+        ).thenThrow(RuntimeException("Wow"))
 
         // Act
 
