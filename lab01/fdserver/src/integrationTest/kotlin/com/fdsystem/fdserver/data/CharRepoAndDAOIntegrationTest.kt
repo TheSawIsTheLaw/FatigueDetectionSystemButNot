@@ -1,18 +1,15 @@
 package com.fdsystem.fdserver.data
 
-import com.fdsystem.fdserver.domain.logicentities.DSDataAccessInfo
 import com.fdsystem.fdserver.expectations.CharRepoAndDAOExpectations
 import com.fdsystem.fdserver.factories.CharRepositoryFactory
-import org.apache.commons.logging.LogFactory
-import org.junit.jupiter.api.Assertions
+import com.fdsystem.fdserver.factories.DSDataAccessInfoFactory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 
 internal class CharRepoAndDAOIntegrationTest {
-    val repoFactory = CharRepositoryFactory()
-    val expectations = CharRepoAndDAOExpectations()
-
-//    val repositoryToTest = CharRepositoryImpl(configuration)
+    private val repoFactory = CharRepositoryFactory()
+    private val dsDataAccessInfoFactory = DSDataAccessInfoFactory()
+    private val expectations = CharRepoAndDAOExpectations()
 
     @Test
     fun getTestSuccess() {
@@ -21,14 +18,7 @@ internal class CharRepoAndDAOIntegrationTest {
         val expectedGotMeasurements = expectations.pulseListAtCreation
 
         // Act
-        val gotMeasurements = repository.get(
-            DSDataAccessInfo(
-                "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==",
-                "testUser",
-                Pair(0, 0),
-                "pulse"
-            )
-        )
+        val gotMeasurements = repository.get(dsDataAccessInfoFactory.createDSDataAccessInfoByMeasurementName("pulse"))
 
         // Assert
         for (i in gotMeasurements.indices) {
