@@ -2,6 +2,7 @@ package com.fdsystem.fdserver.config
 
 import com.fdsystem.fdserver.expects.InfluxdbConfigurationExpectations
 import com.fdsystem.fdserver.mothers.InfluxConfigFileMother
+import com.google.gson.Gson
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
@@ -38,3 +39,10 @@ internal class InfluxdbConfigurationTest {
         assertEquals(expectations.influxdbAdminToken, testConfiguration.configData.influxdbAdminToken)
     }
 }
+
+//object foo
+//{
+//    val bar by lazy {
+//        Gson()
+//    }
+//}

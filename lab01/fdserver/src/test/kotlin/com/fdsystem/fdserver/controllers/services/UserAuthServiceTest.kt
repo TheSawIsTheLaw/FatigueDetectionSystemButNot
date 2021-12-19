@@ -145,28 +145,29 @@ internal class UserAuthServiceTest {
         assertFalse(returnedStatus)
     }
 
-    @Test
-    fun changeUserInfoWithException() {
-        // Arrange
-        val userInfo = oMother.exceptionChangeUserInfo
-
-        Mockito.`when`(
-            userRepositoryMock.changePasswordAndUsername(
-                USCredentialsChangeInfo(
-                    userInfo.username,
-                    userInfo.username,
-                    userInfo.oldPassword,
-                    userInfo.newPassword
-                )
-            )
-        ).thenThrow(RuntimeException("Internal server error"))
-
-        // Act
-
-        // Assert
-        Assertions.assertThatExceptionOfType(RuntimeException::class.java)
-            .isThrownBy { serviceToTest.changeUserInfo(userInfo) }
-    }
+//    // Можно выкинуть
+//    @Test
+//    fun changeUserInfoWithException() {
+//        // Arrange
+//        val userInfo = oMother.exceptionChangeUserInfo
+//
+//        Mockito.`when`(
+//            userRepositoryMock.changePasswordAndUsername(
+//                USCredentialsChangeInfo(
+//                    userInfo.username,
+//                    userInfo.username,
+//                    userInfo.oldPassword,
+//                    userInfo.newPassword
+//                )
+//            )
+//        ).thenThrow(RuntimeException("Internal server error"))
+//
+//        // Act
+//
+//        // Assert
+//        Assertions.assertThatExceptionOfType(RuntimeException::class.java)
+//            .isThrownBy { serviceToTest.changeUserInfo(userInfo) }
+//    }
 
     @Test
     fun getUserByUsernameSuccess() {

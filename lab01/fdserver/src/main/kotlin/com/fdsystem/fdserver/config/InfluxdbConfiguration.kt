@@ -1,11 +1,8 @@
 package com.fdsystem.fdserver.config
 
 import com.google.gson.Gson
-import com.google.gson.GsonBuilder
-import org.apache.commons.logging.LogFactory
 import org.springframework.stereotype.Component
 import java.io.File
-import java.io.InputStream
 
 data class InfluxConfigData(
         val influxdbURL: String = "",

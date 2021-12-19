@@ -32,11 +32,12 @@ internal class DataServiceTest {
     fun getMeasurementsWithSeveralElementsReturned() {
         // Arrange
         // Prepare parameters
+        pulseGetMeasurementPreparationFixture()
+
         val token = oMother.defaultToken
         val bucketName = oMother.defaultBucket
         val requiredNames = oMother.defaultRequiredNames
 
-        pulseGetMeasurementPreparationFixture()
 
         Mockito.`when`(
             charRepositoryMock.get(oMother.arterialAccessInfo)
@@ -57,11 +58,12 @@ internal class DataServiceTest {
     fun getMeasurementsWithOneElementReturned() {
         // Arrange
         // Prepare parameters
+        pulseGetMeasurementPreparationFixture()
+
         val token = oMother.defaultToken
         val bucketName = oMother.defaultBucket
         val requiredNames = listOf(oMother.defaultRequiredNames[0])
 
-        pulseGetMeasurementPreparationFixture()
 
         // Act
         val returnedMeasurements =
