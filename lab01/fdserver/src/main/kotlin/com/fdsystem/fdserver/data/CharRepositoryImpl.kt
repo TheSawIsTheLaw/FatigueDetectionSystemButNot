@@ -7,7 +7,6 @@ import com.influxdb.client.kotlin.InfluxDBClientKotlin
 import com.influxdb.client.kotlin.InfluxDBClientKotlinFactory
 import org.springframework.stereotype.Repository
 
-// Вынести private val в конструктор
 class InfluxConnection(
     private val connectionString: String,
     private val token: String,
@@ -32,11 +31,10 @@ class InfluxConnection(
     }
 }
 
-// Выносим query в отдельный слой
 @Repository
 class CharRepositoryImpl(private val config: InfluxdbConfiguration) :
     CharRepositoryInterface {
-    val influxDAO = InfluxDAO(config)
+    private val influxDAO = InfluxDAO(config)
 
     private fun get(
         dataAccessInfo: DSDataAccessInfo,

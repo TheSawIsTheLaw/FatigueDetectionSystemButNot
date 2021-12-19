@@ -66,6 +66,28 @@ val integrationTest = task<Test>("integrationTest") {
     mustRunAfter(tasks["test"])
 }
 
+// Well, i've tried to automize it. Not helped.
+//val runDockerCompose = task("startDatabases") {
+//    doLast {
+//        exec {
+//            executable = "make"
+//            args = listOf("runclear")
+//        }
+//    }
+//}
+//
+//val runDockerD = task("runDockerDaemon") {
+//    doLast {
+//        exec {
+//            executable = "dockerd"
+//        }
+//    }
+//}
+//
+//runDockerCompose.dependsOn(runDockerD)
+//
+//integrationTest.dependsOn(runDockerCompose)
+
 tasks.check {
     dependsOn(integrationTest)
 }
