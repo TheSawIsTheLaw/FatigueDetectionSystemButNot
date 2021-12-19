@@ -18,3 +18,17 @@ services:
       - .env
     ports:
       - ${INFLUXDB_PORT}:8086
+
+  postgres:
+    image: postgres:latest
+    container_name: integration-postgres
+    volumes:
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+    env_file:
+      - .env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - ${POSTGRES_PORT}:5432
