@@ -53,9 +53,6 @@ internal class CharRepoAndDAOIntegrationTest {
         }
     }
 
-    // https://youtrack.jetbrains.com/issue/KT-17630
-    // Пришлось сделать метод публичным, штош.
-    // https://youtrack.jetbrains.com/issue/KTIJ-17598
     @Test
     fun createNewUserTokenTest() {
         // Arrange
