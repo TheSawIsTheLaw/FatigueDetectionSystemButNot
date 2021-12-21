@@ -11,5 +11,7 @@ class CharRepoAndDAOExpectations {
         DSMeasurement("pulse", "70.0", Instant.MAX),
         DSMeasurement("pulse", "30.0", Instant.MAX),
         DSMeasurement("pulse", "0.0", Instant.MAX),
-        )
+    )
+
+    val pulseListWithAddedValue = pulseListAtCreation + DSMeasurement("pulse", "0.0", Instant.MAX)
 }

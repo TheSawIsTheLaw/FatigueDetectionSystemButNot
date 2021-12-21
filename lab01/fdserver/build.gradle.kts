@@ -92,6 +92,10 @@ tasks.check {
     dependsOn(integrationTest)
 }
 
+kotlin.target.compilations.getByName("test") {
+    associateWith(target.compilations.getByName("main"))
+}
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
