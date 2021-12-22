@@ -46,7 +46,7 @@ jobs:
         run: sudo ./gradlew unitTest --rerun-tasks
         
   runIntegrationTests:
-#     needs: runDBs
+    needs: runUnitTests
     runs-on: ubuntu-latest
     
 #     services:
@@ -86,7 +86,7 @@ jobs:
           distribution: 'adopt'
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
-      - name: Runs docker using make
+      - name: Run docker using make
         working-directory: ./lab01/fdserver/integrationTest
         run: make run
       - name: Run tests with gradle
@@ -94,7 +94,7 @@ jobs:
         run: sudo ./gradlew integrationTest --rerun-tasks --info
         
   runE2ETests:
-#     needs: runDBs
+    needs: runIntegrationTests
     runs-on: ubuntu-latest
     
     steps:
