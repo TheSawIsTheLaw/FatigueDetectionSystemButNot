@@ -1,11 +1,8 @@
 *.db
-lab1/fdserver/gradle
 *.jar
 *.bat
 *.properties
 .idea
-gradlew
-lab01/fdserver/gradle/wrapper/
 lab01/fdserver/postgresData
 *.env
 lab01/fdserver/src/main/kotlin/META-INF/
