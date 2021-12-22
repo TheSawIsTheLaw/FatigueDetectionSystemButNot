@@ -50,6 +50,13 @@ tasks.withType<KotlinCompile> {
 }
 
 sourceSets {
+    create("unitTest") {
+        kotlin {
+            compileClasspath += main.get().output + configurations.testRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+    }
+
     create("integrationTest") {
         kotlin {
             compileClasspath += main.get().output + configurations.testRuntimeClasspath
@@ -63,6 +70,13 @@ sourceSets {
             runtimeClasspath += output + compileClasspath
         }
     }
+}
+
+val unitTest = task<Test>("unitTest") {
+    description = "Runs unit test."
+    group = "verification"
+    testClassesDirs = sourceSets["unitTest"].output.classesDirs
+    classpath = sourceSets["unitTest"].runtimeClasspath
 }
 
 val integrationTest = task<Test>("integrationTest") {
@@ -105,6 +119,7 @@ val e2eTest = task<Test>("e2eTest") {
 //integrationTest.dependsOn(runDockerCompose)
 
 tasks.check {
+    dependsOn(unitTest)
     dependsOn(integrationTest)
     dependsOn(e2eTest)
 }
