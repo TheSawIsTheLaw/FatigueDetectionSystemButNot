@@ -42,7 +42,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Build with Gradle
-        working-directory: ./lab01
+        working-directory: ./lab01/fdserver
         run: ./gradlew build
         
   runUnitTests:
@@ -58,7 +58,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run tests with gradle
-        working-directory: ./lab01
+        working-directory: ./lab01/fdserver
         run: ./gradlew unitTest
         
   runIntegrationTests:
@@ -75,6 +75,7 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run tests with gradle
+        working-directory: ./lab01/fdserver
         run: ./gradlew integrationTests
         
   runE2ETests:
@@ -91,5 +92,5 @@ jobs:
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run tests with gradle
-        working-directory: ./lab01
+        working-directory: ./lab01/fdserver
         run: ./gradlew e2eTest -DnOfExecs=100
