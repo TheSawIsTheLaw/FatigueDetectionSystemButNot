@@ -25,7 +25,7 @@ class USUserCredentialsFactory {
         )
 
     fun getExistingUser() = USUserCredentials(
-        "user",
+        "testUser",
         "password",
         "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
     )
@@ -40,7 +40,7 @@ class USUserCredentialsFactory {
     )
 
     fun getExistingUserWithInvalidPassword() = USUserCredentials(
-        "user",
+        "testUser",
         "invalidPassword",
         "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
     )
