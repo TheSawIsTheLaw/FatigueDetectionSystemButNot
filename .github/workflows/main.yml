@@ -53,9 +53,9 @@ jobs:
       influxdbintegrationtests:
         image: influxdb:2.0
         volumes:
-          - ./lab01/fdserver/integrationTest/influxdb/data:/var/lib/influxdb2
-          - ./lab01/fdserver/integrationTest/influxdb/config:/etc/influxdb2
-          - ./lab01/fdserver/integrationTest/influxdb/scripts:/docker-entrypoint-initdb.d
+          - /lab01/fdserver/integrationTest/influxdb/data:/var/lib/influxdb2
+          - /lab01/fdserver/integrationTest/influxdb/config:/etc/influxdb2
+          - /lab01/fdserver/integrationTest/influxdb/scripts:/docker-entrypoint-initdb.d
         env:
           DOCKER_INFLUXDB_INIT_MODE: setup
           DOCKER_INFLUXDB_INIT_USERNAME: admin
@@ -69,7 +69,7 @@ jobs:
       postgresintegrationtests:
         image: postgres:latest
         volumes:
-          - ./lab01/fdserver/integrationTest/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+          - /lab01/fdserver/integrationTest/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
         env:
           POSTGRES_USER: admin
           POSTGRES_PASSWORD: satanIsHere
