@@ -1,5 +1,5 @@
 {
-  "postgresURL": "localhost:5432/users",
+  "postgresURL": "postgres:5432/users",
   "postgresUsername": "admin",
   "postgresPassword": "satanIsHere"
 }
