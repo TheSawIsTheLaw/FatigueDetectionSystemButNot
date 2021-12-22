@@ -48,7 +48,6 @@ jobs:
   runIntegrationTests:
 #     needs: runDBs
     runs-on: ubuntu-latest
-    container: node:10.18-jessie
     
 #     services:
 #       influxdbintegrationtests:
@@ -92,7 +91,7 @@ jobs:
         run: make run
       - name: Run tests with gradle
         working-directory: ./lab01/fdserver
-        run: ./gradlew integrationTest --rerun-tasks --info
+        run: sudo ./gradlew integrationTest --rerun-tasks --info
         
   runE2ETests:
 #     needs: runDBs
