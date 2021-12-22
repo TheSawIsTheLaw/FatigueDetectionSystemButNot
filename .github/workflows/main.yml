@@ -50,33 +50,33 @@ jobs:
     runs-on: ubuntu-latest
     container: node:10.18-jessie
     
-    services:
-      influxdbintegrationtests:
-        image: influxdb:2.0
-        volumes:
-          - /lab01/fdserver/integrationTest/influxdb/data:/var/lib/influxdb2
-          - /lab01/fdserver/integrationTest/influxdb/config:/etc/influxdb2
-          - /lab01/fdserver/integrationTest/influxdb/scripts:/docker-entrypoint-initdb.d
-        env:
-          DOCKER_INFLUXDB_INIT_MODE: setup
-          DOCKER_INFLUXDB_INIT_USERNAME: admin
-          DOCKER_INFLUXDB_INIT_PASSWORD: password
-          DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==
-          DOCKER_INFLUXDB_INIT_ORG: subjects
-          DOCKER_INFLUXDB_INIT_BUCKET: testUser
-        ports:
-          - 8086:8086
+#     services:
+#       influxdbintegrationtests:
+#         image: influxdb:2.0
+#         volumes:
+#           - /lab01/fdserver/integrationTest/influxdb/data:/var/lib/influxdb2
+#           - /lab01/fdserver/integrationTest/influxdb/config:/etc/influxdb2
+#           - /lab01/fdserver/integrationTest/influxdb/scripts:/docker-entrypoint-initdb.d
+#         env:
+#           DOCKER_INFLUXDB_INIT_MODE: setup
+#           DOCKER_INFLUXDB_INIT_USERNAME: admin
+#           DOCKER_INFLUXDB_INIT_PASSWORD: password
+#           DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==
+#           DOCKER_INFLUXDB_INIT_ORG: subjects
+#           DOCKER_INFLUXDB_INIT_BUCKET: testUser
+#         ports:
+#           - 8086:8086
           
-      postgresintegrationtests:
-        image: postgres:latest
-        volumes:
-          - /lab01/fdserver/integrationTest/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
-        env:
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: satanIsHere
-          POSTGRES_DB: users
-        ports:
-          - 5432:5432
+#       postgresintegrationtests:
+#         image: postgres:latest
+#         volumes:
+#           - /lab01/fdserver/integrationTest/postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+#         env:
+#           POSTGRES_USER: admin
+#           POSTGRES_PASSWORD: satanIsHere
+#           POSTGRES_DB: users
+#         ports:
+#           - 5432:5432
     
     steps:
       - uses: actions/checkout@v2
@@ -87,6 +87,9 @@ jobs:
           distribution: 'adopt'
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Runs docker using make
+        working-directory: ./lab01/fdserver/integrationTest
+        run: make run
       - name: Run tests with gradle
         working-directory: ./lab01/fdserver
         run: ./gradlew integrationTest --rerun-tasks --info
@@ -104,6 +107,9 @@ jobs:
           distribution: 'adopt'
       - name: Validate Gradle wrapper
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Runs docker using make
+        working-directory: ./lab01/fdserver/integrationTest
+        run: make run
       - name: Run tests with gradle
         working-directory: ./lab01/fdserver
         run: sudo ./gradlew e2eTest --rerun-tasks -DnOfExecs=100
