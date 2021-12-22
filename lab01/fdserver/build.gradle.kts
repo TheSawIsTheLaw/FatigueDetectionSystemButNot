@@ -56,14 +56,30 @@ sourceSets {
             runtimeClasspath += output + compileClasspath
         }
     }
+
+    create("e2eTest") {
+        kotlin {
+            compileClasspath += main.get().output + configurations.testRuntimeClasspath
+            runtimeClasspath += output + compileClasspath
+        }
+    }
 }
 
 val integrationTest = task<Test>("integrationTest") {
-    description = "Runs the integration tests"
+    description = "Runs integration tests."
     group = "verification"
     testClassesDirs = sourceSets["integrationTest"].output.classesDirs
     classpath = sourceSets["integrationTest"].runtimeClasspath
     mustRunAfter(tasks["test"])
+}
+
+val e2eTest = task<Test>("e2eTest") {
+    description = "Runs e2e test."
+    group = "verification"
+    testClassesDirs = sourceSets["e2eTest"].output.classesDirs
+    classpath = sourceSets["e2eTest"].runtimeClasspath
+    mustRunAfter(tasks["integrationTest"])
+    systemProperty("numberOfExecutions", System.getProperty("nOfExecs"))
 }
 
 // Well, i've tried to automize it. Not helped.
@@ -90,6 +106,7 @@ val integrationTest = task<Test>("integrationTest") {
 
 tasks.check {
     dependsOn(integrationTest)
+    dependsOn(e2eTest)
 }
 
 kotlin.target.compilations.getByName("test") {
