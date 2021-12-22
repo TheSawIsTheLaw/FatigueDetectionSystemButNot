@@ -7,6 +7,7 @@ import com.fdsystem.fdserver.factories.JwtTokenFactory
 import com.fdsystem.fdserver.factories.MeasurementsListFactory
 import com.fdsystem.fdserver.factories.USUserCredentialsFactory
 import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
 
 internal class DataControllerIntegrationTest {
@@ -18,12 +19,12 @@ internal class DataControllerIntegrationTest {
     private val expectations = DataControllerExpectations()
 
     private val controller = controllerFactory.getDataController()
+    private val userJwtToken = jwtTokenFactory.createTokenFromUser(usUserCredentialsFactory.getExistingUser())
 
     @Test
     fun getDataTest() {
         // Arrange
         val measurementsList = measurementsListFactory.getMeasurementsListWithBotArterialPressure()
-        val userJwtToken = jwtTokenFactory.createTokenFromUser(usUserCredentialsFactory.getExistingUser())
 
         val responseMeasurementToCheck = expectations.responseMeasurementsDTOWithArterial
 
@@ -44,6 +45,31 @@ internal class DataControllerIntegrationTest {
                 gotMeasurements.values[i].value,
                 responseMeasurementToCheck.measurementsList.first().values[i].value
             )
+        }
+    }
+
+    @Test
+    fun addDataTest() {
+        // Arrange
+        val measurementsToAdd = measurementsListFactory.getMeasurementsToAdd()
+        val measurementsToCheck = expectations.responseMeasurementsDTOWithAddedArterial.measurementsList[0].values
+
+        // Act
+        val response = controller.addData(measurementsToAdd, userJwtToken)
+
+        // Assert
+        assertTrue(response.statusCode.is2xxSuccessful)
+
+        val currentMeasurements =
+            (controller.getData(
+                measurementsListFactory.getMeasurementsListWithBotArterialPressure(),
+                userJwtToken
+            ).body as ResponseMeasurementsDTO).measurementsList.first()
+
+        assertEquals(currentMeasurements.measurement, measurementsToAdd.measurements.first().measurement)
+
+        for (i in currentMeasurements.values.indices) {
+            assertEquals(currentMeasurements.values[i].value, measurementsToCheck[i].value)
         }
     }
 }
