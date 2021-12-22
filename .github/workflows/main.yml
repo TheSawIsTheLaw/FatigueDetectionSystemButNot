@@ -89,7 +89,7 @@ jobs:
         uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
       - name: Run tests with gradle
         working-directory: ./lab01/fdserver
-        run: sudo ./gradlew integrationTest --rerun-tasks --info
+        run: ./gradlew integrationTest --rerun-tasks --info
         
   runE2ETests:
 #     needs: runDBs
