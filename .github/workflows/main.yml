@@ -16,18 +16,18 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   # This workflow contains a single job called "build"
-  runDBs:
+#   runDBs:
     # The type of runner that the job will run on
-    runs-on: ubuntu-latest
+#     runs-on: ubuntu-latest
 
     # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
+#     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v2
+#       - uses: actions/checkout@v2
         
-      - name: Runs docker using make
-        working-directory: ./lab01/fdserver/integrationTest
-        run: make run
+#       - name: Runs docker using make
+#         working-directory: ./lab01/fdserver/integrationTest
+#         run: make run
         
   runUnitTests:
     runs-on: ubuntu-latest
@@ -46,8 +46,37 @@ jobs:
         run: sudo ./gradlew unitTest --rerun-tasks
         
   runIntegrationTests:
-    needs: runDBs
+#     needs: runDBs
     runs-on: ubuntu-latest
+    
+    services:
+      working-directory: ./lab01/fdserver/integrationTest
+      influxdbintegrationtests:
+        image: influxdb:2.0
+        volumes:
+          - ./influxdb/data:/var/lib/influxdb2
+          - ./influxdb/config:/etc/influxdb2
+          - ./influxdb/scripts:/docker-entrypoint-initdb.d
+        env:
+          DOCKER_INFLUXDB_INIT_MODE: setup
+          DOCKER_INFLUXDB_INIT_USERNAME: admin
+          DOCKER_INFLUXDB_INIT_PASSWORD: password
+          DOCKER_INFLUXDB_INIT_ADMIN_TOKEN: HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow==
+          DOCKER_INFLUXDB_INIT_ORG: subjects
+          DOCKER_INFLUXDB_INIT_BUCKET: testUser
+        ports:
+          - 8086:8086
+          
+      postgresintegrationtests:
+        image: postgres:latest
+        volumes:
+          - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql
+        env:
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: satanIsHere
+          POSTGRES_DB: users
+        ports:
+          - 5432:5432
     
     steps:
       - uses: actions/checkout@v2
@@ -63,7 +92,7 @@ jobs:
         run: sudo ./gradlew integrationTest --rerun-tasks
         
   runE2ETests:
-    needs: runDBs
+#     needs: runDBs
     runs-on: ubuntu-latest
     
     steps:
