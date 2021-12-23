@@ -67,12 +67,14 @@ internal class DataControllerIntegrationTest {
                 userJwtToken
             ).body as ResponseMeasurementsDTO).measurementsList.first()
 
+        val difference = currentMeasurements.values - measurementsToCheck
+
         // Assert
         assertTrue(response.statusCode.is2xxSuccessful)
 
         assertEquals(currentMeasurements.measurement, measurementsToAdd.measurements.first().measurement)
 
-        assertTrue(currentMeasurements.values.size == measurementsToCheck.size + 1)
-        assertTrue(currentMeasurements.values.last().value == measurementsToAdd.measurements[0].values[0].value)
+        assertTrue(difference.size == 1)
+        assertTrue(difference.first().value == measurementsToAdd.measurements[0].values[0].value)
     }
 }

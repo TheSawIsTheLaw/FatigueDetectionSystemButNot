@@ -40,6 +40,7 @@ internal class UserScenarioTest {
             numberOfSuccessExecutions += runScenarioTest(i)
         }
 
+        println("Successful $numberOfExecutions of $numberOfExecutions")
         assertEquals(numberOfSuccessExecutions, numberOfExecutions)
     }
 
