@@ -40,6 +40,7 @@ internal class UserScenarioTest {
             numberOfSuccessExecutions += runScenarioTest(i)
         }
 
+        println("Successful $numberOfSuccessExecutions of $numberOfExecutions")
         assertEquals(numberOfSuccessExecutions, numberOfExecutions)
     }
 
@@ -54,7 +55,7 @@ internal class UserScenarioTest {
         val gotLoginResponse = userController.login(userCredentials)
 
         // Assert
-        if (!gotLoginResponse.statusCode.is2xxSuccessful || !(gotLoginResponse.body as JwtResponse).token.isBlank())
+        if (gotLoginResponse.statusCode.isError || (gotLoginResponse.body as JwtResponse).token.isNotBlank())
             return 0
 
         // Arrange
@@ -65,7 +66,7 @@ internal class UserScenarioTest {
         val gotAddResponse = dataController.addData(measurementsToAdd, userJwtToken)
 
         // Assert
-        if (!gotAddResponse.statusCode.is2xxSuccessful)
+        if (gotAddResponse.statusCode.isError)
             return 0
 
         // Arrange
@@ -75,7 +76,7 @@ internal class UserScenarioTest {
         val gotGetResponse = dataController.getData(measurementsToGet, userJwtToken)
 
         // Assert
-        if (!gotGetResponse.statusCode.is2xxSuccessful)
+        if (gotGetResponse.statusCode.isError)
             return 0
 
         val gotGetValues = (gotGetResponse.body as ResponseMeasurementsDTO).measurementsList.first().values
