@@ -70,21 +70,18 @@ class UserControllerIntegrationTest {
     @Test
     fun changePasswordSuccessTest() {
         // Arrange
-        val userCredentials = userCredentialsDTOFactory.getExistingUser()
-        val newUserCredentials = userCredentialsDTOFactory.getExistingUserWithNewPassword()
+        val userCredentials = userCredentialsDTOFactory.getNewUserForPasswordChange()
+        controller.register(userCredentials)
+
+        val userCredentialsWithPasswordChanged = userCredentialsDTOFactory.getNewUserWithPasswordChanged()
 
         val userJwtToken = "Bearer " + (controller.login(userCredentials).body as JwtResponse).token
         val newPassword = newPasswordDTOFactory.getNewPasswordDTO(userCredentials.password)
-        controller.changePassword(newPassword, userJwtToken)
-
-        val newUserJwtToken = "Bearer " + (controller.login(newUserCredentials).body as JwtResponse).token
-        val newPasswordToReturn =
-            newPasswordDTOFactory.getNewPasswordDTOForReturnToPreviousState(userCredentials.password)
 
         // Act
-        val gotResponse = controller.changePassword(newPasswordToReturn, newUserJwtToken)
+        val gotResponse = controller.changePassword(newPassword, userJwtToken)
 
-        val loginTryResponse = controller.login(userCredentials)
+        val loginTryResponse = controller.login(userCredentialsWithPasswordChanged)
 
         // Assert
         assertTrue(gotResponse.statusCode.is2xxSuccessful)

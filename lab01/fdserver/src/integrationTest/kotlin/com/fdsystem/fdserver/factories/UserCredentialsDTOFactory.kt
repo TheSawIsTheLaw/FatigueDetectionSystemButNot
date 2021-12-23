@@ -9,6 +9,18 @@ class UserCredentialsDTOFactory {
         "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
     )
 
+    fun getNewUserForPasswordChange() = UserCredentialsDTO(
+        "passwordChangeUser",
+        "password",
+        "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
+    )
+
+    fun getNewUserWithPasswordChanged() = UserCredentialsDTO(
+        "passwordChangeUser",
+        "password",
+        "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
+    )
+
     fun getExistingUserWithNewPassword() = UserCredentialsDTO(
         "testUser",
         "passwordnew",
