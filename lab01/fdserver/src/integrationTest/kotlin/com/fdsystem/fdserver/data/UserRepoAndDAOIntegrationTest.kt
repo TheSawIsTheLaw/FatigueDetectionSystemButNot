@@ -159,9 +159,9 @@ internal class UserRepoAndDAOIntegrationTest {
         // Act
         repository.changePasswordAndUsername(credentialsForChange)
 
-        // Assert
         val currentUser = repository.getUserByUsername(changedUser)
 
+        // Assert
         assertEquals(changedUser, currentUser)
     }
 
@@ -175,9 +175,9 @@ internal class UserRepoAndDAOIntegrationTest {
         // Act
         repository.changePasswordAndUsername(credentialsForChange)
 
-        // Assert
         val currentUser = repository.getUserByUsername(existingUser)
 
+        // Assert
         assertEquals(existingUser, currentUser)
     }
 }

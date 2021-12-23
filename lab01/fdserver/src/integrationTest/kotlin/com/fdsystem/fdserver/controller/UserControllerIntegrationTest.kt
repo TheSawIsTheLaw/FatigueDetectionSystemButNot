@@ -23,8 +23,8 @@ class UserControllerIntegrationTest {
         val gotResponse = controller.login(userCredentials)
 
         // Assert
-        assertTrue(gotResponse.body is JwtResponse)
         assertTrue(gotResponse.statusCode.is2xxSuccessful)
+        assertTrue((gotResponse.body as JwtResponse).token.isNotBlank())
     }
 
     @Test
@@ -51,8 +51,8 @@ class UserControllerIntegrationTest {
         assertTrue(gotResponse.statusCode.is2xxSuccessful)
 
         val loginTryResponse = controller.login(userCredentials)
-        assertTrue(loginTryResponse.body is JwtResponse)
         assertTrue(loginTryResponse.statusCode.is2xxSuccessful)
+        assertTrue(loginTryResponse.body is JwtResponse)
     }
 
     @Test
@@ -84,10 +84,11 @@ class UserControllerIntegrationTest {
         // Act
         val gotResponse = controller.changePassword(newPasswordToReturn, newUserJwtToken)
 
+        val loginTryResponse = controller.login(userCredentials)
+
         // Assert
         assertTrue(gotResponse.statusCode.is2xxSuccessful)
 
-        val loginTryResponse = controller.login(userCredentials)
         assertTrue(loginTryResponse.statusCode.is2xxSuccessful)
     }
 

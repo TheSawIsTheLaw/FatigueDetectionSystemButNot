@@ -46,7 +46,7 @@ internal class UserScenarioTest {
         val gotLoginResponse = userController.login(userCredentials)
 
         // Assert
-        if (!gotLoginResponse.statusCode.is2xxSuccessful || !(gotLoginResponse.body is JwtResponse))
+        if (!gotLoginResponse.statusCode.is2xxSuccessful || !(gotLoginResponse.body as JwtResponse).token.isBlank())
             return 0
 
         // Arrange

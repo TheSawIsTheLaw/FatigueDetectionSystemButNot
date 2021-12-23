@@ -52,19 +52,23 @@ internal class DataControllerIntegrationTest {
     fun addDataTest() {
         // Arrange
         val measurementsToAdd = measurementsListFactory.getMeasurementsToAdd()
-        val measurementsToCheck = expectations.responseMeasurementsDTOWithAddedArterial.measurementsList[0].values
+
+        val measurementsToCheck = (controller.getData(
+            measurementsListFactory.getMeasurementsListWithBotArterialPressure(),
+            userJwtToken
+        ).body as ResponseMeasurementsDTO).measurementsList[0].values
 
         // Act
         val response = controller.addData(measurementsToAdd, userJwtToken)
-
-        // Assert
-        assertTrue(response.statusCode.is2xxSuccessful)
 
         val currentMeasurements =
             (controller.getData(
                 measurementsListFactory.getMeasurementsListWithBotArterialPressure(),
                 userJwtToken
             ).body as ResponseMeasurementsDTO).measurementsList.first()
+
+        // Assert
+        assertTrue(response.statusCode.is2xxSuccessful)
 
         assertEquals(currentMeasurements.measurement, measurementsToAdd.measurements.first().measurement)
 
