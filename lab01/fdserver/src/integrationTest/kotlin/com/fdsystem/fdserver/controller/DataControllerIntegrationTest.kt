@@ -74,6 +74,5 @@ internal class DataControllerIntegrationTest {
 
         assertTrue(currentMeasurements.values.size == measurementsToCheck.size + 1)
         assertTrue(currentMeasurements.values.last().value == measurementsToAdd.measurements[0].values[0].value)
-        }
     }
 }
