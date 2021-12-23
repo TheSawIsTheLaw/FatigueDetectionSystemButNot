@@ -17,7 +17,7 @@ class UserCredentialsDTOFactory {
 
     fun getNewUserWithPasswordChanged() = UserCredentialsDTO(
         "passwordChangeUser",
-        "password",
+        "passwordnew",
         "HsJBf0sINtvxedXJio2Lg7iskJgLcR5q8a0MZtqoiWZt66pBEQ0LUz0IPEe5ooD2GqaxQoGxzqoIi-U1CLINow=="
     )
 

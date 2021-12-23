@@ -8,6 +8,7 @@ import com.fdsystem.fdserver.factories.UserControllerFactory
 import com.fdsystem.fdserver.factories.UserCredentialsDTOFactory
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
+import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 
 internal class UserScenarioTest {
@@ -18,6 +19,12 @@ internal class UserScenarioTest {
 
     private val userController = userControllerFactory.getUserController()
     private val dataController = dataControllerFactory.getDataController()
+
+//    private var numberOfExecutions: Int = 100
+
+//    init {
+//        numberOfExecutions = System.getProperty("numberOfExecutions").toInt()
+//    }
 
     // sudo gradle e2etest --info --rerun-tasks -DnOfExecs=100
     @Test
@@ -38,6 +45,7 @@ internal class UserScenarioTest {
 
     // Почему иф-ы?
     // Да потому что в задании требуется узнать, сколько тестов не прошло.
+//    @RepeatedTest(100)
     private fun runScenarioTest(numberOfExecution: Int): Int {
         // Arrange
         val userCredentials = userCredentialsDTOFactory.getExistingUser()
