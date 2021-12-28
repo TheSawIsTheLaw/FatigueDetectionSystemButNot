@@ -111,4 +111,24 @@ jobs:
         run: make run
       - name: Run tests with gradle
         working-directory: ./lab01/fdserver
-        run: sudo ./gradlew e2eTest --rerun-tasks -DnOfExecs=100
+        run: sudo ./gradlew e2eTest --rerun-tasks --info -DnOfExecs=100
+        
+  runBDDTests:
+    needs: runE2ETests
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+      - name: Validate Gradle wrapper
+        uses: gradle/wrapper-validation-action@e6e38bacfdf1a337459f332974bb2327a31aaf4b
+      - name: Runs docker using make
+        working-directory: ./lab01/fdserver/integrationTest
+        run: make run
+      - name: Run tests with gradle
+        working-directory: ./lab01/fdserver
+        run: sudo ./gradlew bddTest --rerun-tasks --info
