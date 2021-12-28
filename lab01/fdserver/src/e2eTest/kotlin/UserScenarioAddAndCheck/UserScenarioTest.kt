@@ -55,8 +55,10 @@ internal class UserScenarioTest {
         val gotLoginResponse = userController.login(userCredentials)
 
         // Assert
-        if (gotLoginResponse.statusCode.isError || (gotLoginResponse.body as JwtResponse).token.isNotBlank())
+        if (gotLoginResponse.statusCode.isError || (gotLoginResponse.body as JwtResponse).token.isBlank()) {
+            println("Login error")
             return 0
+        }
 
         // Arrange
         val userJwtToken = "Bearer " + (gotLoginResponse.body as JwtResponse).token
@@ -66,8 +68,10 @@ internal class UserScenarioTest {
         val gotAddResponse = dataController.addData(measurementsToAdd, userJwtToken)
 
         // Assert
-        if (gotAddResponse.statusCode.isError)
+        if (gotAddResponse.statusCode.isError) {
+            println("Add data error")
             return 0
+        }
 
         // Arrange
         val measurementsToGet = measurementsListFactory.getMeasurementsListWithBotArterialPressure()
@@ -76,12 +80,16 @@ internal class UserScenarioTest {
         val gotGetResponse = dataController.getData(measurementsToGet, userJwtToken)
 
         // Assert
-        if (gotGetResponse.statusCode.isError)
+        if (gotGetResponse.statusCode.isError) {
+            println("Get data error")
             return 0
+        }
 
         val gotGetValues = (gotGetResponse.body as ResponseMeasurementsDTO).measurementsList.first().values
-        if (gotGetValues.last().value != measurementsToAdd.measurements.last().values.last().value)
+        if (gotGetValues.last().value != measurementsToAdd.measurements.last().values.last().value) {
+            println("Last value doesn't match added")
             return 0
+        }
 
         return 1
     }
