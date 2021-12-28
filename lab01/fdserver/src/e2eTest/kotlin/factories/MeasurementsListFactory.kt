@@ -1,26 +1,16 @@
-package com.fdsystem.fdserver.factories
+package factories
 
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsDTO
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
 import com.fdsystem.fdserver.domain.dtos.MeasurementDataWithoutTime
 
-class MeasurementsListFactory {
-    fun getMeasurementsListWithBotArterialPressure() = listOf("botArterialPressure")
+internal object MeasurementsListFactory {
+    fun getMeasurementsList(charName: String) = listOf(charName)
 
-    fun getMeasurementsToAdd() = AcceptMeasurementsListDTO(
+    fun getMeasurementsToAdd(charName: String, value: Int) = AcceptMeasurementsListDTO(
         listOf(
             AcceptMeasurementsDTO(
-                "botArterialPressure", listOf(
-                    MeasurementDataWithoutTime("0.0")
-                )
-            )
-        )
-    )
-
-    fun getMeasurementsToAdd(value: Int) = AcceptMeasurementsListDTO(
-        listOf(
-            AcceptMeasurementsDTO(
-                "botArterialPressure", listOf(
+                charName, listOf(
                     MeasurementDataWithoutTime("$value.0")
                 )
             )

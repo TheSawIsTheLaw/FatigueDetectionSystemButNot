@@ -1,30 +1,17 @@
-package UserScenarioAddAndCheck
+package userScenarioAddAndCheck
 
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.domain.dtos.ResponseMeasurementsDTO
-import com.fdsystem.fdserver.factories.DataControllerFactory
-import com.fdsystem.fdserver.factories.MeasurementsListFactory
-import com.fdsystem.fdserver.factories.UserControllerFactory
-import com.fdsystem.fdserver.factories.UserCredentialsDTOFactory
+import factories.DataControllerFactory
+import factories.MeasurementsListFactory
+import factories.UserControllerFactory
+import factories.UserCredentialsDTOFactory
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.RepeatedTest
 import org.junit.jupiter.api.Test
 
 internal class UserScenarioTest {
-    private val userControllerFactory = UserControllerFactory()
-    private val dataControllerFactory = DataControllerFactory()
-    private val userCredentialsDTOFactory = UserCredentialsDTOFactory()
-    private val measurementsListFactory = MeasurementsListFactory()
-
-    private val userController = userControllerFactory.getUserController()
-    private val dataController = dataControllerFactory.getDataController()
-
-//    private var numberOfExecutions: Int = 100
-
-//    init {
-//        numberOfExecutions = System.getProperty("numberOfExecutions").toInt()
-//    }
+    private val userController = UserControllerFactory.getUserController()
+    private val dataController = DataControllerFactory.getDataController()
 
     // sudo gradle e2etest --info --rerun-tasks -DnOfExecs=100
     @Test
@@ -49,7 +36,7 @@ internal class UserScenarioTest {
 //    @RepeatedTest(100)
     private fun runScenarioTest(numberOfExecution: Int): Int {
         // Arrange
-        val userCredentials = userCredentialsDTOFactory.getExistingUser()
+        val userCredentials = UserCredentialsDTOFactory.getExistingUser()
 
         // Act
         val gotLoginResponse = userController.login(userCredentials)
@@ -62,7 +49,7 @@ internal class UserScenarioTest {
 
         // Arrange
         val userJwtToken = "Bearer " + (gotLoginResponse.body as JwtResponse).token
-        val measurementsToAdd = measurementsListFactory.getMeasurementsToAdd(numberOfExecution)
+        val measurementsToAdd = MeasurementsListFactory.getMeasurementsToAdd("BotArterialPressure", numberOfExecution)
 
         // Act
         val gotAddResponse = dataController.addData(measurementsToAdd, userJwtToken)
@@ -74,7 +61,7 @@ internal class UserScenarioTest {
         }
 
         // Arrange
-        val measurementsToGet = measurementsListFactory.getMeasurementsListWithBotArterialPressure()
+        val measurementsToGet = MeasurementsListFactory.getMeasurementsList("BotArterialPressure")
 
         // Act
         val gotGetResponse = dataController.getData(measurementsToGet, userJwtToken)

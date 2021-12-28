@@ -1,8 +1,8 @@
-package com.fdsystem.fdserver.factories
+package factories
 
 import com.fdsystem.fdserver.controllers.components.JwtTokenUtil
 
-class JwtTokenUtilFactory {
+internal object JwtTokenUtilFactory {
     fun createJwtTokenUtilWithDefaultSecret(): JwtTokenUtil {
         val utilToReturn = JwtTokenUtil()
         org.springframework.test.util.ReflectionTestUtils.setField(
