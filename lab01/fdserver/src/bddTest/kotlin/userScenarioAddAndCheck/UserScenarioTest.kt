@@ -1,13 +1,13 @@
-package UserScenarioAddAndCheck
+package userScenarioAddAndCheck
 
 import com.fdsystem.fdserver.controllers.jwt.JwtResponse
 import com.fdsystem.fdserver.domain.dtos.AcceptMeasurementsListDTO
 import com.fdsystem.fdserver.domain.dtos.ResponseMeasurementsDTO
 import com.fdsystem.fdserver.domain.dtos.UserCredentialsDTO
-import com.fdsystem.fdserver.factories.DataControllerFactory
-import com.fdsystem.fdserver.factories.MeasurementsListFactory
-import com.fdsystem.fdserver.factories.UserControllerFactory
-import com.fdsystem.fdserver.factories.UserCredentialsDTOFactory
+import factories.DataControllerFactory
+import factories.MeasurementsListFactory
+import factories.UserControllerFactory
+import factories.UserCredentialsDTOFactory
 import org.jetbrains.spek.api.Spek
 import org.jetbrains.spek.api.dsl.given
 import org.jetbrains.spek.api.dsl.it
@@ -16,13 +16,8 @@ import org.junit.jupiter.api.Assertions.*
 import org.springframework.http.ResponseEntity
 
 internal class UserScenarioTest : Spek({
-    val userControllerFactory = UserControllerFactory()
-    val dataControllerFactory = DataControllerFactory()
-    val userCredentialsDTOFactory = UserCredentialsDTOFactory()
-    val measurementsListFactory = MeasurementsListFactory()
-
-    val userController = userControllerFactory.getUserController()
-    val dataController = dataControllerFactory.getDataController()
+    val userController = UserControllerFactory.getUserController()
+    val dataController = DataControllerFactory.getDataController()
 
     /*
      *  Прикол передачи датасета в тест в том, что фича не предусмотрена.
@@ -32,14 +27,14 @@ internal class UserScenarioTest : Spek({
 
     val dataset = listOf(
         mapOf(
-            "userCredentials" to userCredentialsDTOFactory.getExistingUser(),
-            "measurementsToAdd" to measurementsListFactory.getMeasurementsToAdd("botArterialPressure", 666),
-            "measurementsToGet" to measurementsListFactory.getMeasurementsList("botArterialPressure")
+            "userCredentials" to UserCredentialsDTOFactory.getExistingUser(),
+            "measurementsToAdd" to MeasurementsListFactory.getMeasurementsToAdd("botArterialPressure", 666),
+            "measurementsToGet" to MeasurementsListFactory.getMeasurementsList("botArterialPressure")
         ),
         mapOf(
-            "userCredentials" to userCredentialsDTOFactory.getExistingUser(),
-            "measurementsToAdd" to measurementsListFactory.getMeasurementsToAdd("pulse", 33),
-            "measurementsToGet" to measurementsListFactory.getMeasurementsList("pulse")
+            "userCredentials" to UserCredentialsDTOFactory.getExistingUser(),
+            "measurementsToAdd" to MeasurementsListFactory.getMeasurementsToAdd("pulse", 33),
+            "measurementsToGet" to MeasurementsListFactory.getMeasurementsList("pulse")
         )
     )
 

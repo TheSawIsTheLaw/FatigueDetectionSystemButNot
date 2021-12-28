@@ -1,10 +1,10 @@
-package com.fdsystem.fdserver.factories
+package factories
 
 import com.fdsystem.fdserver.config.PostgresConfiguration
 import com.fdsystem.fdserver.data.UserRepositoryImpl
 import java.io.File
 
-class UserRepositoryFactory {
+internal object UserRepositoryFactory {
     val confPath =
         "./src/integrationTest/kotlin/com/fdsystem/fdserver/config/FDPostgresConf.json"
 

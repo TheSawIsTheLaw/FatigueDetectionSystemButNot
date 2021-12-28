@@ -1,10 +1,10 @@
-package com.fdsystem.fdserver.factories
+package factories
 
 import com.fdsystem.fdserver.config.InfluxdbConfiguration
 import com.fdsystem.fdserver.data.CharRepositoryImpl
 import java.io.File
 
-class CharRepositoryFactory {
+internal object CharRepositoryFactory {
     val confPath =
         "./src/integrationTest/kotlin/com/fdsystem/fdserver/config/FDInfluxConf.json"
 
