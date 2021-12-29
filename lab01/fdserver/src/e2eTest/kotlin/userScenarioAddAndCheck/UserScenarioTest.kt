@@ -14,13 +14,15 @@ internal class UserScenarioTest {
     private val dataController = DataControllerFactory.getDataController()
 
     // sudo gradle e2etest --info --rerun-tasks -DnOfExecs=100
+    // (yep, i'm too lazy for alias)
+    // With profiler sudo ~/Desktop/gradle-profiler/build/install/gradle-profiler/bin/gradle-profiler --profile async-profiler --project-dir . e2eTest -DnOfExecs=100
     @Test
     fun userScenarioNTests() {
         var numberOfSuccessExecutions = 0
         val numberOfExecutions = try {
             System.getProperty("numberOfExecutions").toInt()
         } catch (exc: Exception) {
-            throw Exception("No parameter provided for number of Executions: use -DnOfExec=120 for example")
+            100
         }
 
         for (i in 0 until numberOfExecutions) {
@@ -34,7 +36,7 @@ internal class UserScenarioTest {
     // Почему иф-ы?
     // Да потому что в задании требуется узнать, сколько тестов не прошло.
 //    @RepeatedTest(100)
-    private fun runScenarioTest(numberOfExecution: Int): Int {
+    private fun runScenarioTest(numberOfExecution: Int = 100): Int {
         // Arrange
         val userCredentials = UserCredentialsDTOFactory.getExistingUser()
 
