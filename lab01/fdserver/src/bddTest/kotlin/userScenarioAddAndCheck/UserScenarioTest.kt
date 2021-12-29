@@ -66,7 +66,7 @@ internal class UserScenarioTest : Spek({
                     userJwtToken = "Bearer " + (gotLoginResponse.body as JwtResponse).token
                     measurementsToAdd = it["measurementsToAdd"] as AcceptMeasurementsListDTO
 
-                    on("Send measurements to BD using user's JWT and get some response about operation") {
+                    on("Send measurements to BD using user's JWT and get response about operation") {
                         val gotAddResponse = dataController.addData(measurementsToAdd, userJwtToken)
 
                         it("Response should contains 2xx code") {
@@ -77,7 +77,7 @@ internal class UserScenarioTest : Spek({
             }
 
             test("Get measurement") {
-                given("List of required to see name of measurement (contains only one because only one was added") {
+                given("List of required to see measurements (contains only one because only one was added") {
                     val measurementsToGet = it["measurementsToGet"] as List<String>
 
                     on("Get values of measurement by it's name") {
@@ -85,8 +85,10 @@ internal class UserScenarioTest : Spek({
 
                         val gotGetValues =
                             (gotGetResponse.body as ResponseMeasurementsDTO).measurementsList.first().values
-                        it("Response contains success code and last value of got list matches to added value") {
+                        it("Response should contain success code") {
                             assertTrue(gotGetResponse.statusCode.is2xxSuccessful)
+                        }
+                        it("Last value of got list should match to added value") {
                             assertEquals(
                                 gotGetValues.last().value,
                                 measurementsToAdd.measurements.last().values.last().value
